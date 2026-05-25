@@ -39,7 +39,8 @@ explicitement `Authorization: Bearer <access>` a `/api/auth/me`, qui relaye vers
 `/api/accounts/me/`, et affiche un skeleton pendant le chargement du profil.
 
 Le dashboard `/dashboard` valide aussi le profil via `/api/auth/me`. Sans token
-local valide, il redirige vers `/login?next=/dashboard`.
+local valide, il redirige vers `/login?next=/dashboard`. Il utilise un shell
+administration avec sidebar, topbar et breadcrumbs.
 
 ## Scripts
 
