@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowRight, Link2, Search, ShieldCheck } from "lucide-react"
 
+import { AccountStatus } from "@/components/account/account-status"
 import { HomelinkLogo } from "@/components/homelink-logo"
 import { Button } from "@/components/ui/button"
 
@@ -52,13 +53,7 @@ export default function Page() {
                 Inscription
               </Link>
             </nav>
-            <Button
-              asChild
-              size="sm"
-              className="h-9 bg-brand-orange px-3 text-brand-navy hover:bg-brand-orange/90 sm:px-4"
-            >
-              <Link href="/register">S&apos;inscrire</Link>
-            </Button>
+            <AccountStatus />
           </div>
         </header>
 

@@ -6,6 +6,8 @@ import { Loader2, LogIn } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { formatApiMessage, readResponseBody } from "@/lib/api-errors"
+import { extractAuthTokens } from "@/lib/auth-tokens"
+import { storeAuthTokens } from "@/lib/auth-storage"
 
 const inputClassName =
   "h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-60"
@@ -42,6 +44,14 @@ function LoginForm({ registered = false }: { registered?: boolean }) {
         return
       }
 
+      const tokens = extractAuthTokens(body)
+
+      if (!tokens) {
+        setError("Connexion reussie, mais aucun token n'a ete renvoye.")
+        return
+      }
+
+      storeAuthTokens(tokens)
       router.replace("/")
       router.refresh()
     } catch {

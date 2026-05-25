@@ -7,7 +7,7 @@ import {
   AUTH_TOKEN_SCHEME_COOKIE,
   REFRESH_TOKEN_MAX_AGE,
 } from "@/lib/auth-cookies"
-import { extractAuthTokens, stripAuthTokens } from "@/lib/auth-tokens"
+import { extractAuthTokens } from "@/lib/auth-tokens"
 import { formatApiMessage } from "@/lib/api-errors"
 import { postUpstreamJson } from "@/lib/server-api"
 
@@ -97,8 +97,8 @@ export async function POST(request: NextRequest) {
     }
 
     const nextResponse = NextResponse.json({
-      data: stripAuthTokens(body),
-      message: "Connexion reussie.",
+      access: tokens.accessToken,
+      refresh: tokens.refreshToken ?? null,
     })
 
     nextResponse.cookies.set(

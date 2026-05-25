@@ -31,9 +31,10 @@ Les formulaires `/register` et `/login` appellent les routes serveur Homelink:
 - `POST /api/auth/register` transmet vers `/api/accounts/register/`
 - `POST /api/auth/login` transmet vers `/api/accounts/login/`
 
-Le token de connexion est conserve dans un cookie `httpOnly`. Le proxy
-`/api/proxy/*` l'utilise ensuite cote serveur pour ajouter l'en-tete
-`Authorization` aux appels backend.
+Les tokens `access` et `refresh` renvoyes par le login sont conserves en
+`localStorage`. Le helper `apiFetch` ajoute ensuite l'en-tete `Authorization`
+aux appels `/api/proxy/*`. Le header interroge `/accounts/me/` via le proxy et
+affiche un skeleton pendant le chargement du profil.
 
 ## Scripts
 
