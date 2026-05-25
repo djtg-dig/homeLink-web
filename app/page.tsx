@@ -1,8 +1,8 @@
-import Image from "next/image"
+import Link from "next/link"
 import { ArrowRight, Link2, Search, ShieldCheck } from "lucide-react"
 
+import { HomelinkLogo } from "@/components/homelink-logo"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 const strengths = [
   {
@@ -25,29 +25,6 @@ const strengths = [
   },
 ]
 
-function HomelinkLogo({
-  className,
-  priority = false,
-  sizes,
-}: {
-  className?: string
-  priority?: boolean
-  sizes: string
-}) {
-  return (
-    <div className={cn("relative overflow-hidden", className)}>
-      <Image
-        src="/logo.png"
-        alt="Homelink"
-        fill
-        priority={priority}
-        sizes={sizes}
-        className="object-cover [object-position:center_45%]"
-      />
-    </div>
-  )
-}
-
 export default function Page() {
   return (
     <main className="min-h-svh bg-background text-foreground">
@@ -68,19 +45,19 @@ export default function Page() {
               <a className="transition hover:text-white" href="#biens">
                 Biens
               </a>
-              <a className="transition hover:text-white" href="#connexion">
+              <Link className="transition hover:text-white" href="/login">
                 Connexion
-              </a>
-              <a className="transition hover:text-white" href="#contact">
-                Contact
-              </a>
+              </Link>
+              <Link className="transition hover:text-white" href="/register">
+                Inscription
+              </Link>
             </nav>
             <Button
               asChild
               size="sm"
               className="h-9 bg-brand-orange px-3 text-brand-navy hover:bg-brand-orange/90 sm:px-4"
             >
-              <a href="#contact">Contact</a>
+              <Link href="/register">S&apos;inscrire</Link>
             </Button>
           </div>
         </header>
@@ -102,18 +79,22 @@ export default function Page() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button
+                asChild
                 size="lg"
                 className="bg-brand-orange text-brand-navy hover:bg-brand-orange/90"
               >
-                Explorer
-                <ArrowRight />
+                <Link href="/register">
+                  Creer un compte
+                  <ArrowRight />
+                </Link>
               </Button>
               <Button
+                asChild
                 size="lg"
                 variant="outline"
                 className="border-white/24 bg-white/8 text-white hover:bg-white/14 hover:text-white"
               >
-                Nous contacter
+                <Link href="/login">Se connecter</Link>
               </Button>
             </div>
           </div>
@@ -161,9 +142,14 @@ export default function Page() {
               immobiliere et les bons contacts.
             </p>
           </div>
-          <Button className="w-full bg-brand-orange text-brand-navy hover:bg-brand-orange/90 sm:w-auto">
-            Demarrer
-            <ArrowRight />
+          <Button
+            asChild
+            className="w-full bg-brand-orange text-brand-navy hover:bg-brand-orange/90 sm:w-auto"
+          >
+            <Link href="/register">
+              Demarrer
+              <ArrowRight />
+            </Link>
           </Button>
         </div>
       </section>

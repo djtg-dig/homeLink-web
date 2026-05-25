@@ -24,6 +24,17 @@ const biens = await apiFetch("/biens")
 La requete ci-dessus passe par `/api/proxy/biens`; l'URL reelle du backend reste
 cote serveur. N'utilisez pas de variable `NEXT_PUBLIC_*` pour l'URL API.
 
+## Authentification
+
+Les formulaires `/register` et `/login` appellent les routes serveur Homelink:
+
+- `POST /api/auth/register` transmet vers `/api/accounts/register/`
+- `POST /api/auth/login` transmet vers `/api/accounts/login/`
+
+Le token de connexion est conserve dans un cookie `httpOnly`. Le proxy
+`/api/proxy/*` l'utilise ensuite cote serveur pour ajouter l'en-tete
+`Authorization` aux appels backend.
+
 ## Scripts
 
 ```bash

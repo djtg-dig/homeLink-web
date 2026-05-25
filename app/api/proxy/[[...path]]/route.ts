@@ -1,5 +1,11 @@
 import { NextRequest } from "next/server"
 
+import {
+  AUTH_ACCESS_TOKEN_COOKIE,
+  AUTH_TOKEN_SCHEME_COOKIE,
+} from "@/lib/auth-cookies"
+import { buildUpstreamUrl } from "@/lib/server-api"
+
 const BODYLESS_METHODS = new Set(["GET", "HEAD", "OPTIONS"])
 
 const REQUEST_HEADER_BLOCKLIST = new Set([
@@ -36,27 +42,16 @@ type ProxyRouteContext = {
   }>
 }
 
-function getApiBaseUrl() {
-  const apiBaseUrl = process.env.API_BASE_URL ?? process.env.VITE_API_BASE_URL
-
-  if (!apiBaseUrl) {
-    throw new Error("API_BASE_URL is not configured")
-  }
-
-  return apiBaseUrl
-}
-
 function buildTargetUrl(path: string[], request: NextRequest) {
-  const baseUrl = getApiBaseUrl()
-  const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`
   const encodedPath = path
     .map((segment) => encodeURIComponent(segment))
     .join("/")
-  const targetUrl = new URL(encodedPath, normalizedBaseUrl)
+  const targetPath =
+    request.nextUrl.pathname.endsWith("/") && encodedPath
+      ? `${encodedPath}/`
+      : encodedPath
 
-  targetUrl.search = request.nextUrl.search
-
-  return targetUrl
+  return buildUpstreamUrl(targetPath, request.nextUrl.search)
 }
 
 function buildRequestHeaders(request: NextRequest) {
@@ -70,6 +65,16 @@ function buildRequestHeaders(request: NextRequest) {
 
   headers.set("x-forwarded-host", request.headers.get("host") ?? "")
   headers.set("x-forwarded-proto", request.nextUrl.protocol.replace(":", ""))
+
+  if (!headers.has("authorization")) {
+    const token = request.cookies.get(AUTH_ACCESS_TOKEN_COOKIE)?.value
+    const scheme =
+      request.cookies.get(AUTH_TOKEN_SCHEME_COOKIE)?.value ?? "Bearer"
+
+    if (token) {
+      headers.set("authorization", `${scheme} ${token}`)
+    }
+  }
 
   return headers
 }

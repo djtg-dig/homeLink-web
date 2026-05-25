@@ -1,3 +1,5 @@
+import { readResponseBody } from "@/lib/api-errors"
+
 const API_PROXY_PREFIX = "/api/proxy"
 
 export class ApiError extends Error {
@@ -18,21 +20,6 @@ export function apiUrl(path = "") {
   return normalizedPath
     ? `${API_PROXY_PREFIX}/${normalizedPath}`
     : API_PROXY_PREFIX
-}
-
-async function readResponseBody(response: Response) {
-  const contentType = response.headers.get("content-type") ?? ""
-  const text = await response.text()
-
-  if (!text) {
-    return null
-  }
-
-  if (contentType.includes("application/json")) {
-    return JSON.parse(text)
-  }
-
-  return text
 }
 
 export async function apiFetch<TResponse>(
@@ -66,4 +53,31 @@ export async function apiFetch<TResponse>(
   }
 
   return readResponseBody(response) as Promise<TResponse>
+}
+
+export function jsonHeaders(headers?: HeadersInit) {
+  const nextHeaders = new Headers(headers)
+
+  if (!nextHeaders.has("Accept")) {
+    nextHeaders.set("Accept", "application/json")
+  }
+
+  if (!nextHeaders.has("Content-Type")) {
+    nextHeaders.set("Content-Type", "application/json")
+  }
+
+  return nextHeaders
+}
+
+export function apiPostJson<TResponse>(
+  path: string,
+  payload: unknown,
+  init?: RequestInit
+) {
+  return apiFetch<TResponse>(path, {
+    ...init,
+    body: JSON.stringify(payload),
+    headers: jsonHeaders(init?.headers),
+    method: "POST",
+  })
 }
