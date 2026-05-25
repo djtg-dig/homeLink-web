@@ -1,8 +1,8 @@
 import Link from "next/link"
 import { ArrowRight, Link2, Search, ShieldCheck } from "lucide-react"
 
-import { AccountStatus } from "@/components/account/account-status"
 import { HomelinkLogo } from "@/components/homelink-logo"
+import { SiteHeader } from "@/components/navigation/site-header"
 import { Button } from "@/components/ui/button"
 
 const strengths = [
@@ -29,35 +29,11 @@ const strengths = [
 export default function Page() {
   return (
     <main className="min-h-svh bg-background text-foreground">
+      <SiteHeader />
       <section className="relative isolate overflow-hidden bg-brand-navy text-brand-white">
-        <div className="absolute inset-x-0 top-0 h-1 bg-brand-orange" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_76%_18%,rgba(121,228,255,0.24),transparent_28%),linear-gradient(135deg,rgba(0,60,255,0.22),transparent_42%)]" />
-        <header className="sticky top-0 z-20 border-b border-white/10 bg-brand-navy/90 backdrop-blur">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:h-20 sm:px-8 lg:px-10">
-            <HomelinkLogo
-              priority
-              sizes="(min-width: 640px) 176px, 144px"
-              className="h-11 w-36 shrink-0 sm:h-14 sm:w-44"
-            />
-            <nav
-              aria-label="Navigation principale"
-              className="hidden items-center gap-6 text-sm font-medium text-white/76 md:flex"
-            >
-              <a className="transition hover:text-white" href="#biens">
-                Biens
-              </a>
-              <Link className="transition hover:text-white" href="/login">
-                Connexion
-              </Link>
-              <Link className="transition hover:text-white" href="/register">
-                Inscription
-              </Link>
-            </nav>
-            <AccountStatus />
-          </div>
-        </header>
 
-        <div className="mx-auto flex min-h-[calc(86svh-4rem)] max-w-6xl flex-col justify-center gap-10 px-4 py-10 pb-14 sm:min-h-[68svh] sm:px-8 sm:py-16 lg:px-10">
+        <div className="mx-auto flex min-h-[72svh] max-w-6xl flex-col justify-center gap-10 px-4 py-10 pb-14 sm:min-h-[68svh] sm:px-8 sm:py-16 lg:px-10">
           <div className="flex max-w-3xl flex-col gap-7 sm:gap-8">
             <HomelinkLogo
               sizes="(min-width: 1024px) 420px, (min-width: 640px) 360px, 88vw"
