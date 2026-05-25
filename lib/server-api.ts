@@ -15,8 +15,14 @@ export function getApiBaseUrl() {
 export function buildUpstreamUrl(path: string, search = "") {
   const baseUrl = getApiBaseUrl()
   const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`
-  const normalizedPath = path.replace(/^\/+/, "")
-  const targetUrl = new URL(normalizedPath, normalizedBaseUrl)
+  const base = new URL(normalizedBaseUrl)
+  const pathWithoutLeadingSlash = path.replace(/^\/+/, "")
+  const normalizedPath =
+    base.pathname.replace(/\/+$/, "").endsWith("/api") &&
+    pathWithoutLeadingSlash.startsWith("api/")
+      ? pathWithoutLeadingSlash.replace(/^api\/+/, "")
+      : pathWithoutLeadingSlash
+  const targetUrl = new URL(normalizedPath, base)
 
   targetUrl.search = search
 

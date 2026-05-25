@@ -30,12 +30,13 @@ Les formulaires `/register` et `/login` appellent les routes serveur Homelink:
 
 - `POST /api/auth/register` transmet vers `/api/accounts/register/`
 - `POST /api/auth/login` transmet vers `/api/accounts/login/`
+- `GET /api/auth/me` transmet vers `/api/accounts/me/`
 
 Les tokens `access` et `refresh` renvoyes par le login sont conserves en
 `localStorage`. Le helper `apiFetch` ajoute ensuite
-`Authorization: Bearer <access>` aux appels `/api/proxy/*`. Le header interroge
-`/api/accounts/me/` via le proxy et affiche un skeleton pendant le chargement du
-profil.
+`Authorization: Bearer <access>` aux appels `/api/proxy/*`. Le header envoie
+explicitement `Authorization: Bearer <access>` a `/api/auth/me`, qui relaye vers
+`/api/accounts/me/`, et affiche un skeleton pendant le chargement du profil.
 
 ## Scripts
 

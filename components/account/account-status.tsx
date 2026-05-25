@@ -7,11 +7,11 @@ import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ApiError, apiFetch } from "@/lib/api-client"
+import { readResponseBody } from "@/lib/api-errors"
 import {
   AUTH_STORAGE_EVENT,
   clearStoredAuthTokens,
-  getStoredAccessToken,
+  getStoredAuthorizationHeader,
 } from "@/lib/auth-storage"
 
 type AccountProfile = {
@@ -30,7 +30,7 @@ type AccountState =
   | { status: "anonymous" }
   | { status: "authenticated"; profile: AccountProfile }
 
-const ACCOUNT_ME_ENDPOINT = "/api/accounts/me/"
+const ACCOUNT_ME_ENDPOINT = "/api/auth/me"
 
 function initials(profile: AccountProfile) {
   const first = profile.first_name.at(0) ?? ""
@@ -55,7 +55,9 @@ function AccountStatus() {
   })
 
   const loadProfile = React.useCallback(async () => {
-    if (!getStoredAccessToken()) {
+    const authorization = getStoredAuthorizationHeader()
+
+    if (!authorization) {
       setState({ status: "anonymous" })
       return
     }
@@ -63,13 +65,26 @@ function AccountStatus() {
     setState({ status: "checking" })
 
     try {
-      const profile = await apiFetch<AccountProfile>(ACCOUNT_ME_ENDPOINT)
-      setState({ status: "authenticated", profile })
-    } catch (error) {
-      if (error instanceof ApiError && [401, 403].includes(error.status)) {
-        clearStoredAuthTokens()
+      const response = await fetch(ACCOUNT_ME_ENDPOINT, {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+          Authorization: authorization,
+        },
+      })
+
+      if (!response.ok) {
+        if ([401, 403].includes(response.status)) {
+          clearStoredAuthTokens()
+        }
+
+        setState({ status: "anonymous" })
+        return
       }
 
+      const profile = (await readResponseBody(response)) as AccountProfile
+      setState({ status: "authenticated", profile })
+    } catch {
       setState({ status: "anonymous" })
     }
   }, [])
