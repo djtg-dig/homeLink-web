@@ -1,5 +1,5 @@
 import { readResponseBody } from "@/lib/api-errors"
-import { getStoredAccessToken, getStoredTokenScheme } from "@/lib/auth-storage"
+import { getStoredAuthorizationHeader } from "@/lib/auth-storage"
 
 const API_PROXY_PREFIX = "/api/proxy"
 
@@ -34,10 +34,10 @@ export async function apiFetch<TResponse>(
   }
 
   if (!headers.has("Authorization")) {
-    const token = getStoredAccessToken()
+    const authorization = getStoredAuthorizationHeader()
 
-    if (token) {
-      headers.set("Authorization", `${getStoredTokenScheme()} ${token}`)
+    if (authorization) {
+      headers.set("Authorization", authorization)
     }
   }
 

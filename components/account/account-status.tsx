@@ -30,6 +30,8 @@ type AccountState =
   | { status: "anonymous" }
   | { status: "authenticated"; profile: AccountProfile }
 
+const ACCOUNT_ME_ENDPOINT = "/api/accounts/me/"
+
 function initials(profile: AccountProfile) {
   const first = profile.first_name.at(0) ?? ""
   const last = profile.last_name.at(0) ?? ""
@@ -61,7 +63,7 @@ function AccountStatus() {
     setState({ status: "checking" })
 
     try {
-      const profile = await apiFetch<AccountProfile>("/accounts/me/")
+      const profile = await apiFetch<AccountProfile>(ACCOUNT_ME_ENDPOINT)
       setState({ status: "authenticated", profile })
     } catch (error) {
       if (error instanceof ApiError && [401, 403].includes(error.status)) {

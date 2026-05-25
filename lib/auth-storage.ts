@@ -58,6 +58,12 @@ export function getStoredTokenScheme() {
   return window.localStorage.getItem(AUTH_TOKEN_SCHEME_STORAGE_KEY) ?? "Bearer"
 }
 
+export function getStoredAuthorizationHeader() {
+  const token = getStoredAccessToken()
+
+  return token ? `${getStoredTokenScheme()} ${token}` : null
+}
+
 export function clearStoredAuthTokens() {
   if (!storageAvailable()) {
     return
