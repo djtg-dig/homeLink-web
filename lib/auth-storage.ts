@@ -69,8 +69,16 @@ export function clearStoredAuthTokens() {
     return
   }
 
+  const hadStoredAuth =
+    window.localStorage.getItem(AUTH_ACCESS_TOKEN_STORAGE_KEY) ||
+    window.localStorage.getItem(AUTH_REFRESH_TOKEN_STORAGE_KEY) ||
+    window.localStorage.getItem(AUTH_TOKEN_SCHEME_STORAGE_KEY)
+
   window.localStorage.removeItem(AUTH_ACCESS_TOKEN_STORAGE_KEY)
   window.localStorage.removeItem(AUTH_REFRESH_TOKEN_STORAGE_KEY)
   window.localStorage.removeItem(AUTH_TOKEN_SCHEME_STORAGE_KEY)
-  window.dispatchEvent(new Event(AUTH_STORAGE_EVENT))
+
+  if (hadStoredAuth) {
+    window.dispatchEvent(new Event(AUTH_STORAGE_EVENT))
+  }
 }

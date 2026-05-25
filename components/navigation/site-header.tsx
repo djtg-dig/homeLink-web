@@ -5,18 +5,8 @@ import * as React from "react"
 
 import { AccountStatus } from "@/components/account/account-status"
 import { HomelinkLogo } from "@/components/homelink-logo"
+import { propertyCategories } from "@/lib/property-categories"
 import { cn } from "@/lib/utils"
-
-const categoryItems = [
-  "Agences",
-  "Appartements",
-  "Bureaux",
-  "Hotels",
-  "Immeubles",
-  "Kiosques",
-  "Maisons",
-  "Terrains",
-]
 
 function SiteHeader() {
   const [hidden, setHidden] = React.useState(false)
@@ -71,13 +61,13 @@ function SiteHeader() {
         className="border-t border-white/10"
       >
         <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2 sm:px-8 lg:px-10">
-          {categoryItems.map((item) => (
+          {propertyCategories.map((item) => (
             <Link
-              key={item}
+              key={item.slug}
               href="#biens"
               className="shrink-0 rounded-md px-3 py-2 text-sm font-medium text-white/76 transition hover:bg-white/8 hover:text-white"
             >
-              {item}
+              {item.label}
             </Link>
           ))}
         </div>

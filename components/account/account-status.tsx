@@ -2,35 +2,19 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ChevronDown, LogOut, Mail, UserRound } from "lucide-react"
+import { ChevronDown, LayoutDashboard, LogOut, Mail } from "lucide-react"
 import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { readResponseBody } from "@/lib/api-errors"
-import {
-  AUTH_STORAGE_EVENT,
-  clearStoredAuthTokens,
-  getStoredAuthorizationHeader,
-} from "@/lib/auth-storage"
-
-type AccountProfile = {
-  address: string | null
-  date_joined: string
-  email: string
-  first_name: string
-  id: string
-  is_email_verified: boolean
-  last_name: string
-  phone_number: string | null
-}
+import { fetchCurrentAccountProfile } from "@/lib/account-client"
+import type { AccountProfile } from "@/lib/account-profile"
+import { AUTH_STORAGE_EVENT, clearStoredAuthTokens } from "@/lib/auth-storage"
 
 type AccountState =
   | { status: "checking" }
   | { status: "anonymous" }
   | { status: "authenticated"; profile: AccountProfile }
-
-const ACCOUNT_ME_ENDPOINT = "/api/auth/me"
 
 function initials(profile: AccountProfile) {
   const first = profile.first_name.at(0) ?? ""
@@ -57,34 +41,17 @@ function AccountStatus() {
   const [menuOpen, setMenuOpen] = React.useState(false)
 
   const loadProfile = React.useCallback(async () => {
-    const authorization = getStoredAuthorizationHeader()
-
-    if (!authorization) {
-      setState({ status: "anonymous" })
-      return
-    }
-
     setState({ status: "checking" })
 
     try {
-      const response = await fetch(ACCOUNT_ME_ENDPOINT, {
-        cache: "no-store",
-        headers: {
-          Accept: "application/json",
-          Authorization: authorization,
-        },
-      })
+      const profile = await fetchCurrentAccountProfile()
 
-      if (!response.ok) {
-        if ([401, 403].includes(response.status)) {
-          clearStoredAuthTokens()
-        }
-
+      if (!profile) {
+        clearStoredAuthTokens()
         setState({ status: "anonymous" })
         return
       }
 
-      const profile = (await readResponseBody(response)) as AccountProfile
       setState({ status: "authenticated", profile })
     } catch {
       setState({ status: "anonymous" })
@@ -212,11 +179,14 @@ function AccountStatus() {
           <button
             type="button"
             role="menuitem"
-            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-muted-foreground"
-            disabled
+            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-muted-foreground transition hover:bg-muted"
+            onClick={() => {
+              setMenuOpen(false)
+              router.push("/dashboard")
+            }}
           >
-            <UserRound className="size-4" />
-            Mon profil
+            <LayoutDashboard className="size-4" />
+            Dashboard
           </button>
           <a
             role="menuitem"

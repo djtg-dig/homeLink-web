@@ -13,7 +13,13 @@ const inputClassName =
   "h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-60"
 const labelClassName = "text-sm font-medium text-foreground"
 
-function LoginForm({ registered = false }: { registered?: boolean }) {
+function LoginForm({
+  redirectTo = "/",
+  registered = false,
+}: {
+  redirectTo?: string
+  registered?: boolean
+}) {
   const router = useRouter()
   const [error, setError] = useState("")
   const [pending, setPending] = useState(false)
@@ -52,7 +58,7 @@ function LoginForm({ registered = false }: { registered?: boolean }) {
       }
 
       storeAuthTokens(tokens)
-      router.replace("/")
+      router.replace(redirectTo)
       router.refresh()
     } catch {
       setError("Connexion impossible pour le moment.")

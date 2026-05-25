@@ -9,8 +9,17 @@ export const metadata: Metadata = {
 
 type LoginPageProps = {
   searchParams?: Promise<{
+    next?: string
     registered?: string
   }>
+}
+
+function safeRedirectPath(path?: string) {
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+    return "/"
+  }
+
+  return path
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -24,7 +33,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       actionLabel="Creer un compte"
       actionHref="/register"
     >
-      <LoginForm registered={params.registered === "1"} />
+      <LoginForm
+        redirectTo={safeRedirectPath(params.next)}
+        registered={params.registered === "1"}
+      />
     </AuthShell>
   )
 }
