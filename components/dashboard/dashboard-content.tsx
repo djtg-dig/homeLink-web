@@ -4,7 +4,9 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   Building2,
+  ChevronDown,
   ChevronRight,
+  Home,
   Hotel,
   House,
   Landmark,
@@ -135,9 +137,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 function DashboardContent() {
   const router = useRouter()
+  const userMenuRef = React.useRef<HTMLDivElement>(null)
   const [profile, setProfile] = React.useState<AccountProfile | null>(null)
   const [checking, setChecking] = React.useState(true)
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false)
 
   const loadProfile = React.useCallback(async () => {
     setChecking(true)
@@ -170,12 +174,39 @@ function DashboardContent() {
     }
   }, [loadProfile])
 
+  React.useEffect(() => {
+    function onPointerDown(event: PointerEvent) {
+      if (
+        userMenuRef.current &&
+        event.target instanceof Node &&
+        !userMenuRef.current.contains(event.target)
+      ) {
+        setUserMenuOpen(false)
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setUserMenuOpen(false)
+      }
+    }
+
+    document.addEventListener("pointerdown", onPointerDown)
+    document.addEventListener("keydown", onKeyDown)
+
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown)
+      document.removeEventListener("keydown", onKeyDown)
+    }
+  }, [])
+
   if (checking || !profile) {
     return <DashboardSkeleton />
   }
 
   async function logout() {
     clearStoredAuthTokens()
+    setUserMenuOpen(false)
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => null)
     router.replace("/login")
   }
@@ -258,22 +289,78 @@ function DashboardContent() {
                   className="h-9 w-64 rounded-md border border-input bg-background pr-3 pl-9 text-sm transition outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30"
                 />
               </div>
-              <div className="hidden items-center gap-2 rounded-md border border-border bg-card px-2 py-1.5 sm:flex">
-                <span className="flex size-7 items-center justify-center rounded bg-primary text-xs font-semibold text-primary-foreground">
-                  {initials(profile)}
-                </span>
-                <span className="max-w-32 truncate text-sm font-medium">
-                  {profile.first_name || profile.email}
-                </span>
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                  onClick={() => setUserMenuOpen((open) => !open)}
+                  className="flex h-9 items-center gap-2 rounded-md border border-border bg-card px-2 text-card-foreground transition outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                >
+                  <span className="flex size-7 items-center justify-center rounded bg-primary text-xs font-semibold text-primary-foreground">
+                    {initials(profile)}
+                  </span>
+                  <span className="hidden max-w-32 truncate text-sm font-medium sm:block">
+                    {profile.first_name || profile.email}
+                  </span>
+                  <ChevronDown className="size-4 text-muted-foreground" />
+                </button>
+
+                <div
+                  role="menu"
+                  className={cn(
+                    "absolute top-11 right-0 z-40 w-64 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-lg transition",
+                    userMenuOpen
+                      ? "visible translate-y-0 opacity-100"
+                      : "invisible -translate-y-1 opacity-0"
+                  )}
+                >
+                  <div className="border-b border-border p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="flex size-9 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground">
+                        {initials(profile)}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">
+                          {profile.first_name} {profile.last_name}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {profile.email}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-1">
+                    <a
+                      role="menuitem"
+                      href={`mailto:${profile.email}`}
+                      className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition hover:bg-muted"
+                    >
+                      {profile.email}
+                    </a>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={logout}
+                      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-destructive transition hover:bg-destructive/10"
+                    >
+                      <LogOut className="size-4" />
+                      Deconnexion
+                    </button>
+                  </div>
+                </div>
               </div>
               <Button
-                type="button"
-                size="icon-sm"
+                asChild
+                size="sm"
                 variant="outline"
-                title="Deconnexion"
-                onClick={logout}
+                className="h-9 gap-1.5 px-2 sm:px-3"
               >
-                <LogOut />
+                <Link href="/">
+                  <Home />
+                  <span className="hidden sm:inline">Accueil</span>
+                </Link>
               </Button>
             </div>
           </div>
