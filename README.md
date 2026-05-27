@@ -42,6 +42,10 @@ Le dashboard `/dashboard` valide aussi le profil via `/api/auth/me`. Sans token
 local valide, il redirige vers `/login?next=/dashboard`. Il utilise un shell
 administration avec sidebar, topbar et breadcrumbs.
 
+La creation d'agence se fait depuis `/dashboard/agencies/new`. Le formulaire
+envoie un `multipart/form-data` vers `/api/agencies/` via le proxy Next, avec le
+token `Bearer` ajoute automatiquement depuis le stockage local.
+
 ## Scripts
 
 ```bash
