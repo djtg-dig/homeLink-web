@@ -9,8 +9,29 @@ import {
   useMemo,
   useState,
 } from "react"
-import { MapPin } from "lucide-react"
+import { Check, ChevronsUpDown, MapPin } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ApiError, apiFetch, apiPostJson } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
@@ -132,6 +153,10 @@ function selectedName<TOption extends { id: number; name: string }>(
   value: string
 ) {
   return optionById(options, value)?.name ?? ""
+}
+
+function countryFlagClassName(iso2?: string) {
+  return iso2 ? `fi fi-${iso2.toLowerCase()}` : ""
 }
 
 function normaliseNextListPath(nextPath: string) {
@@ -268,6 +293,128 @@ function AddressTextField({
   )
 }
 
+function CountryComboboxField({
+  countries,
+  disabled,
+  id,
+  label,
+  loading,
+  onChange,
+  placeholder,
+  required,
+  value,
+}: {
+  countries: CountryOption[]
+  disabled?: boolean
+  id: string
+  label: string
+  loading?: boolean
+  onChange: (name: keyof AddressFormValues, value: string) => void
+  placeholder: string
+  required?: boolean
+  value: string
+}) {
+  const [open, setOpen] = useState(false)
+  const selectedCountry = optionById(countries, value)
+
+  return (
+    <div className="space-y-2">
+      <label className={labelClassName} htmlFor={id}>
+        {label}
+      </label>
+      {loading ? (
+        <Skeleton className="h-10 w-full" />
+      ) : (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              id={id}
+              type="button"
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              aria-required={required}
+              disabled={disabled}
+              className="h-10 w-full justify-between rounded-md px-3 font-normal"
+            >
+              {selectedCountry ? (
+                <span className="flex min-w-0 items-center gap-2">
+                  <span
+                    className={cn(
+                      "h-3.5 w-5 shrink-0 rounded-[2px] bg-muted",
+                      countryFlagClassName(selectedCountry.iso2)
+                    )}
+                  />
+                  <span className="truncate">{selectedCountry.name}</span>
+                  {selectedCountry.iso2 ? (
+                    <span className="text-muted-foreground">
+                      {selectedCountry.iso2}
+                    </span>
+                  ) : null}
+                </span>
+              ) : (
+                <span className="text-muted-foreground">{placeholder}</span>
+              )}
+              <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="start"
+            className="w-(--radix-popover-trigger-width) p-0"
+          >
+            <Command>
+              <CommandInput placeholder="Rechercher un pays..." />
+              <CommandList>
+                <CommandEmpty>Aucun pays trouve.</CommandEmpty>
+                <CommandGroup>
+                  {countries.map((country) => {
+                    const countryId = String(country.id)
+                    const selected = countryId === value
+
+                    return (
+                      <CommandItem
+                        key={country.id}
+                        value={`${country.name} ${country.iso2 ?? ""} ${
+                          country.phone_code ?? ""
+                        }`}
+                        onSelect={() => {
+                          onChange("country", countryId)
+                          setOpen(false)
+                        }}
+                      >
+                        <span
+                          className={cn(
+                            "h-3.5 w-5 shrink-0 rounded-[2px] bg-muted",
+                            countryFlagClassName(country.iso2)
+                          )}
+                        />
+                        <span className="min-w-0 flex-1 truncate">
+                          {country.name}
+                        </span>
+                        {country.phone_code ? (
+                          <span className="text-xs text-muted-foreground">
+                            {country.phone_code}
+                          </span>
+                        ) : null}
+                        <Check
+                          className={cn(
+                            "size-4 shrink-0",
+                            selected ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    )
+                  })}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
+  )
+}
+
 function AddressSelectField({
   disabled,
   id,
@@ -299,22 +446,28 @@ function AddressSelectField({
       {loading ? (
         <Skeleton className="h-10 w-full" />
       ) : (
-        <select
-          className={inputClassName}
-          id={id}
-          name={name}
+        <Select
           value={value}
           disabled={disabled}
           required={required}
-          onChange={(event) => onChange(name, event.target.value)}
+          onValueChange={(nextValue) => onChange(name, nextValue)}
         >
-          <option value="">{placeholder}</option>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.meta ? `${option.label} - ${option.meta}` : option.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id={id} className="h-10 w-full rounded-md">
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                <span className="min-w-0 truncate">{option.label}</span>
+                {option.meta ? (
+                  <span className="text-xs text-muted-foreground">
+                    {option.meta}
+                  </span>
+                ) : null}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
     </div>
   )
@@ -351,16 +504,6 @@ const AddressCreateSection = forwardRef<
     useState(false)
   const [loadingLocalities, setLoadingLocalities] = useState(false)
   const [loadingSubLocalities, setLoadingSubLocalities] = useState(false)
-
-  const countryOptions = useMemo(
-    () =>
-      countries.map((country) => ({
-        label: country.name,
-        meta: country.iso2,
-        value: String(country.id),
-      })),
-    [countries]
-  )
 
   const administrativeAreaOptions = useMemo(
     () =>
@@ -706,12 +849,11 @@ const AddressCreateSection = forwardRef<
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
-        <AddressSelectField
+        <CountryComboboxField
           id={`${idPrefix}-country`}
           label="Pays *"
-          name="country"
           value={values.country}
-          options={countryOptions}
+          countries={countries}
           loading={loadingCountries}
           disabled={disabled}
           required
