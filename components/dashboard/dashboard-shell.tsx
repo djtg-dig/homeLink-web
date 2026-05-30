@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   Building2,
   ChevronDown,
@@ -69,6 +69,18 @@ function categoryHref(item: PropertyCategory) {
     : `/dashboard#${item.slug}`
 }
 
+const categoryPathPrefixes: Partial<
+  Record<PropertyCategory["slug"], string[]>
+> = {
+  agences: ["/dashboard/agencies"],
+}
+
+function isCategoryActive(item: PropertyCategory, pathname: string) {
+  return categoryPathPrefixes[item.slug]?.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  )
+}
+
 function DashboardShellSkeleton() {
   return (
     <main className="flex min-h-svh bg-muted text-foreground">
@@ -99,7 +111,15 @@ function DashboardShellSkeleton() {
   )
 }
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarContent({
+  onNavigate,
+  pathname,
+}: {
+  onNavigate?: () => void
+  pathname: string
+}) {
+  const overviewIsActive = pathname === "/dashboard"
+
   return (
     <div className="flex h-full flex-col">
       <Link
@@ -115,20 +135,33 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <Link
           href="/dashboard"
           onClick={onNavigate}
-          className="flex h-10 items-center gap-2 rounded-md bg-white/12 px-3 text-sm font-medium text-white"
+          aria-current={overviewIsActive ? "page" : undefined}
+          className={cn(
+            "flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
+            overviewIsActive
+              ? "bg-white/12 text-white"
+              : "text-white/72 hover:bg-white/8 hover:text-white"
+          )}
         >
           <LayoutDashboard className="size-4" />
           Vue d&apos;ensemble
         </Link>
         {propertyCategories.map((item) => {
           const Icon = categoryIcons[item.slug]
+          const active = isCategoryActive(item, pathname)
 
           return (
             <Link
               key={item.slug}
               href={categoryHref(item)}
               onClick={onNavigate}
-              className="flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium text-white/72 transition hover:bg-white/8 hover:text-white"
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
+                active
+                  ? "bg-white/12 text-white"
+                  : "text-white/72 hover:bg-white/8 hover:text-white"
+              )}
             >
               <Icon className="size-4" />
               {item.label}
@@ -155,6 +188,7 @@ function DashboardShell({
   title?: string
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const userMenuRef = React.useRef<HTMLDivElement>(null)
   const [profile, setProfile] = React.useState<AccountProfile | null>(null)
   const [checking, setChecking] = React.useState(true)
@@ -234,7 +268,7 @@ function DashboardShell({
   return (
     <main className="flex min-h-svh bg-muted text-foreground">
       <aside className="sticky top-0 hidden h-svh w-72 shrink-0 border-r border-white/10 bg-brand-navy p-4 text-brand-white lg:block">
-        <SidebarContent />
+        <SidebarContent pathname={pathname} />
       </aside>
 
       <div
@@ -262,7 +296,10 @@ function DashboardShell({
             <X />
           </Button>
         </div>
-        <SidebarContent onNavigate={() => setSidebarOpen(false)} />
+        <SidebarContent
+          pathname={pathname}
+          onNavigate={() => setSidebarOpen(false)}
+        />
       </aside>
 
       <section className="min-w-0 flex-1">
