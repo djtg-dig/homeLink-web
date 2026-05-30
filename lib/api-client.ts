@@ -16,7 +16,15 @@ export class ApiError extends Error {
 }
 
 export function apiUrl(path = "") {
-  const normalizedPath = path.replace(/^\/+/, "")
+  const pathWithoutLeadingSlash = path.replace(/^\/+/, "")
+  const queryIndex = pathWithoutLeadingSlash.indexOf("?")
+  const pathname =
+    queryIndex === -1
+      ? pathWithoutLeadingSlash
+      : pathWithoutLeadingSlash.slice(0, queryIndex)
+  const suffix =
+    queryIndex === -1 ? "" : pathWithoutLeadingSlash.slice(queryIndex)
+  const normalizedPath = `${pathname.replace(/\/+$/, "")}${suffix}`
 
   return normalizedPath
     ? `${API_PROXY_PREFIX}/${normalizedPath}`

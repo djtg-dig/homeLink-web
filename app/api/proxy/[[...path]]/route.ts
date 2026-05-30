@@ -46,10 +46,7 @@ function buildTargetUrl(path: string[], request: NextRequest) {
   const encodedPath = path
     .map((segment) => encodeURIComponent(segment))
     .join("/")
-  const targetPath =
-    request.nextUrl.pathname.endsWith("/") && encodedPath
-      ? `${encodedPath}/`
-      : encodedPath
+  const targetPath = encodedPath ? `${encodedPath}/` : encodedPath
 
   return buildUpstreamUrl(targetPath, request.nextUrl.search)
 }
