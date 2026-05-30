@@ -1,21 +1,25 @@
 "use client"
 
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { FormEvent, useMemo, useRef, useState } from "react"
 import {
   Building2,
   CheckCircle2,
   FileCheck2,
   ImagePlus,
   Loader2,
-  MapPin,
   Scale,
   Send,
 } from "lucide-react"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import {
+  AddressCreateSection,
+  emptyAddressSummary,
+  type AddressCreateSectionHandle,
+  type AddressSummary,
+} from "@/components/localisation/address-create-section"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ApiError, apiFetch, apiPostJson } from "@/lib/api-client"
+import { ApiError, apiFetch } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
 
 type AgencyFormValues = {
@@ -30,58 +34,6 @@ type AgencyFormValues = {
   tax_number: string
   website: string
 }
-
-type AddressFormValues = {
-  administrative_area: string
-  country: string
-  locality: string
-  postal_code: string
-  street: string
-  sub_locality: string
-}
-
-type CountryOption = {
-  id: number
-  iso2?: string
-  name: string
-  phone_code?: string
-}
-
-type AdministrativeAreaOption = {
-  country: number
-  country_iso2?: string
-  country_name?: string
-  id: number
-  name: string
-}
-
-type LocalityOption = {
-  administrative_area: number
-  administrative_area_name?: string
-  country: number
-  country_name?: string
-  id: number
-  name: string
-}
-
-type SubLocalityOption = {
-  administrative_area: number
-  administrative_area_name?: string
-  code?: string
-  country: number
-  country_name?: string
-  id: number
-  locality: number
-  locality_name?: string
-  name: string
-}
-
-type ListResponse<TItem> =
-  | TItem[]
-  | {
-      next?: string | null
-      results?: TItem[]
-    }
 
 type FileField =
   | "business_registration_document"
@@ -104,15 +56,6 @@ const initialValues: AgencyFormValues = {
   rccm_number: "",
   tax_number: "",
   website: "",
-}
-
-const initialAddressValues: AddressFormValues = {
-  administrative_area: "",
-  country: "",
-  locality: "",
-  postal_code: "",
-  street: "",
-  sub_locality: "",
 }
 
 const initialFiles: FileState = {
@@ -180,140 +123,20 @@ function appendText(formData: FormData, key: string, value: string) {
   }
 }
 
-function optionById<TOption extends { id: number }>(
-  options: TOption[],
-  value: string
-) {
-  return options.find((option) => String(option.id) === value)
-}
-
-function selectedName<TOption extends { id: number; name: string }>(
-  options: TOption[],
-  value: string
-) {
-  return optionById(options, value)?.name ?? "-"
-}
-
-function normaliseNextListPath(nextPath: string) {
-  try {
-    const nextUrl = new URL(nextPath)
-
-    return `${nextUrl.pathname}${nextUrl.search}`
-  } catch {
-    return nextPath
-  }
-}
-
-function buildLocalisationPath(path: string, params: Record<string, string>) {
-  const query = new URLSearchParams()
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value) {
-      query.set(key, value)
-    }
-  })
-
-  const nextQuery = query.toString()
-
-  return nextQuery ? `${path}?${nextQuery}` : path
-}
-
-async function fetchLocalisationList<TItem>(path: string, signal: AbortSignal) {
-  const items: TItem[] = []
-  let nextPath: string | null = path
-
-  while (nextPath) {
-    const response: ListResponse<TItem> = await apiFetch<ListResponse<TItem>>(
-      nextPath,
-      { signal }
-    )
-
-    if (Array.isArray(response)) {
-      items.push(...response)
-      break
-    }
-
-    items.push(...(response.results ?? []))
-    nextPath = response.next ? normaliseNextListPath(response.next) : null
-  }
-
-  return items
-}
-
-function isAbortError(error: unknown) {
-  return error instanceof DOMException && error.name === "AbortError"
-}
-
-function localisationErrorMessage(error: unknown, fallback: string) {
-  if (error instanceof ApiError) {
-    return formatApiMessage(error.body, fallback)
-  }
-
-  return fallback
-}
-
-function requiredNumericValue(value: string, label: string) {
-  const nextValue = value.trim()
-
-  if (!/^\d+$/.test(nextValue)) {
-    throw new Error(`${label} est obligatoire.`)
-  }
-
-  return Number(nextValue)
-}
-
-function createdAddressId(response: unknown) {
-  if (typeof response === "number" || typeof response === "string") {
-    return String(response)
-  }
-
-  if (response && typeof response === "object" && "id" in response) {
-    const value = (response as { id: unknown }).id
-
-    if (typeof value === "number" || typeof value === "string") {
-      return String(value)
-    }
-  }
-
-  if (response && typeof response === "object" && "address" in response) {
-    return createdAddressId((response as { address: unknown }).address)
-  }
-
-  if (response && typeof response === "object" && "data" in response) {
-    return createdAddressId((response as { data: unknown }).data)
-  }
-
-  throw new Error("L'adresse creee ne contient pas d'identifiant.")
-}
-
 function TextField({
-  inputMode,
   label,
-  min,
   name,
   onChange,
   placeholder,
   required,
-  step,
   type = "text",
   value,
 }: {
-  inputMode?:
-    | "decimal"
-    | "email"
-    | "none"
-    | "numeric"
-    | "search"
-    | "tel"
-    | "text"
-    | "url"
   label: string
-  min?: string
   name: keyof AgencyFormValues
   onChange: (name: keyof AgencyFormValues, value: string) => void
   placeholder?: string
   required?: boolean
-  step?: string
   type?: string
   value: string
 }) {
@@ -328,100 +151,10 @@ function TextField({
         name={name}
         type={type}
         value={value}
-        inputMode={inputMode}
-        min={min}
-        placeholder={placeholder}
-        required={required}
-        step={step}
-        onChange={(event) => onChange(name, event.target.value)}
-      />
-    </div>
-  )
-}
-
-function AddressTextField({
-  inputMode,
-  label,
-  name,
-  onChange,
-  placeholder,
-  required,
-  value,
-}: {
-  inputMode?: "numeric" | "text"
-  label: string
-  name: keyof AddressFormValues
-  onChange: (name: keyof AddressFormValues, value: string) => void
-  placeholder?: string
-  required?: boolean
-  value: string
-}) {
-  return (
-    <div className="space-y-2">
-      <label className={labelClassName} htmlFor={name}>
-        {label}
-      </label>
-      <input
-        className={inputClassName}
-        id={name}
-        name={name}
-        type="text"
-        value={value}
-        inputMode={inputMode}
         placeholder={placeholder}
         required={required}
         onChange={(event) => onChange(name, event.target.value)}
       />
-    </div>
-  )
-}
-
-function AddressSelectField({
-  disabled,
-  label,
-  loading,
-  name,
-  onChange,
-  options,
-  placeholder,
-  required,
-  value,
-}: {
-  disabled?: boolean
-  label: string
-  loading?: boolean
-  name: keyof AddressFormValues
-  onChange: (name: keyof AddressFormValues, value: string) => void
-  options: Array<{ label: string; meta?: string; value: string }>
-  placeholder: string
-  required?: boolean
-  value: string
-}) {
-  return (
-    <div className="space-y-2">
-      <label className={labelClassName} htmlFor={name}>
-        {label}
-      </label>
-      {loading ? (
-        <Skeleton className="h-10 w-full" />
-      ) : (
-        <select
-          className={inputClassName}
-          id={name}
-          name={name}
-          value={value}
-          disabled={disabled}
-          required={required}
-          onChange={(event) => onChange(name, event.target.value)}
-        >
-          <option value="">{placeholder}</option>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.meta ? `${option.label} - ${option.meta}` : option.label}
-            </option>
-          ))}
-        </select>
-      )}
     </div>
   )
 }
@@ -489,278 +222,22 @@ function Section({
 }
 
 function AgencyCreateContent() {
+  const addressSectionRef = useRef<AddressCreateSectionHandle>(null)
   const [values, setValues] = useState<AgencyFormValues>(initialValues)
-  const [addressValues, setAddressValues] =
-    useState<AddressFormValues>(initialAddressValues)
+  const [addressSummary, setAddressSummary] =
+    useState<AddressSummary>(emptyAddressSummary)
   const [files, setFiles] = useState<FileState>(initialFiles)
   const [error, setError] = useState("")
-  const [localisationError, setLocalisationError] = useState("")
   const [success, setSuccess] = useState("")
   const [pending, setPending] = useState(false)
-  const [countries, setCountries] = useState<CountryOption[]>([])
-  const [administrativeAreas, setAdministrativeAreas] = useState<
-    AdministrativeAreaOption[]
-  >([])
-  const [localities, setLocalities] = useState<LocalityOption[]>([])
-  const [subLocalities, setSubLocalities] = useState<SubLocalityOption[]>([])
-  const [loadingCountries, setLoadingCountries] = useState(true)
-  const [loadingAdministrativeAreas, setLoadingAdministrativeAreas] =
-    useState(false)
-  const [loadingLocalities, setLoadingLocalities] = useState(false)
-  const [loadingSubLocalities, setLoadingSubLocalities] = useState(false)
 
   const selectedFiles = useMemo(
     () => Object.entries(files).filter(([, file]) => Boolean(file)),
     [files]
   )
 
-  const countryOptions = useMemo(
-    () =>
-      countries.map((country) => ({
-        label: country.name,
-        meta: country.iso2,
-        value: String(country.id),
-      })),
-    [countries]
-  )
-
-  const administrativeAreaOptions = useMemo(
-    () =>
-      administrativeAreas.map((area) => ({
-        label: area.name,
-        meta: area.country_name,
-        value: String(area.id),
-      })),
-    [administrativeAreas]
-  )
-
-  const localityOptions = useMemo(
-    () =>
-      localities.map((locality) => ({
-        label: locality.name,
-        meta: locality.administrative_area_name,
-        value: String(locality.id),
-      })),
-    [localities]
-  )
-
-  const subLocalityOptions = useMemo(
-    () =>
-      subLocalities.map((subLocality) => ({
-        label: subLocality.name,
-        meta: subLocality.code,
-        value: String(subLocality.id),
-      })),
-    [subLocalities]
-  )
-
-  const addressSummary = useMemo(
-    () => ({
-      administrativeArea: selectedName(
-        administrativeAreas,
-        addressValues.administrative_area
-      ),
-      country: selectedName(countries, addressValues.country),
-      locality: selectedName(localities, addressValues.locality),
-      subLocality: selectedName(subLocalities, addressValues.sub_locality),
-    }),
-    [
-      addressValues.administrative_area,
-      addressValues.country,
-      addressValues.locality,
-      addressValues.sub_locality,
-      administrativeAreas,
-      countries,
-      localities,
-      subLocalities,
-    ]
-  )
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    fetchLocalisationList<CountryOption>(
-      "/api/localisation/countries/",
-      controller.signal
-    )
-      .then(setCountries)
-      .catch((caughtError) => {
-        if (!isAbortError(caughtError)) {
-          setLocalisationError(
-            localisationErrorMessage(
-              caughtError,
-              "Impossible de charger les pays."
-            )
-          )
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setLoadingCountries(false)
-        }
-      })
-
-    return () => controller.abort()
-  }, [])
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    if (!addressValues.country) {
-      return () => controller.abort()
-    }
-
-    fetchLocalisationList<AdministrativeAreaOption>(
-      buildLocalisationPath("/api/localisation/administrative-areas/", {
-        country_id: addressValues.country,
-      }),
-      controller.signal
-    )
-      .then(setAdministrativeAreas)
-      .catch((caughtError) => {
-        if (!isAbortError(caughtError)) {
-          setLocalisationError(
-            localisationErrorMessage(
-              caughtError,
-              "Impossible de charger les divisions administratives."
-            )
-          )
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setLoadingAdministrativeAreas(false)
-        }
-      })
-
-    return () => controller.abort()
-  }, [addressValues.country])
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    if (!addressValues.country || !addressValues.administrative_area) {
-      return () => controller.abort()
-    }
-
-    fetchLocalisationList<LocalityOption>(
-      buildLocalisationPath("/api/localisation/localities/", {
-        administrative_area_id: addressValues.administrative_area,
-        country_id: addressValues.country,
-      }),
-      controller.signal
-    )
-      .then(setLocalities)
-      .catch((caughtError) => {
-        if (!isAbortError(caughtError)) {
-          setLocalisationError(
-            localisationErrorMessage(
-              caughtError,
-              "Impossible de charger les localites."
-            )
-          )
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setLoadingLocalities(false)
-        }
-      })
-
-    return () => controller.abort()
-  }, [addressValues.administrative_area, addressValues.country])
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    if (
-      !addressValues.country ||
-      !addressValues.administrative_area ||
-      !addressValues.locality
-    ) {
-      return () => controller.abort()
-    }
-
-    fetchLocalisationList<SubLocalityOption>(
-      buildLocalisationPath("/api/localisation/sub-localities/", {
-        administrative_area_id: addressValues.administrative_area,
-        country_id: addressValues.country,
-        locality_id: addressValues.locality,
-      }),
-      controller.signal
-    )
-      .then(setSubLocalities)
-      .catch((caughtError) => {
-        if (!isAbortError(caughtError)) {
-          setLocalisationError(
-            localisationErrorMessage(
-              caughtError,
-              "Impossible de charger les sous-localites."
-            )
-          )
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setLoadingSubLocalities(false)
-        }
-      })
-
-    return () => controller.abort()
-  }, [
-    addressValues.administrative_area,
-    addressValues.country,
-    addressValues.locality,
-  ])
-
   function updateValue(name: keyof AgencyFormValues, value: string) {
     setValues((current) => ({ ...current, [name]: value }))
-  }
-
-  function updateAddressValue(name: keyof AddressFormValues, value: string) {
-    setLocalisationError("")
-
-    if (name === "country") {
-      setAdministrativeAreas([])
-      setLocalities([])
-      setSubLocalities([])
-      setLoadingAdministrativeAreas(Boolean(value))
-      setLoadingLocalities(false)
-      setLoadingSubLocalities(false)
-    }
-
-    if (name === "administrative_area") {
-      setLocalities([])
-      setSubLocalities([])
-      setLoadingLocalities(Boolean(value))
-      setLoadingSubLocalities(false)
-    }
-
-    if (name === "locality") {
-      setSubLocalities([])
-      setLoadingSubLocalities(Boolean(value))
-    }
-
-    setAddressValues((current) => {
-      const nextValues = { ...current, [name]: value }
-
-      if (name === "country") {
-        nextValues.administrative_area = ""
-        nextValues.locality = ""
-        nextValues.sub_locality = ""
-      }
-
-      if (name === "administrative_area") {
-        nextValues.locality = ""
-        nextValues.sub_locality = ""
-      }
-
-      if (name === "locality") {
-        nextValues.sub_locality = ""
-      }
-
-      return nextValues
-    })
   }
 
   function updateFile(name: FileField, file: File | null) {
@@ -777,38 +254,8 @@ function AgencyCreateContent() {
       return
     }
 
-    let addressPayload: {
-      administrative_area: number
-      country: number
-      locality: number
-      postal_code: string
-      street: string
-      sub_locality: number
-    }
-
-    try {
-      if (!addressValues.street.trim()) {
-        throw new Error("La rue ou avenue est obligatoire.")
-      }
-
-      addressPayload = {
-        administrative_area: requiredNumericValue(
-          addressValues.administrative_area,
-          "La division administrative"
-        ),
-        country: requiredNumericValue(addressValues.country, "Le pays"),
-        locality: requiredNumericValue(addressValues.locality, "La localite"),
-        postal_code: addressValues.postal_code.trim(),
-        street: addressValues.street.trim(),
-        sub_locality: requiredNumericValue(
-          addressValues.sub_locality,
-          "La sous-localite"
-        ),
-      }
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error ? caughtError.message : "Adresse invalide."
-      )
+    if (!addressSectionRef.current) {
+      setError("Le formulaire d'adresse est indisponible.")
       return
     }
 
@@ -817,11 +264,7 @@ function AgencyCreateContent() {
     let currentStep: "address" | "agency" = "address"
 
     try {
-      const addressResponse = await apiPostJson<unknown>(
-        "/api/localisation/addresses/",
-        addressPayload
-      )
-      const addressId = createdAddressId(addressResponse)
+      const addressId = await addressSectionRef.current.createAddress()
       const formData = new FormData()
 
       currentStep = "agency"
@@ -861,11 +304,7 @@ function AgencyCreateContent() {
         return
       }
 
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Creation impossible pour le moment."
-      )
+      setError(caughtError instanceof Error ? caughtError.message : fallback)
     } finally {
       setPending(false)
     }
@@ -996,99 +435,12 @@ function AgencyCreateContent() {
             </div>
           </Section>
 
-          <Section
-            icon={MapPin}
-            title="Adresse"
+          <AddressCreateSection
+            ref={addressSectionRef}
+            disabled={pending}
             description="Creez l'adresse qui sera associee a cette agence."
-          >
-            {localisationError ? (
-              <p
-                aria-live="polite"
-                className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-              >
-                {localisationError}
-              </p>
-            ) : null}
-            <div className="grid gap-4 md:grid-cols-2">
-              <AddressSelectField
-                label="Pays *"
-                name="country"
-                value={addressValues.country}
-                options={countryOptions}
-                loading={loadingCountries}
-                required
-                onChange={updateAddressValue}
-                placeholder="Selectionner un pays"
-              />
-              <AddressSelectField
-                label="Division administrative *"
-                name="administrative_area"
-                value={addressValues.administrative_area}
-                options={administrativeAreaOptions}
-                loading={loadingAdministrativeAreas}
-                disabled={!addressValues.country}
-                required
-                onChange={updateAddressValue}
-                placeholder={
-                  addressValues.country
-                    ? "Selectionner une division"
-                    : "Choisir un pays"
-                }
-              />
-              <AddressSelectField
-                label="Localite *"
-                name="locality"
-                value={addressValues.locality}
-                options={localityOptions}
-                loading={loadingLocalities}
-                disabled={
-                  !addressValues.country || !addressValues.administrative_area
-                }
-                required
-                onChange={updateAddressValue}
-                placeholder={
-                  addressValues.administrative_area
-                    ? "Selectionner une localite"
-                    : "Choisir une division"
-                }
-              />
-              <AddressSelectField
-                label="Sous-localite *"
-                name="sub_locality"
-                value={addressValues.sub_locality}
-                options={subLocalityOptions}
-                loading={loadingSubLocalities}
-                disabled={
-                  !addressValues.country ||
-                  !addressValues.administrative_area ||
-                  !addressValues.locality
-                }
-                required
-                onChange={updateAddressValue}
-                placeholder={
-                  addressValues.locality
-                    ? "Selectionner une sous-localite"
-                    : "Choisir une localite"
-                }
-              />
-              <AddressTextField
-                label="Rue / avenue *"
-                name="street"
-                value={addressValues.street}
-                required
-                onChange={updateAddressValue}
-                placeholder="Avenue de la Justice 10"
-              />
-              <AddressTextField
-                label="Code postal"
-                name="postal_code"
-                value={addressValues.postal_code}
-                inputMode="numeric"
-                onChange={updateAddressValue}
-                placeholder="0000"
-              />
-            </div>
-          </Section>
+            onSummaryChange={setAddressSummary}
+          />
 
           <Section
             icon={Scale}
@@ -1208,7 +560,7 @@ function AgencyCreateContent() {
                 <p className="text-xs font-medium text-muted-foreground uppercase">
                   Adresse
                 </p>
-                <p className="mt-1">{filled(addressValues.street)}</p>
+                <p className="mt-1">{filled(addressSummary.street)}</p>
                 <p className="text-muted-foreground">
                   {[
                     addressSummary.subLocality,
@@ -1216,11 +568,11 @@ function AgencyCreateContent() {
                     addressSummary.administrativeArea,
                     addressSummary.country,
                   ]
-                    .filter((item) => item !== "-")
+                    .filter(Boolean)
                     .join(", ") || "-"}
                 </p>
                 <p className="text-muted-foreground">
-                  Code postal : {filled(addressValues.postal_code)}
+                  Code postal : {filled(addressSummary.postalCode)}
                 </p>
               </div>
 
