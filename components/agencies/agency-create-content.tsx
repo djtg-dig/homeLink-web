@@ -19,16 +19,12 @@ import { formatApiMessage } from "@/lib/api-errors"
 
 type AgencyFormValues = {
   address: string
-  city: string
-  commune: string
-  country: string
   description: string
   email: string
   is_active: boolean
   legal_name: string
   legal_status: string
   name: string
-  neighborhood: string
   phone: string
   rccm_number: string
   tax_number: string
@@ -47,16 +43,12 @@ type FileState = Record<FileField, File | null>
 
 const initialValues: AgencyFormValues = {
   address: "",
-  city: "",
-  commune: "",
-  country: "",
   description: "",
   email: "",
   is_active: true,
   legal_name: "",
   legal_status: "",
   name: "",
-  neighborhood: "",
   phone: "",
   rccm_number: "",
   tax_number: "",
@@ -132,20 +124,38 @@ function appendText(
   }
 }
 
+function isIntegerValue(value: string) {
+  return /^\d+$/.test(value.trim())
+}
+
 function TextField({
+  inputMode,
   label,
+  min,
   name,
   onChange,
   placeholder,
   required,
+  step,
   type = "text",
   value,
 }: {
+  inputMode?:
+    | "decimal"
+    | "email"
+    | "none"
+    | "numeric"
+    | "search"
+    | "tel"
+    | "text"
+    | "url"
   label: string
+  min?: string
   name: keyof AgencyFormValues
   onChange: (name: keyof AgencyFormValues, value: string) => void
   placeholder?: string
   required?: boolean
+  step?: string
   type?: string
   value: string
 }) {
@@ -160,8 +170,11 @@ function TextField({
         name={name}
         type={type}
         value={value}
+        inputMode={inputMode}
+        min={min}
         placeholder={placeholder}
         required={required}
+        step={step}
         onChange={(event) => onChange(name, event.target.value)}
       />
     </div>
@@ -269,11 +282,16 @@ function AgencyCreateContent() {
     appendText(formData, "email", values.email)
     appendText(formData, "phone", values.phone)
     appendText(formData, "website", values.website)
-    appendText(formData, "country", values.country)
-    appendText(formData, "city", values.city)
-    appendText(formData, "commune", values.commune)
-    appendText(formData, "neighborhood", values.neighborhood)
-    appendText(formData, "address", values.address)
+
+    if (values.address.trim()) {
+      if (!isIntegerValue(values.address)) {
+        setError("L'adresse doit etre un identifiant numerique.")
+        return
+      }
+
+      appendText(formData, "address", values.address)
+    }
+
     appendText(formData, "legal_name", values.legal_name)
     appendText(formData, "legal_status", values.legal_status)
     appendText(formData, "rccm_number", values.rccm_number)
@@ -323,8 +341,8 @@ function AgencyCreateContent() {
               Enregistrer une nouvelle agence immobiliere
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Renseignez les informations publiques, la localisation, les
-              donnees legales et les pieces justificatives avant validation.
+              Renseignez les informations publiques, l&apos;adresse associee,
+              les donnees legales et les pieces justificatives avant validation.
             </p>
           </div>
           <span className="rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground">
@@ -432,47 +450,24 @@ function AgencyCreateContent() {
 
           <Section
             icon={MapPin}
-            title="Localisation"
-            description="Precisez l'adresse operationnelle de l'agence."
+            title="Adresse liee"
+            description="Associez l'agence a une adresse deja enregistree."
           >
             <div className="grid gap-4 md:grid-cols-2">
               <TextField
-                label="Pays (ID)"
-                name="country"
+                label="Adresse (ID)"
+                name="address"
                 type="number"
-                value={values.country}
+                inputMode="numeric"
+                min="1"
+                step="1"
+                value={values.address}
                 onChange={updateValue}
                 placeholder="Ex. 1"
               />
-              <TextField
-                label="Ville"
-                name="city"
-                value={values.city}
-                onChange={updateValue}
-                placeholder="Kinshasa"
-              />
-              <TextField
-                label="Commune"
-                name="commune"
-                value={values.commune}
-                onChange={updateValue}
-                placeholder="Gombe"
-              />
-              <TextField
-                label="Quartier"
-                name="neighborhood"
-                value={values.neighborhood}
-                onChange={updateValue}
-                placeholder="Quartier"
-              />
-              <div className="md:col-span-2">
-                <TextField
-                  label="Adresse"
-                  name="address"
-                  value={values.address}
-                  onChange={updateValue}
-                  placeholder="Avenue, numero, reference"
-                />
+              <div className="rounded-md border border-border bg-muted p-3 text-sm text-muted-foreground">
+                Renseignez l&apos;identifiant numerique de l&apos;adresse a
+                associer a cette agence.
               </div>
             </div>
           </Section>
@@ -551,7 +546,7 @@ function AgencyCreateContent() {
             <div className="border-b border-border p-4">
               <h2 className="text-base font-semibold">Recapitulatif</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Apercu avant envoi a l&apos;API.
+                Apercu avant validation.
               </p>
             </div>
             <div className="space-y-4 p-4 text-sm">
@@ -595,14 +590,7 @@ function AgencyCreateContent() {
                 <p className="text-xs font-medium text-muted-foreground uppercase">
                   Adresse
                 </p>
-                <p className="mt-1">
-                  {[values.city, values.commune, values.neighborhood]
-                    .filter(Boolean)
-                    .join(", ") || "-"}
-                </p>
-                <p className="text-muted-foreground">
-                  {filled(values.address)}
-                </p>
+                <p className="mt-1">ID adresse : {filled(values.address)}</p>
               </div>
 
               <div>
@@ -632,7 +620,7 @@ function AgencyCreateContent() {
                 <span>
                   <span className="block font-medium">Agence active</span>
                   <span className="text-xs text-muted-foreground">
-                    Envoyer `is_active` a l&apos;API.
+                    Rendre l&apos;agence disponible sur la plateforme.
                   </span>
                 </span>
                 <input
