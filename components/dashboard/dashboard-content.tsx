@@ -112,7 +112,7 @@ function DashboardContent() {
                     <td className="px-4 py-4 text-right">
                       {item.slug === "agences" ? (
                         <Button asChild variant="outline" size="sm">
-                          <Link href="/dashboard/agencies/new">Creer</Link>
+                          <Link href="/dashboard/agencies">Ouvrir</Link>
                         </Button>
                       ) : (
                         <Button variant="outline" size="sm" disabled>

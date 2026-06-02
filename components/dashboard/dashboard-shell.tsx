@@ -65,7 +65,7 @@ function dashboardRedirectPath() {
 
 function categoryHref(item: PropertyCategory) {
   return item.slug === "agences"
-    ? "/dashboard/agencies/new"
+    ? "/dashboard/agencies"
     : `/dashboard#${item.slug}`
 }
 

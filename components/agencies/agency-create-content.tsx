@@ -1,6 +1,7 @@
 "use client"
 
 import { FormEvent, useMemo, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   Building2,
   CheckCircle2,
@@ -19,6 +20,7 @@ import {
   type AddressSummary,
 } from "@/components/localisation/address-create-section"
 import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/toaster"
 import { ApiError, apiFetch } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
 
@@ -222,13 +224,13 @@ function Section({
 }
 
 function AgencyCreateContent() {
+  const router = useRouter()
   const addressSectionRef = useRef<AddressCreateSectionHandle>(null)
   const [values, setValues] = useState<AgencyFormValues>(initialValues)
   const [addressSummary, setAddressSummary] =
     useState<AddressSummary>(emptyAddressSummary)
   const [files, setFiles] = useState<FileState>(initialFiles)
   const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
   const [pending, setPending] = useState(false)
 
   const selectedFiles = useMemo(
@@ -247,7 +249,6 @@ function AgencyCreateContent() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError("")
-    setSuccess("")
 
     if (!values.name.trim()) {
       setError("Le nom de l'agence est obligatoire.")
@@ -292,7 +293,12 @@ function AgencyCreateContent() {
         body: formData,
         method: "POST",
       })
-      setSuccess("Adresse creee puis agence creee avec succes.")
+      toast({
+        description: "L'agence est maintenant disponible dans la liste.",
+        title: "Agence creee",
+        variant: "success",
+      })
+      router.push("/dashboard/agencies")
     } catch (caughtError) {
       const fallback =
         currentStep === "address"
@@ -314,7 +320,7 @@ function AgencyCreateContent() {
     <DashboardShell
       title="Nouvelle agence"
       breadcrumbs={[
-        { href: "/dashboard#agences", label: "Agences" },
+        { href: "/dashboard/agencies", label: "Agences" },
         { label: "Creation" },
       ]}
     >
@@ -349,15 +355,6 @@ function AgencyCreateContent() {
               className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
             >
               {error}
-            </p>
-          ) : null}
-
-          {success ? (
-            <p
-              aria-live="polite"
-              className="rounded-lg border border-brand-cyan/35 bg-secondary px-4 py-3 text-sm text-secondary-foreground"
-            >
-              {success}
             </p>
           ) : null}
 
