@@ -7,6 +7,10 @@ import {
 import { buildUpstreamUrl } from "@/lib/server-api"
 
 const BODYLESS_METHODS = new Set(["GET", "HEAD", "OPTIONS"])
+const DEFAULT_PROXY_TIMEOUT_MS = 30_000
+const PROXY_RETRY_DELAY_MS = 250
+
+export const maxDuration = 60
 
 const REQUEST_HEADER_BLOCKLIST = new Set([
   "accept-encoding",
@@ -88,6 +92,85 @@ function buildResponseHeaders(upstreamHeaders: Headers) {
   return headers
 }
 
+function getProxyTimeoutMs() {
+  const timeout = Number(process.env.API_PROXY_TIMEOUT_MS)
+
+  return Number.isFinite(timeout) && timeout > 0
+    ? timeout
+    : DEFAULT_PROXY_TIMEOUT_MS
+}
+
+function isTimeoutError(error: unknown) {
+  if (error instanceof DOMException) {
+    return error.name === "AbortError" || error.name === "TimeoutError"
+  }
+
+  if (error instanceof Error && "cause" in error) {
+    const cause = error.cause
+
+    return (
+      typeof cause === "object" &&
+      cause !== null &&
+      "code" in cause &&
+      cause.code === "UND_ERR_CONNECT_TIMEOUT"
+    )
+  }
+
+  return false
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function fetchWithTimeout(
+  targetUrl: URL,
+  request: NextRequest,
+  timeoutMs: number
+) {
+  const body = BODYLESS_METHODS.has(request.method)
+    ? undefined
+    : await request.arrayBuffer()
+  const startedAt = Date.now()
+  const deadline = startedAt + timeoutMs
+  let lastError: unknown
+
+  while (Date.now() < deadline) {
+    const remainingMs = deadline - Date.now()
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), remainingMs)
+
+    try {
+      return await fetch(targetUrl, {
+        body,
+        cache: "no-store",
+        headers: buildRequestHeaders(request),
+        method: request.method,
+        redirect: "manual",
+        signal: controller.signal,
+      })
+    } catch (caughtError) {
+      lastError = caughtError
+
+      if (!isTimeoutError(caughtError)) {
+        throw caughtError
+      }
+
+      const nextRemainingMs = deadline - Date.now()
+
+      if (nextRemainingMs <= PROXY_RETRY_DELAY_MS) {
+        break
+      }
+
+      await sleep(Math.min(PROXY_RETRY_DELAY_MS, nextRemainingMs))
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  throw lastError
+}
+
 async function proxyRequest(request: NextRequest, context: ProxyRouteContext) {
   let targetUrl: URL
 
@@ -102,22 +185,25 @@ async function proxyRequest(request: NextRequest, context: ProxyRouteContext) {
   }
 
   try {
-    const upstreamResponse = await fetch(targetUrl, {
-      body: BODYLESS_METHODS.has(request.method)
-        ? undefined
-        : await request.arrayBuffer(),
-      cache: "no-store",
-      headers: buildRequestHeaders(request),
-      method: request.method,
-      redirect: "manual",
-    })
+    const upstreamResponse = await fetchWithTimeout(
+      targetUrl,
+      request,
+      getProxyTimeoutMs()
+    )
 
     return new Response(upstreamResponse.body, {
       headers: buildResponseHeaders(upstreamResponse.headers),
       status: upstreamResponse.status,
       statusText: upstreamResponse.statusText,
     })
-  } catch {
+  } catch (caughtError) {
+    if (isTimeoutError(caughtError)) {
+      return Response.json(
+        { message: "Le delai d'attente du service API est depasse." },
+        { status: 504 }
+      )
+    }
+
     return Response.json(
       { message: "Le service API est momentanement indisponible." },
       { status: 502 }
