@@ -4,11 +4,13 @@ import * as React from "react"
 import Link from "next/link"
 import {
   Building2,
+  Eye,
   ExternalLink,
   Mail,
   Phone,
   Plus,
   RefreshCw,
+  X,
 } from "lucide-react"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
@@ -177,6 +179,27 @@ function createdDateLabel(value?: string | null) {
   return date === "-" ? "Date non disponible" : `Cree le ${date}`
 }
 
+function agencyDisplayName(agency: Agency) {
+  return agency.name?.trim() || "Agence sans nom"
+}
+
+function DetailRow({
+  label,
+  value,
+}: {
+  label: string
+  value: React.ReactNode
+}) {
+  return (
+    <div className="rounded-md border border-border bg-background p-3">
+      <p className="text-xs font-medium text-muted-foreground uppercase">
+        {label}
+      </p>
+      <div className="mt-1 text-sm leading-6">{value || "-"}</div>
+    </div>
+  )
+}
+
 function ContactCell({ agency }: { agency: Agency }) {
   const email = agency.email?.trim()
   const phone = agency.phone?.trim()
@@ -249,6 +272,9 @@ function AgenciesListContent() {
   const [count, setCount] = React.useState(0)
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
+  const [selectedAgency, setSelectedAgency] = React.useState<Agency | null>(
+    null
+  )
 
   const activeAgencies = React.useMemo(
     () => agencies.filter((agency) => agency.is_active !== false).length,
@@ -308,202 +334,282 @@ function AgenciesListContent() {
     void loadAgencies()
   }
 
+  React.useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSelectedAgency(null)
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown)
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown)
+    }
+  }, [])
+
   return (
-    <DashboardShell title="Agences" breadcrumbs={[{ label: "Agences" }]}>
-      <section className="rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Gestion des agences
-            </p>
-            <h2 className="mt-1 text-2xl font-semibold">
-              Agences immobilieres
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Retrouvez les agences enregistrees depuis l&apos;API et creez de
-              nouveaux dossiers avec leur adresse associee.
-            </p>
+    <>
+      <DashboardShell title="Agences" breadcrumbs={[{ label: "Agences" }]}>
+        <section className="rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Gestion des agences
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold">
+                Agences immobilieres
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Retrouvez les agences enregistrees et creez de nouveaux dossiers
+                avec leur adresse associee.
+              </p>
+            </div>
+            <Button asChild className="h-10 w-full lg:w-auto">
+              <Link href="/dashboard/agencies/new">
+                <Plus />
+                Creer une agence maintenant
+              </Link>
+            </Button>
           </div>
-          <Button asChild className="h-10 w-full lg:w-auto">
-            <Link href="/dashboard/agencies/new">
-              <Plus />
-              Creer une agence maintenant
-            </Link>
-          </Button>
-        </div>
-      </section>
+        </section>
 
-      <section
-        aria-label="Indicateurs agences"
-        className="grid gap-4 sm:grid-cols-3"
-      >
-        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <p className="text-sm text-muted-foreground">Total agences</p>
-          {loading ? (
-            <Skeleton className="mt-3 h-9 w-20" />
-          ) : (
-            <p className="mt-3 text-3xl font-semibold">{count}</p>
-          )}
-        </article>
-        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <p className="text-sm text-muted-foreground">Agences actives</p>
-          {loading ? (
-            <Skeleton className="mt-3 h-9 w-20" />
-          ) : (
-            <p className="mt-3 text-3xl font-semibold">{activeAgencies}</p>
-          )}
-        </article>
-        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <p className="text-sm text-muted-foreground">Source</p>
-          <p className="mt-3 truncate text-sm font-medium">/api/agencies/</p>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Via le proxy Homelink
-          </p>
-        </article>
-      </section>
+        <section
+          aria-label="Indicateurs agences"
+          className="grid gap-4 sm:grid-cols-2"
+        >
+          <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">Total agences</p>
+            {loading ? (
+              <Skeleton className="mt-3 h-9 w-20" />
+            ) : (
+              <p className="mt-3 text-3xl font-semibold">{count}</p>
+            )}
+          </article>
+          <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">Agences actives</p>
+            {loading ? (
+              <Skeleton className="mt-3 h-9 w-20" />
+            ) : (
+              <p className="mt-3 text-3xl font-semibold">{activeAgencies}</p>
+            )}
+          </article>
+        </section>
 
-      <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold">Liste des agences</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Donnees recuperees depuis l&apos;endpoint agences.
-            </p>
+        <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Liste des agences</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Suivez les agences ajoutees sur la plateforme.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={reloadAgencies}
+              disabled={loading}
+            >
+              <RefreshCw className={cn(loading && "animate-spin")} />
+              Actualiser
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={reloadAgencies}
-            disabled={loading}
-          >
-            <RefreshCw className={cn(loading && "animate-spin")} />
-            Actualiser
-          </Button>
-        </div>
 
-        {error ? (
-          <div className="m-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {error}
-          </div>
-        ) : null}
+          {error ? (
+            <div className="m-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          ) : null}
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-sm">
-            <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Agence</th>
-                <th className="px-4 py-3 font-medium">Contact</th>
-                <th className="px-4 py-3 font-medium">Statut legal</th>
-                <th className="px-4 py-3 font-medium">Adresse</th>
-                <th className="px-4 py-3 font-medium">Etat</th>
-                <th className="px-4 py-3 text-right font-medium">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? <AgenciesTableSkeleton /> : null}
-
-              {!loading && agencies.length === 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[920px] text-sm">
+              <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
-                  <td colSpan={6} className="px-4 py-12">
-                    <div className="mx-auto flex max-w-md flex-col items-center text-center">
-                      <span className="flex size-12 items-center justify-center rounded-md bg-secondary text-primary">
-                        <Building2 className="size-6" />
-                      </span>
-                      <h3 className="mt-4 text-base font-semibold">
-                        Aucune agence pour le moment
-                      </h3>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        Creez une premiere agence pour alimenter cette liste.
-                      </p>
-                      <Button asChild className="mt-4">
-                        <Link href="/dashboard/agencies/new">
-                          <Plus />
-                          Creer une agence maintenant
-                        </Link>
-                      </Button>
-                    </div>
-                  </td>
+                  <th className="px-4 py-3 font-medium">Agence</th>
+                  <th className="px-4 py-3 font-medium">Contact</th>
+                  <th className="px-4 py-3 font-medium">Statut legal</th>
+                  <th className="px-4 py-3 font-medium">Adresse</th>
+                  <th className="px-4 py-3 font-medium">Etat</th>
+                  <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
-              ) : null}
+              </thead>
+              <tbody>
+                {loading ? <AgenciesTableSkeleton /> : null}
 
-              {!loading
-                ? agencies.map((agency, index) => {
-                    const key =
-                      agency.id ?? agency.uuid ?? `${agency.name}-${index}`
-                    const agencyName = agency.name?.trim() || "Agence sans nom"
-                    const website = agency.website?.trim()
+                {!loading && agencies.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-12">
+                      <div className="mx-auto flex max-w-md flex-col items-center text-center">
+                        <span className="flex size-12 items-center justify-center rounded-md bg-secondary text-primary">
+                          <Building2 className="size-6" />
+                        </span>
+                        <h3 className="mt-4 text-base font-semibold">
+                          Aucune agence pour le moment
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          Creez une premiere agence pour alimenter cette liste.
+                        </p>
+                        <Button asChild className="mt-4">
+                          <Link href="/dashboard/agencies/new">
+                            <Plus />
+                            Creer une agence maintenant
+                          </Link>
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
 
-                    return (
-                      <tr
-                        key={key}
-                        className="border-b border-border last:border-b-0"
-                      >
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
-                              <Building2 className="size-5" />
-                            </span>
-                            <div className="min-w-0">
-                              <p className="truncate font-semibold">
-                                {agencyName}
-                              </p>
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                {createdDateLabel(agency.created_at)}
-                              </p>
+                {!loading
+                  ? agencies.map((agency, index) => {
+                      const key =
+                        agency.id ?? agency.uuid ?? `${agency.name}-${index}`
+                      const agencyName = agencyDisplayName(agency)
+
+                      return (
+                        <tr
+                          key={key}
+                          className="border-b border-border last:border-b-0"
+                        >
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                                <Building2 className="size-5" />
+                              </span>
+                              <div className="min-w-0">
+                                <p className="truncate font-semibold">
+                                  {agencyName}
+                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {createdDateLabel(agency.created_at)}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="max-w-64 px-4 py-4">
-                          <ContactCell agency={agency} />
-                        </td>
-                        <td className="px-4 py-4">
-                          {legalStatusLabel(agency.legal_status)}
-                        </td>
-                        <td className="max-w-80 px-4 py-4 text-muted-foreground">
-                          <span className="line-clamp-2">
-                            {addressLabel(agency.address)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span
-                            className={cn(
-                              "rounded-md px-2 py-1 text-xs font-medium",
-                              agency.is_active === false
-                                ? "bg-muted text-muted-foreground"
-                                : "bg-secondary text-secondary-foreground"
-                            )}
-                          >
-                            {statusLabel(agency.is_active)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-right">
-                          {website ? (
-                            <Button asChild variant="outline" size="sm">
-                              <a
-                                href={website}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                <ExternalLink />
-                                Site
-                              </a>
+                          </td>
+                          <td className="max-w-64 px-4 py-4">
+                            <ContactCell agency={agency} />
+                          </td>
+                          <td className="px-4 py-4">
+                            {legalStatusLabel(agency.legal_status)}
+                          </td>
+                          <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                            <span className="line-clamp-2">
+                              {addressLabel(agency.address)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span
+                              className={cn(
+                                "rounded-md px-2 py-1 text-xs font-medium",
+                                agency.is_active === false
+                                  ? "bg-muted text-muted-foreground"
+                                  : "bg-secondary text-secondary-foreground"
+                              )}
+                            >
+                              {statusLabel(agency.is_active)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-right">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedAgency(agency)}
+                            >
+                              <Eye />
+                              Voir les details
                             </Button>
-                          ) : (
-                            <Button variant="outline" size="sm" disabled>
-                              Site
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })
-                : null}
-            </tbody>
-          </table>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  : null}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </DashboardShell>
+
+      {selectedAgency ? (
+        <div
+          className="fixed inset-0 z-[90] flex items-end justify-center bg-brand-navy/55 p-0 sm:items-center sm:p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="agency-details-title"
+        >
+          <div className="max-h-[92svh] w-full overflow-y-auto rounded-t-lg border border-border bg-card text-card-foreground shadow-xl sm:max-w-2xl sm:rounded-lg">
+            <div className="flex items-start justify-between gap-4 border-b border-border p-4">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Details de l&apos;agence
+                </p>
+                <h2
+                  id="agency-details-title"
+                  className="mt-1 truncate text-xl font-semibold"
+                >
+                  {agencyDisplayName(selectedAgency)}
+                </h2>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setSelectedAgency(null)}
+              >
+                <X />
+              </Button>
+            </div>
+
+            <div className="grid gap-3 p-4 sm:grid-cols-2">
+              <DetailRow
+                label="Etat"
+                value={statusLabel(selectedAgency.is_active)}
+              />
+              <DetailRow
+                label="Statut legal"
+                value={legalStatusLabel(selectedAgency.legal_status)}
+              />
+              <DetailRow label="Nom legal" value={selectedAgency.legal_name} />
+              <DetailRow
+                label="Numero RCCM"
+                value={selectedAgency.rccm_number}
+              />
+              <DetailRow label="Email" value={selectedAgency.email} />
+              <DetailRow label="Telephone" value={selectedAgency.phone} />
+              <DetailRow
+                label="Date de creation"
+                value={formatDate(selectedAgency.created_at)}
+              />
+              <DetailRow
+                label="Site web"
+                value={
+                  selectedAgency.website ? (
+                    <a
+                      href={selectedAgency.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+                    >
+                      Ouvrir le site
+                      <ExternalLink className="size-3.5" />
+                    </a>
+                  ) : (
+                    "-"
+                  )
+                }
+              />
+              <div className="sm:col-span-2">
+                <DetailRow
+                  label="Adresse"
+                  value={addressLabel(selectedAgency.address)}
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
-    </DashboardShell>
+      ) : null}
+    </>
   )
 }
 
