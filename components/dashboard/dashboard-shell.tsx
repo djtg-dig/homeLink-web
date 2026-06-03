@@ -64,15 +64,22 @@ function dashboardRedirectPath() {
 }
 
 function categoryHref(item: PropertyCategory) {
-  return item.slug === "agences"
-    ? "/dashboard/agencies"
-    : `/dashboard#${item.slug}`
+  if (item.slug === "agences") {
+    return "/dashboard/agencies"
+  }
+
+  if (item.slug === "appartements") {
+    return "/dashboard/appartements"
+  }
+
+  return `/dashboard#${item.slug}`
 }
 
 const categoryPathPrefixes: Partial<
   Record<PropertyCategory["slug"], string[]>
 > = {
   agences: ["/dashboard/agencies"],
+  appartements: ["/dashboard/appartements"],
 }
 
 function isCategoryActive(item: PropertyCategory, pathname: string) {

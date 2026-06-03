@@ -17,6 +17,11 @@ const stats = [
   { label: "Visites", value: "0", change: "A suivre" },
 ]
 
+const categoryLinks: Partial<Record<string, string>> = {
+  agences: "/dashboard/agencies",
+  appartements: "/dashboard/appartements",
+}
+
 function DashboardContent() {
   return (
     <DashboardShell title="Administration">
@@ -86,6 +91,8 @@ function DashboardContent() {
             <tbody>
               {propertyCategories.map((item) => {
                 const Icon = categoryIcons[item.slug]
+                const categoryLink = categoryLinks[item.slug]
+                const categoryIsAvailable = Boolean(categoryLink)
 
                 return (
                   <tr
@@ -106,13 +113,13 @@ function DashboardContent() {
                     </td>
                     <td className="px-4 py-4">
                       <span className="rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
-                        En preparation
+                        {categoryIsAvailable ? "Disponible" : "En preparation"}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-right">
-                      {item.slug === "agences" ? (
+                      {categoryLink ? (
                         <Button asChild variant="outline" size="sm">
-                          <Link href="/dashboard/agencies">Ouvrir</Link>
+                          <Link href={categoryLink}>Ouvrir</Link>
                         </Button>
                       ) : (
                         <Button variant="outline" size="sm" disabled>
