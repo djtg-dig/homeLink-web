@@ -81,30 +81,159 @@ function isCategoryActive(item: PropertyCategory, pathname: string) {
   )
 }
 
-function DashboardShellSkeleton() {
+function DashboardShellLoading({
+  breadcrumbs,
+  children,
+  pathname,
+  title,
+}: {
+  breadcrumbs: BreadcrumbItem[]
+  children?: React.ReactNode
+  pathname: string
+  title: string
+}) {
+  const overviewIsActive = pathname === "/dashboard"
+
   return (
     <main className="flex min-h-svh bg-muted text-foreground">
-      <aside className="hidden w-72 border-r border-border bg-brand-navy p-4 lg:block">
-        <Skeleton className="h-12 w-40 bg-white/15" />
-        <div className="mt-8 space-y-2">
-          {propertyCategories.slice(0, 6).map((item) => (
-            <Skeleton key={item.slug} className="h-10 w-full bg-white/15" />
-          ))}
+      <aside className="sticky top-0 hidden h-svh w-72 shrink-0 border-r border-white/10 bg-brand-navy p-4 text-brand-white lg:block">
+        <Link href="/" aria-label="Accueil Homelink" className="block shrink-0">
+          <HomelinkLogo sizes="176px" className="h-14 w-44" />
+        </Link>
+
+        <nav aria-label="Navigation dashboard" className="mt-8 space-y-1">
+          <Link
+            href="/dashboard"
+            aria-current={overviewIsActive ? "page" : undefined}
+            className={cn(
+              "flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
+              overviewIsActive
+                ? "bg-white/12 text-white"
+                : "text-white/72 hover:bg-white/8 hover:text-white"
+            )}
+          >
+            <LayoutDashboard className="size-4" />
+            Vue d&apos;ensemble
+          </Link>
+          {propertyCategories.map((item) => {
+            const Icon = categoryIcons[item.slug]
+            const active = isCategoryActive(item, pathname)
+
+            return (
+              <Link
+                key={item.slug}
+                href={categoryHref(item)}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
+                  active
+                    ? "bg-white/12 text-white"
+                    : "text-white/72 hover:bg-white/8 hover:text-white"
+                )}
+              >
+                <Icon className="size-4" />
+                {item.label}
+              </Link>
+            )
+          })}
+        </nav>
+
+        <div className="mt-8 rounded-lg border border-white/10 bg-white/8 p-3 text-sm text-white/72">
+          <p className="font-medium text-white">Homelink Admin</p>
+          <p className="mt-1 leading-5">Gestion des biens et des categories.</p>
         </div>
       </aside>
       <section className="min-w-0 flex-1">
-        <div className="border-b border-border bg-background px-4 py-4 sm:px-6">
-          <Skeleton className="h-8 w-52" />
-        </div>
-        <div className="space-y-6 p-4 sm:p-6">
-          <Skeleton className="h-28 w-full" />
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
+        <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+          <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6">
+            <div className="flex min-w-0 items-center gap-3">
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="outline"
+                className="lg:hidden"
+                disabled
+              >
+                <Menu />
+              </Button>
+              <div className="min-w-0">
+                <nav
+                  aria-label="Fil d'Ariane"
+                  className="flex items-center gap-1 text-xs text-muted-foreground"
+                >
+                  <Link href="/dashboard" className="hover:text-foreground">
+                    Dashboard
+                  </Link>
+                  {breadcrumbs.map((item) => (
+                    <React.Fragment key={`${item.href ?? ""}${item.label}`}>
+                      <ChevronRight className="size-3" />
+                      {item.href ? (
+                        <Link
+                          href={item.href}
+                          className="truncate hover:text-foreground"
+                        >
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <span className="truncate text-foreground">
+                          {item.label}
+                        </span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </nav>
+                <h1 className="mt-1 truncate text-lg font-semibold">{title}</h1>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="relative hidden md:block">
+                <label htmlFor="dashboard-search-loading" className="sr-only">
+                  Rechercher
+                </label>
+                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  id="dashboard-search-loading"
+                  type="search"
+                  placeholder="Rechercher"
+                  disabled
+                  className="h-9 w-64 rounded-md border border-input bg-background pr-3 pl-9 text-sm transition outline-none placeholder:text-muted-foreground disabled:opacity-70"
+                />
+              </div>
+              <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-card px-2 text-card-foreground">
+                <Skeleton className="size-7 rounded" />
+                <span className="hidden text-sm font-medium text-muted-foreground sm:block">
+                  Compte
+                </span>
+                <ChevronDown className="size-4 text-muted-foreground" />
+              </div>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-9 gap-1.5 px-2 sm:px-3"
+              >
+                <Link href="/">
+                  <Home />
+                  <span className="hidden sm:inline">Accueil</span>
+                </Link>
+              </Button>
+            </div>
           </div>
-          <Skeleton className="h-80 w-full" />
+        </header>
+        <div className="space-y-6 p-4 sm:p-6">
+          {children ?? (
+            <>
+              <Skeleton className="h-28 w-full" />
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+              </div>
+              <Skeleton className="h-80 w-full" />
+            </>
+          )}
         </div>
       </section>
     </main>
@@ -123,8 +252,8 @@ function SidebarContent({
   return (
     <div className="flex h-full flex-col">
       <Link
-        href="/dashboard"
-        aria-label="Dashboard Homelink"
+        href="/"
+        aria-label="Accueil Homelink"
         className="shrink-0"
         onClick={onNavigate}
       >
@@ -254,8 +383,26 @@ function DashboardShell({
     }
   }, [])
 
-  if (checking || !profile) {
-    return <DashboardShellSkeleton />
+  if (checking) {
+    return (
+      <DashboardShellLoading
+        breadcrumbs={breadcrumbs}
+        pathname={pathname}
+        title={title}
+      >
+        {children}
+      </DashboardShellLoading>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <DashboardShellLoading
+        breadcrumbs={breadcrumbs}
+        pathname={pathname}
+        title={title}
+      />
+    )
   }
 
   async function logout() {

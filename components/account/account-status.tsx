@@ -6,7 +6,6 @@ import { ChevronDown, LayoutDashboard, LogOut, Mail } from "lucide-react"
 import * as React from "react"
 
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
 import { fetchCurrentAccountProfile } from "@/lib/account-client"
 import type { AccountProfile } from "@/lib/account-profile"
 import { AUTH_STORAGE_EVENT, clearStoredAuthTokens } from "@/lib/auth-storage"
@@ -23,12 +22,17 @@ function initials(profile: AccountProfile) {
   return `${first}${last}`.toUpperCase() || profile.email.at(0)?.toUpperCase()
 }
 
-function AccountStatusSkeleton() {
+function AccountStatusChecking() {
   return (
-    <div className="flex items-center gap-2">
-      <Skeleton className="h-9 w-9 rounded-md bg-white/15" />
-      <Skeleton className="hidden h-9 w-24 rounded-md bg-white/15 sm:block" />
-    </div>
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      disabled
+      className="h-9 border-white/15 bg-white/8 px-3 text-white disabled:opacity-80 sm:px-4"
+    >
+      Compte
+    </Button>
   )
 }
 
@@ -118,7 +122,7 @@ function AccountStatus() {
   }
 
   if (state.status === "checking") {
-    return <AccountStatusSkeleton />
+    return <AccountStatusChecking />
   }
 
   if (state.status === "anonymous") {
