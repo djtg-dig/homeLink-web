@@ -123,10 +123,10 @@ const emptyAddressSummary: ImmovableAddressSummary = {
 
 const statutOptions = [
   { label: "Disponible", value: "disponible" },
-  { label: "Reserve", value: "reserve" },
+  { label: "Réservé", value: "reserve" },
   { label: "Indisponible", value: "indisponible" },
   { label: "Vendu", value: "vendu" },
-  { label: "Loue", value: "loue" },
+  { label: "Loué", value: "loue" },
 ]
 
 const transactionOptions = [
@@ -140,7 +140,7 @@ const comfortFields: Array<{
   label: string
   name: keyof AppartementFormValues
 }> = [
-  { label: "Meuble", name: "meuble" },
+  { label: "Meublé", name: "meuble" },
   { label: "Parking", name: "parking" },
   { label: "Cave", name: "cave" },
   { label: "Balcon", name: "balcon" },
@@ -148,7 +148,7 @@ const comfortFields: Array<{
   { label: "Jardin", name: "jardin" },
   { label: "Piscine", name: "piscine" },
   { label: "Climatisation", name: "climatisation" },
-  { label: "Cheminee", name: "cheminee" },
+  { label: "Cheminée", name: "cheminee" },
   { label: "Interphone", name: "interphone" },
 ]
 
@@ -178,7 +178,7 @@ function requiredInteger(value: string, label: string) {
   const nextValue = requiredText(value, label)
 
   if (!/^-?\d+$/.test(nextValue)) {
-    throw new Error(`${label} doit etre un nombre entier.`)
+    throw new Error(`${label} doit être un nombre entier.`)
   }
 
   return Number(nextValue)
@@ -497,7 +497,7 @@ function AppartementCreateContent() {
       classe_energie: values.classe_energie,
       climatisation: values.climatisation,
       emission_ges: values.emission_ges,
-      etage: requiredInteger(values.etage, "L'etage"),
+      etage: requiredInteger(values.etage, "L'étage"),
       interphone: values.interphone,
       jardin: values.jardin,
       meuble: values.meuble,
@@ -507,7 +507,7 @@ function AppartementCreateContent() {
       ),
       nombre_pieces: requiredInteger(
         values.nombre_pieces,
-        "Le nombre de pieces"
+        "Le nombre de pièces"
       ),
       nombre_sdb: requiredInteger(
         values.nombre_sdb,
@@ -559,18 +559,18 @@ function AppartementCreateContent() {
       await apiPostJson<unknown>("/api/immovables/appartements/", payload)
       toast({
         description: "L'appartement est maintenant disponible dans la gestion.",
-        title: "Appartement cree",
+        title: "Appartement créé",
         variant: "success",
       })
       router.push("/dashboard/appartements")
     } catch (caughtError) {
       if (caughtError instanceof ApiError) {
-        setError(formatApiMessage(caughtError.body, "Creation impossible."))
+        setError(formatApiMessage(caughtError.body, "Création impossible."))
       } else {
         setError(
           caughtError instanceof Error
             ? caughtError.message
-            : "Creation impossible."
+            : "Création impossible."
         )
       }
     } finally {
@@ -583,25 +583,25 @@ function AppartementCreateContent() {
       title="Nouvel appartement"
       breadcrumbs={[
         { href: "/dashboard/appartements", label: "Appartements" },
-        { label: "Creation" },
+        { label: "Création" },
       ]}
     >
       <section className="rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
-              Creation d&apos;appartement
+              Création d&apos;appartement
             </p>
             <h2 className="mt-1 text-2xl font-semibold">
               Enregistrer un nouvel appartement
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
               Renseignez les informations du bien, son adresse, l&apos;agence et
-              les caracteristiques de l&apos;appartement.
+              les caractéristiques de l&apos;appartement.
             </p>
           </div>
           <span className="rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground">
-            Champs obligatoires marques par *
+            Champs obligatoires marqués par *
           </span>
         </div>
       </section>
@@ -620,7 +620,7 @@ function AppartementCreateContent() {
           <Section
             icon={Home}
             title="Informations principales"
-            description="Details visibles dans la fiche de publication."
+            description="Détails visibles dans la fiche de publication."
           >
             <div className="grid gap-4 md:grid-cols-2">
               <TextField
@@ -629,7 +629,7 @@ function AppartementCreateContent() {
                 value={values.title}
                 required
                 onChange={updateValue}
-                placeholder="Appartement moderne a Kinshasa"
+                placeholder="Appartement moderne à Kinshasa"
               />
               <div className="space-y-2">
                 <label className={labelClassName} htmlFor="agency_id">
@@ -645,7 +645,7 @@ function AppartementCreateContent() {
                     }
                   >
                     <SelectTrigger id="agency_id" className="h-10 w-full">
-                      <SelectValue placeholder="Selectionner une agence" />
+                      <SelectValue placeholder="Sélectionner une agence" />
                     </SelectTrigger>
                     <SelectContent>
                       {agencies
@@ -679,7 +679,7 @@ function AppartementCreateContent() {
                     }
                   >
                     <SelectTrigger id="immeuble" className="h-10 w-full">
-                      <SelectValue placeholder="Selectionner un immeuble" />
+                      <SelectValue placeholder="Sélectionner un immeuble" />
                     </SelectTrigger>
                     <SelectContent>
                       {immeubles
@@ -705,7 +705,7 @@ function AppartementCreateContent() {
                   <Button asChild variant="outline" size="sm">
                     <Link href="/dashboard/immeubles/new">
                       <Building2 />
-                      Creer un immeuble
+                      Créer un immeuble
                     </Link>
                   </Button>
                 ) : null}
@@ -767,14 +767,14 @@ function AppartementCreateContent() {
                   id="description"
                   name="description"
                   value={values.description}
-                  placeholder="Presentation courte de l'appartement"
+                  placeholder="Présentation courte de l'appartement"
                   onChange={(event) =>
                     updateValue("description", event.target.value)
                   }
                 />
               </div>
               <SwitchField
-                label="Je suis proprietaire"
+                label="Je suis propriétaire"
                 checked={values.est_proprietaire}
                 onChange={(checked) =>
                   updateBoolean("est_proprietaire", checked)
@@ -791,18 +791,18 @@ function AppartementCreateContent() {
           <ImmovableAddressSection
             ref={addressSectionRef}
             disabled={pending}
-            description="Adresse rattachee a cet appartement."
+            description="Adresse rattachée à cet appartement."
             onSummaryChange={setAddressSummary}
           />
 
           <Section
             icon={Ruler}
-            title="Caracteristiques"
-            description="Dimensions, pieces et informations techniques."
+            title="Caractéristiques"
+            description="Dimensions, pièces et informations techniques."
           >
             <div className="grid gap-4 md:grid-cols-2">
               <TextField
-                label="Etage *"
+                label="Étage *"
                 name="etage"
                 value={values.etage}
                 inputMode="numeric"
@@ -825,7 +825,7 @@ function AppartementCreateContent() {
                 onChange={updateValue}
               />
               <TextField
-                label="Nombre de pieces *"
+                label="Nombre de pièces *"
                 name="nombre_pieces"
                 value={values.nombre_pieces}
                 inputMode="numeric"
@@ -849,7 +849,7 @@ function AppartementCreateContent() {
                 onChange={updateValue}
               />
               <SelectField
-                label="Classe energie"
+                label="Classe énergie"
                 name="classe_energie"
                 value={values.classe_energie}
                 options={performanceOptions.map((item) => ({
@@ -859,7 +859,7 @@ function AppartementCreateContent() {
                 onChange={updateValue}
               />
               <SelectField
-                label="Emission GES"
+                label="Émission GES"
                 name="emission_ges"
                 value={values.emission_ges}
                 options={performanceOptions.map((item) => ({
@@ -874,7 +874,7 @@ function AppartementCreateContent() {
           <Section
             icon={PanelsTopLeft}
             title="Confort"
-            description="Equipements et options disponibles."
+            description="Équipements et options disponibles."
           >
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {comfortFields.map((field) => (
@@ -892,9 +892,9 @@ function AppartementCreateContent() {
         <aside className="xl:sticky xl:top-20 xl:self-start">
           <div className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
             <div className="border-b border-border p-4">
-              <h2 className="text-base font-semibold">Recapitulatif</h2>
+              <h2 className="text-base font-semibold">Récapitulatif</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Apercu avant validation.
+                Aperçu avant validation.
               </p>
             </div>
             <div className="space-y-4 p-4 text-sm">
@@ -916,7 +916,7 @@ function AppartementCreateContent() {
                   </p>
                 </div>
                 <div className="rounded-md bg-muted p-3">
-                  <p className="text-xs text-muted-foreground">Pieces</p>
+                  <p className="text-xs text-muted-foreground">Pièces</p>
                   <p className="mt-1 font-medium">
                     {fieldValue(values.nombre_pieces)}
                   </p>
@@ -956,7 +956,7 @@ function AppartementCreateContent() {
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground uppercase">
-                  Equipements
+                  Équipements
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {comfortFields
@@ -979,7 +979,7 @@ function AppartementCreateContent() {
               </div>
               <Button className="h-10 w-full" type="submit" disabled={pending}>
                 {pending ? <Loader2 className="animate-spin" /> : <Save />}
-                Creer l&apos;appartement
+                Créer l&apos;appartement
               </Button>
             </div>
           </div>

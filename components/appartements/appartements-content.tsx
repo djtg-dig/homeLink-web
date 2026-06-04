@@ -1,12 +1,170 @@
 "use client"
 
+import * as React from "react"
 import Link from "next/link"
-import { Building2, Landmark, Plus, Ruler } from "lucide-react"
+import {
+  Building2,
+  CheckCircle2,
+  Eye,
+  Home,
+  Landmark,
+  MapPin,
+  Plus,
+  RefreshCw,
+} from "lucide-react"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  appartementAddressLabel,
+  appartementDetailPath,
+  appartementDisplayName,
+  appartementId,
+  appartementReferenceLabel,
+  createdDateLabel,
+  parseAppartements,
+  priceLabel,
+  statutLabel,
+  surfaceLabel,
+  transactionLabel,
+  type Appartement,
+  type AppartementsResponse,
+} from "@/lib/appartements"
+import { ApiError, apiFetch } from "@/lib/api-client"
+import { formatApiMessage } from "@/lib/api-errors"
+import { cn } from "@/lib/utils"
+
+function AppartementsTableSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 5 }).map((_, index) => (
+        <tr key={index} className="border-b border-border last:border-b-0">
+          <td className="px-4 py-4">
+            <div className="flex items-center gap-3">
+              <Skeleton className="size-10 shrink-0" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-4 w-52" />
+                <Skeleton className="h-3 w-28" />
+              </div>
+            </div>
+          </td>
+          <td className="px-4 py-4">
+            <Skeleton className="h-4 w-28" />
+          </td>
+          <td className="px-4 py-4">
+            <Skeleton className="h-4 w-28" />
+          </td>
+          <td className="px-4 py-4">
+            <Skeleton className="h-4 w-56" />
+          </td>
+          <td className="px-4 py-4">
+            <Skeleton className="h-6 w-24" />
+          </td>
+          <td className="px-4 py-4 text-right">
+            <Skeleton className="ml-auto h-7 w-28" />
+          </td>
+        </tr>
+      ))}
+    </>
+  )
+}
+
+function StatusPill({
+  active,
+  children,
+}: {
+  active: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium",
+        active
+          ? "bg-secondary text-secondary-foreground"
+          : "bg-muted text-muted-foreground"
+      )}
+    >
+      {children}
+    </span>
+  )
+}
 
 function AppartementsContent() {
+  const [appartements, setAppartements] = React.useState<Appartement[]>([])
+  const [count, setCount] = React.useState(0)
+  const [error, setError] = React.useState("")
+  const [loading, setLoading] = React.useState(true)
+
+  const availableCount = React.useMemo(
+    () =>
+      appartements.filter((appartement) => appartement.statut === "disponible")
+        .length,
+    [appartements]
+  )
+
+  const activeCount = React.useMemo(
+    () =>
+      appartements.filter((appartement) => appartement.is_active !== false)
+        .length,
+    [appartements]
+  )
+
+  const loadAppartements = React.useCallback(async (signal?: AbortSignal) => {
+    try {
+      const response = await apiFetch<AppartementsResponse>(
+        "/api/immovables/appartements/",
+        { signal }
+      )
+      const parsed = parseAppartements(response)
+
+      if (signal?.aborted) {
+        return
+      }
+
+      setAppartements(parsed.appartements)
+      setCount(parsed.count)
+      setError("")
+    } catch (caughtError) {
+      if (signal?.aborted) {
+        return
+      }
+
+      if (caughtError instanceof ApiError) {
+        setError(formatApiMessage(caughtError.body, "Chargement impossible."))
+      } else {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Chargement impossible."
+        )
+      }
+    } finally {
+      if (!signal?.aborted) {
+        setLoading(false)
+      }
+    }
+  }, [])
+
+  React.useEffect(() => {
+    const controller = new AbortController()
+    const timer = window.setTimeout(() => {
+      void loadAppartements(controller.signal)
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [loadAppartements])
+
+  function reloadAppartements() {
+    setLoading(true)
+    setError("")
+    void loadAppartements()
+  }
+
   return (
     <DashboardShell
       title="Appartements"
@@ -22,56 +180,215 @@ function AppartementsContent() {
               Appartements immobiliers
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Creez les appartements rattaches a une agence avec leurs
-              informations de publication et leurs caracteristiques.
+              Retrouvez les appartements enregistrés, leurs prix, leurs adresses
+              et leurs statuts de publication.
             </p>
           </div>
           <Button asChild className="h-10 w-full lg:w-auto">
             <Link href="/dashboard/appartements/new">
               <Plus />
-              Creer un appartement
+              Créer un appartement
             </Link>
           </Button>
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section
+        aria-label="Indicateurs appartements"
+        className="grid gap-4 md:grid-cols-3"
+      >
         <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-md bg-secondary text-primary">
-              <Landmark className="size-5" />
-            </span>
-            <div>
-              <h2 className="text-base font-semibold">Immeuble requis</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Creez l&apos;immeuble avant de publier ses appartements.
-              </p>
-            </div>
-          </div>
-          <Button asChild variant="outline" className="mt-4">
-            <Link href="/dashboard/immeubles/new">
-              <Plus />
-              Creer un immeuble
-            </Link>
-          </Button>
+          <p className="text-sm text-muted-foreground">Total appartements</p>
+          {loading ? (
+            <Skeleton className="mt-3 h-9 w-20" />
+          ) : (
+            <p className="mt-3 text-3xl font-semibold">{count}</p>
+          )}
         </article>
+        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+          <p className="text-sm text-muted-foreground">Disponibles</p>
+          {loading ? (
+            <Skeleton className="mt-3 h-9 w-20" />
+          ) : (
+            <p className="mt-3 text-3xl font-semibold">{availableCount}</p>
+          )}
+        </article>
+        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+          <p className="text-sm text-muted-foreground">Actifs</p>
+          {loading ? (
+            <Skeleton className="mt-3 h-9 w-20" />
+          ) : (
+            <p className="mt-3 text-3xl font-semibold">{activeCount}</p>
+          )}
+        </article>
+      </section>
 
+      <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Liste des appartements</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Consultez les biens créés depuis l’API Homelink.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={reloadAppartements}
+            disabled={loading}
+          >
+            <RefreshCw className={cn(loading && "animate-spin")} />
+            Actualiser
+          </Button>
+        </div>
+
+        {error ? (
+          <div className="m-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {error}
+          </div>
+        ) : null}
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[980px] text-sm">
+            <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3 font-medium">Appartement</th>
+                <th className="px-4 py-3 font-medium">Transaction</th>
+                <th className="px-4 py-3 font-medium">Prix</th>
+                <th className="px-4 py-3 font-medium">Adresse</th>
+                <th className="px-4 py-3 font-medium">Statut</th>
+                <th className="px-4 py-3 text-right font-medium">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? <AppartementsTableSkeleton /> : null}
+
+              {!loading && appartements.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12">
+                    <div className="mx-auto flex max-w-md flex-col items-center text-center">
+                      <span className="flex size-12 items-center justify-center rounded-md bg-secondary text-primary">
+                        <Home className="size-6" />
+                      </span>
+                      <h3 className="mt-4 text-base font-semibold">
+                        Aucun appartement pour le moment
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        Créez un appartement pour alimenter cette liste.
+                      </p>
+                      <Button asChild className="mt-4">
+                        <Link href="/dashboard/appartements/new">
+                          <Plus />
+                          Créer un appartement
+                        </Link>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ) : null}
+
+              {!loading
+                ? appartements.map((appartement, index) => {
+                    const id = appartementId(appartement)
+                    const key = id || `${appartement.title}-${index}`
+
+                    return (
+                      <tr
+                        key={key}
+                        className="border-b border-border last:border-b-0"
+                      >
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-3">
+                            <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                              <Landmark className="size-5" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold">
+                                {appartementDisplayName(appartement)}
+                              </p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {appartementReferenceLabel(appartement)} ·{" "}
+                                {createdDateLabel(appartement.created_at)}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          {transactionLabel(appartement.type_transaction)}
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {surfaceLabel(appartement.surface_habitable)}
+                          </p>
+                        </td>
+                        <td className="px-4 py-4 font-medium">
+                          {priceLabel(appartement)}
+                        </td>
+                        <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                          <span className="flex items-start gap-1.5">
+                            <MapPin className="mt-0.5 size-3.5 shrink-0" />
+                            <span className="line-clamp-2">
+                              {appartementAddressLabel(appartement)}
+                            </span>
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex flex-wrap gap-2">
+                            <StatusPill
+                              active={appartement.statut === "disponible"}
+                            >
+                              {statutLabel(appartement.statut)}
+                            </StatusPill>
+                            <StatusPill
+                              active={appartement.is_active !== false}
+                            >
+                              <CheckCircle2 className="mr-1 size-3" />
+                              {appartement.is_active === false
+                                ? "Inactif"
+                                : "Actif"}
+                            </StatusPill>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-right">
+                          {id ? (
+                            <Button asChild variant="outline" size="sm">
+                              <Link href={appartementDetailPath(id)}>
+                                <Eye />
+                                Voir les détails
+                              </Link>
+                            </Button>
+                          ) : (
+                            <Button variant="outline" size="sm" disabled>
+                              <Eye />
+                              Voir les détails
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })
+                : null}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2">
         <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
           <div className="flex items-center gap-3">
             <span className="flex size-10 items-center justify-center rounded-md bg-secondary text-primary">
               <Building2 className="size-5" />
             </span>
             <div>
-              <h2 className="text-base font-semibold">Nouveau dossier</h2>
+              <h2 className="text-base font-semibold">Immeuble requis</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Publier un appartement disponible a la vente ou a la location.
+                Créez l’immeuble avant de publier ses appartements.
               </p>
             </div>
           </div>
           <Button asChild variant="outline" className="mt-4">
-            <Link href="/dashboard/appartements/new">
+            <Link href="/dashboard/immeubles/new">
               <Plus />
-              Creer
+              Créer un immeuble
             </Link>
           </Button>
         </article>
@@ -79,15 +396,21 @@ function AppartementsContent() {
         <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
           <div className="flex items-center gap-3">
             <span className="flex size-10 items-center justify-center rounded-md bg-secondary text-primary">
-              <Ruler className="size-5" />
+              <Home className="size-5" />
             </span>
             <div>
-              <h2 className="text-base font-semibold">Caracteristiques</h2>
+              <h2 className="text-base font-semibold">Nouveau dossier</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Surfaces, pieces, confort, energie et rattachement agence.
+                Publiez un appartement disponible à la vente ou à la location.
               </p>
             </div>
           </div>
+          <Button asChild variant="outline" className="mt-4">
+            <Link href="/dashboard/appartements/new">
+              <Plus />
+              Créer
+            </Link>
+          </Button>
         </article>
       </section>
     </DashboardShell>
