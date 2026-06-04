@@ -965,7 +965,7 @@ function BureauxContent() {
             <div>
               <h2 className="text-lg font-semibold">Liste des bureaux</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Consultez les bureaux créés depuis l’API Homelink.
+                Consultez les bureaux créés sur la plateforme.
               </p>
             </div>
             <Button

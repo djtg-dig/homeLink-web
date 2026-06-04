@@ -179,7 +179,7 @@ async function proxyRequest(request: NextRequest, context: ProxyRouteContext) {
     targetUrl = buildTargetUrl(path, request)
   } catch {
     return Response.json(
-      { message: "La configuration API est manquante." },
+      { message: "La configuration du service est manquante." },
       { status: 500 }
     )
   }
@@ -199,13 +199,13 @@ async function proxyRequest(request: NextRequest, context: ProxyRouteContext) {
   } catch (caughtError) {
     if (isTimeoutError(caughtError)) {
       return Response.json(
-        { message: "Le delai d'attente du service API est depasse." },
+        { message: "Le délai d'attente du service est dépassé." },
         { status: 504 }
       )
     }
 
     return Response.json(
-      { message: "Le service API est momentanement indisponible." },
+      { message: "Le service est momentanément indisponible." },
       { status: 502 }
     )
   }

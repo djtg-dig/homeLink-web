@@ -291,7 +291,7 @@ function AppartementsContent() {
             <div>
               <h2 className="text-lg font-semibold">Liste des appartements</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Consultez les biens créés depuis l’API Homelink.
+                Consultez les biens créés sur la plateforme.
               </p>
             </div>
             <Button
