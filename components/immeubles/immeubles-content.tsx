@@ -10,11 +10,13 @@ import {
   Plus,
   RefreshCw,
   Save,
+  Trash2,
   X,
 } from "lucide-react"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
+import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import {
   Select,
   SelectContent,
@@ -408,6 +410,10 @@ function ImmeubleEditDialog({
 function ImmeublesContent() {
   const [immeubles, setImmeubles] = React.useState<Immeuble[]>([])
   const [count, setCount] = React.useState(0)
+  const [deleteError, setDeleteError] = React.useState("")
+  const [deletePending, setDeletePending] = React.useState(false)
+  const [deletingImmeuble, setDeletingImmeuble] =
+    React.useState<Immeuble | null>(null)
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
   const [editingImmeuble, setEditingImmeuble] = React.useState<Immeuble | null>(
@@ -479,6 +485,61 @@ function ImmeublesContent() {
     setEditingImmeuble(null)
   }
 
+  function openDeleteDialog(immeuble: Immeuble) {
+    setDeleteError("")
+    setDeletingImmeuble(immeuble)
+  }
+
+  async function deleteImmeuble() {
+    if (!deletingImmeuble) {
+      return
+    }
+
+    const id = immeubleId(deletingImmeuble)
+
+    if (!id) {
+      setDeleteError("Cet immeuble ne contient pas d'identifiant.")
+      return
+    }
+
+    setDeletePending(true)
+    setDeleteError("")
+
+    try {
+      await apiFetch<void>(
+        `/api/immovables/immeubles/${encodeURIComponent(id)}/`,
+        {
+          method: "DELETE",
+        }
+      )
+
+      setImmeubles((current) =>
+        current.filter((immeuble) => immeubleId(immeuble) !== id)
+      )
+      setCount((current) => Math.max(0, current - 1))
+      setDeletingImmeuble(null)
+      toast({
+        description: "L'immeuble a été supprimé.",
+        title: "Immeuble supprimé",
+        variant: "success",
+      })
+    } catch (caughtError) {
+      if (caughtError instanceof ApiError) {
+        setDeleteError(
+          formatApiMessage(caughtError.body, "Suppression impossible.")
+        )
+      } else {
+        setDeleteError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Suppression impossible."
+        )
+      }
+    } finally {
+      setDeletePending(false)
+    }
+  }
+
   return (
     <>
       <DashboardShell title="Immeubles" breadcrumbs={[{ label: "Immeubles" }]}>
@@ -548,7 +609,7 @@ function ImmeublesContent() {
           ) : null}
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[860px] text-sm">
+            <table className="w-full min-w-[980px] text-sm">
               <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Immeuble</th>
@@ -629,17 +690,29 @@ function ImmeublesContent() {
                               />
                             </div>
                           </td>
-                          <td className="px-4 py-4 text-right">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              disabled={!canEdit}
-                              onClick={() => setEditingImmeuble(immeuble)}
-                            >
-                              <Pencil />
-                              Modifier
-                            </Button>
+                          <td className="px-4 py-4">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={!canEdit}
+                                onClick={() => setEditingImmeuble(immeuble)}
+                              >
+                                <Pencil />
+                                Modifier
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                disabled={!canEdit}
+                                onClick={() => openDeleteDialog(immeuble)}
+                              >
+                                <Trash2 />
+                                Supprimer
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       )
@@ -656,6 +729,23 @@ function ImmeublesContent() {
           immeuble={editingImmeuble}
           onClose={() => setEditingImmeuble(null)}
           onUpdated={updateImmeuble}
+        />
+      ) : null}
+
+      {deletingImmeuble ? (
+        <DeleteConfirmDialog
+          title="Supprimer l'immeuble"
+          description={`Vous allez supprimer ${immeubleDisplayName(
+            deletingImmeuble
+          )}. Cette action est définitive.`}
+          error={deleteError}
+          pending={deletePending}
+          onClose={() => {
+            if (!deletePending) {
+              setDeletingImmeuble(null)
+            }
+          }}
+          onConfirm={deleteImmeuble}
         />
       ) : null}
     </>

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   BedDouble,
@@ -16,6 +17,7 @@ import {
   Phone,
   RefreshCw,
   Ruler,
+  Trash2,
   User,
   XCircle,
   type LucideIcon,
@@ -23,7 +25,9 @@ import {
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
+import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "@/components/ui/toaster"
 import {
   agencyName,
   appartementAddressLabel,
@@ -181,7 +185,11 @@ function MediaPreview({ media }: { media: AppartementMedia }) {
 }
 
 function AppartementDetailContent({ id }: { id: string }) {
+  const router = useRouter()
   const [appartement, setAppartement] = React.useState<Appartement | null>(null)
+  const [deleteError, setDeleteError] = React.useState("")
+  const [deletePending, setDeletePending] = React.useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
 
@@ -238,6 +246,42 @@ function AppartementDetailContent({ id }: { id: string }) {
     setLoading(true)
     setError("")
     void loadAppartement()
+  }
+
+  async function deleteAppartement() {
+    setDeletePending(true)
+    setDeleteError("")
+
+    try {
+      await apiFetch<void>(
+        `/api/immovables/appartements/${encodeURIComponent(id)}/`,
+        {
+          method: "DELETE",
+        }
+      )
+
+      toast({
+        description: "L'appartement a été supprimé.",
+        title: "Appartement supprimé",
+        variant: "success",
+      })
+      router.push("/dashboard/appartements")
+      router.refresh()
+    } catch (caughtError) {
+      if (caughtError instanceof ApiError) {
+        setDeleteError(
+          formatApiMessage(caughtError.body, "Suppression impossible.")
+        )
+      } else {
+        setDeleteError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Suppression impossible."
+        )
+      }
+    } finally {
+      setDeletePending(false)
+    }
   }
 
   const details = appartement?.appartement
@@ -321,6 +365,17 @@ function AppartementDetailContent({ id }: { id: string }) {
                 >
                   <RefreshCw className={cn(loading && "animate-spin")} />
                   Actualiser
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    setDeleteError("")
+                    setDeleteDialogOpen(true)
+                  }}
+                >
+                  <Trash2 />
+                  Supprimer
                 </Button>
               </div>
             </div>
@@ -563,6 +618,23 @@ function AppartementDetailContent({ id }: { id: string }) {
               </p>
             )}
           </InfoCard>
+
+          {deleteDialogOpen ? (
+            <DeleteConfirmDialog
+              title="Supprimer l'appartement"
+              description={`Vous allez supprimer ${appartementDisplayName(
+                appartement
+              )}. Cette action est définitive.`}
+              error={deleteError}
+              pending={deletePending}
+              onClose={() => {
+                if (!deletePending) {
+                  setDeleteDialogOpen(false)
+                }
+              }}
+              onConfirm={deleteAppartement}
+            />
+          ) : null}
         </>
       ) : null}
     </DashboardShell>

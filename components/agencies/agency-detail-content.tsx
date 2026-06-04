@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   BadgeCheck,
@@ -16,12 +17,14 @@ import {
   RefreshCw,
   Save,
   ShieldCheck,
+  Trash2,
   User,
   X,
 } from "lucide-react"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
+import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/components/ui/toaster"
 import {
@@ -481,7 +484,11 @@ function AgencyEditForm({
 }
 
 function AgencyDetailContent({ slug }: { slug: string }) {
+  const router = useRouter()
   const [agency, setAgency] = React.useState<Agency | null>(null)
+  const [deleteError, setDeleteError] = React.useState("")
+  const [deletePending, setDeletePending] = React.useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
   const [error, setError] = React.useState("")
   const [editing, setEditing] = React.useState(false)
   const [loading, setLoading] = React.useState(true)
@@ -546,6 +553,44 @@ function AgencyDetailContent({ slug }: { slug: string }) {
   function onUpdated(updatedAgency: Agency) {
     setAgency((current) => ({ ...(current ?? {}), ...updatedAgency }))
     setEditing(false)
+  }
+
+  async function deleteAgency() {
+    if (!detailSlug) {
+      setDeleteError("Cette agence ne contient pas de slug.")
+      return
+    }
+
+    setDeletePending(true)
+    setDeleteError("")
+
+    try {
+      await apiFetch<void>(`/api/agencies/${encodeURIComponent(detailSlug)}/`, {
+        method: "DELETE",
+      })
+
+      toast({
+        description: "L'agence a été supprimée.",
+        title: "Agence supprimée",
+        variant: "success",
+      })
+      router.push("/dashboard/agencies")
+      router.refresh()
+    } catch (caughtError) {
+      if (caughtError instanceof ApiError) {
+        setDeleteError(
+          formatApiMessage(caughtError.body, "Suppression impossible.")
+        )
+      } else {
+        setDeleteError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Suppression impossible."
+        )
+      }
+    } finally {
+      setDeletePending(false)
+    }
   }
 
   return (
@@ -615,6 +660,17 @@ function AgencyDetailContent({ slug }: { slug: string }) {
                 <Button type="button" onClick={() => setEditing(true)}>
                   <Pencil />
                   Modifier l&apos;agence
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    setDeleteError("")
+                    setDeleteDialogOpen(true)
+                  }}
+                >
+                  <Trash2 />
+                  Supprimer
                 </Button>
               </div>
             </div>
@@ -755,6 +811,23 @@ function AgencyDetailContent({ slug }: { slug: string }) {
               value={agency.proof_of_address}
             />
           </InfoCard>
+
+          {deleteDialogOpen ? (
+            <DeleteConfirmDialog
+              title="Supprimer l'agence"
+              description={`Vous allez supprimer ${agencyDisplayName(
+                agency
+              )}. Cette action est définitive.`}
+              error={deleteError}
+              pending={deletePending}
+              onClose={() => {
+                if (!deletePending) {
+                  setDeleteDialogOpen(false)
+                }
+              }}
+              onConfirm={deleteAgency}
+            />
+          ) : null}
         </>
       ) : null}
     </DashboardShell>
