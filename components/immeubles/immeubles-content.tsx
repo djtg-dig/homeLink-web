@@ -2,12 +2,29 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Building2, CheckCircle2, Plus, RefreshCw } from "lucide-react"
+import {
+  Building2,
+  CheckCircle2,
+  Loader2,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Save,
+  X,
+} from "lucide-react"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ApiError, apiFetch } from "@/lib/api-client"
+import { toast } from "@/components/ui/toaster"
+import { ApiError, apiFetch, jsonHeaders } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
 import {
   booleanLabel,
@@ -19,6 +36,73 @@ import {
   type ImmeublesResponse,
 } from "@/lib/immeubles"
 import { cn } from "@/lib/utils"
+
+type ImmeubleFormValues = {
+  ascenseur: boolean
+  jardin: boolean
+  nom: string
+  nombre_etages: string
+  piscine: boolean
+  type_immeuble: string
+}
+
+const typeOptions = [
+  { label: "Residentiel", value: "RES" },
+  { label: "Mixte", value: "MIX" },
+  { label: "Commercial", value: "COM" },
+]
+
+const inputClassName =
+  "h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-60"
+const labelClassName = "text-sm font-medium text-foreground"
+
+function requiredText(value: string, label: string) {
+  const nextValue = value.trim()
+
+  if (!nextValue) {
+    throw new Error(`${label} est obligatoire.`)
+  }
+
+  return nextValue
+}
+
+function requiredPositiveInteger(value: string, label: string) {
+  const nextValue = requiredText(value, label)
+
+  if (!/^\d+$/.test(nextValue) || Number(nextValue) <= 0) {
+    throw new Error(`${label} doit etre un nombre entier positif.`)
+  }
+
+  return Number(nextValue)
+}
+
+function formValuesFromImmeuble(immeuble: Immeuble): ImmeubleFormValues {
+  return {
+    ascenseur: Boolean(immeuble.ascenseur),
+    jardin: Boolean(immeuble.jardin),
+    nom: immeuble.nom?.trim() ?? "",
+    nombre_etages:
+      immeuble.nombre_etages === undefined || immeuble.nombre_etages === null
+        ? ""
+        : String(immeuble.nombre_etages),
+    piscine: Boolean(immeuble.piscine),
+    type_immeuble: immeuble.type_immeuble?.trim() || "RES",
+  }
+}
+
+function buildImmeublePayload(values: ImmeubleFormValues) {
+  return {
+    ascenseur: values.ascenseur,
+    jardin: values.jardin,
+    nom: requiredText(values.nom, "Le nom"),
+    nombre_etages: requiredPositiveInteger(
+      values.nombre_etages,
+      "Le nombre d'etages"
+    ),
+    piscine: values.piscine,
+    type_immeuble: values.type_immeuble,
+  }
+}
 
 function ImmeublesTableSkeleton() {
   return (
@@ -39,6 +123,9 @@ function ImmeublesTableSkeleton() {
           </td>
           <td className="px-4 py-4">
             <Skeleton className="h-4 w-52" />
+          </td>
+          <td className="px-4 py-4 text-right">
+            <Skeleton className="ml-auto h-7 w-24" />
           </td>
         </tr>
       ))}
@@ -68,11 +155,264 @@ function FeaturePill({
   )
 }
 
+function TextField({
+  inputMode,
+  label,
+  name,
+  onChange,
+  placeholder,
+  required,
+  value,
+}: {
+  inputMode?: "numeric" | "text"
+  label: string
+  name: keyof ImmeubleFormValues
+  onChange: (name: keyof ImmeubleFormValues, value: string) => void
+  placeholder?: string
+  required?: boolean
+  value: string
+}) {
+  return (
+    <div className="space-y-2">
+      <label className={labelClassName} htmlFor={`edit-${name}`}>
+        {label}
+      </label>
+      <input
+        className={inputClassName}
+        id={`edit-${name}`}
+        name={name}
+        type="text"
+        value={value}
+        inputMode={inputMode}
+        placeholder={placeholder}
+        required={required}
+        onChange={(event) => onChange(name, event.target.value)}
+      />
+    </div>
+  )
+}
+
+function SwitchField({
+  checked,
+  label,
+  onChange,
+}: {
+  checked: boolean
+  label: string
+  onChange: (checked: boolean) => void
+}) {
+  return (
+    <label className="flex min-h-12 items-center justify-between gap-3 rounded-md border border-border px-3 py-2">
+      <span className="text-sm font-medium">{label}</span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="size-4 accent-primary"
+      />
+    </label>
+  )
+}
+
+function ImmeubleEditDialog({
+  immeuble,
+  onClose,
+  onUpdated,
+}: {
+  immeuble: Immeuble
+  onClose: () => void
+  onUpdated: (immeuble: Immeuble) => void
+}) {
+  const [values, setValues] = React.useState<ImmeubleFormValues>(() =>
+    formValuesFromImmeuble(immeuble)
+  )
+  const [error, setError] = React.useState("")
+  const [pending, setPending] = React.useState(false)
+
+  function updateValue(name: keyof ImmeubleFormValues, value: string) {
+    setValues((current) => ({ ...current, [name]: value }))
+  }
+
+  function updateBoolean(name: keyof ImmeubleFormValues, checked: boolean) {
+    setValues((current) => ({ ...current, [name]: checked }))
+  }
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError("")
+
+    const id = immeubleId(immeuble)
+
+    if (!id) {
+      setError("Cet immeuble ne contient pas d'identifiant.")
+      return
+    }
+
+    setPending(true)
+
+    try {
+      const payload = buildImmeublePayload(values)
+      const updatedImmeuble = await apiFetch<Partial<Immeuble> | undefined>(
+        `/api/immovables/immeubles/${encodeURIComponent(id)}/`,
+        {
+          body: JSON.stringify(payload),
+          headers: jsonHeaders(),
+          method: "PATCH",
+        }
+      )
+
+      onUpdated({
+        ...immeuble,
+        ...payload,
+        ...(updatedImmeuble ?? {}),
+      })
+      toast({
+        description: "Les informations de l'immeuble ont ete mises a jour.",
+        title: "Immeuble modifie",
+        variant: "success",
+      })
+    } catch (caughtError) {
+      if (caughtError instanceof ApiError) {
+        setError(formatApiMessage(caughtError.body, "Modification impossible."))
+      } else {
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Modification impossible."
+        )
+      }
+    } finally {
+      setPending(false)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[90] flex items-end justify-center bg-brand-navy/55 p-0 sm:items-center sm:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-immeuble-title"
+    >
+      <form
+        className="max-h-[92svh] w-full overflow-y-auto rounded-t-lg border border-border bg-card text-card-foreground shadow-xl sm:max-w-2xl sm:rounded-lg"
+        onSubmit={onSubmit}
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-border p-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-muted-foreground">
+              Modification d&apos;immeuble
+            </p>
+            <h2
+              id="edit-immeuble-title"
+              className="mt-1 truncate text-xl font-semibold"
+            >
+              {immeubleDisplayName(immeuble)}
+            </h2>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={onClose}
+          >
+            <X />
+          </Button>
+        </div>
+
+        <div className="space-y-4 p-4">
+          {error ? (
+            <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </p>
+          ) : null}
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <TextField
+              label="Nom *"
+              name="nom"
+              value={values.nom}
+              required
+              placeholder="Residence Maman Yemo"
+              onChange={updateValue}
+            />
+            <div className="space-y-2">
+              <label className={labelClassName} htmlFor="edit-type_immeuble">
+                Type d&apos;immeuble
+              </label>
+              <Select
+                value={values.type_immeuble}
+                onValueChange={(nextValue) =>
+                  updateValue("type_immeuble", nextValue)
+                }
+              >
+                <SelectTrigger id="edit-type_immeuble" className="h-10 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {typeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <TextField
+              label="Nombre d'etages *"
+              name="nombre_etages"
+              value={values.nombre_etages}
+              inputMode="numeric"
+              required
+              placeholder="12"
+              onChange={updateValue}
+            />
+            <div className="grid gap-3 sm:grid-cols-3 md:col-span-2">
+              <SwitchField
+                label="Ascenseur"
+                checked={values.ascenseur}
+                onChange={(checked) => updateBoolean("ascenseur", checked)}
+              />
+              <SwitchField
+                label="Piscine"
+                checked={values.piscine}
+                onChange={(checked) => updateBoolean("piscine", checked)}
+              />
+              <SwitchField
+                label="Jardin"
+                checked={values.jardin}
+                onChange={(checked) => updateBoolean("jardin", checked)}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={pending}
+            >
+              Annuler
+            </Button>
+            <Button type="submit" disabled={pending}>
+              {pending ? <Loader2 className="animate-spin" /> : <Save />}
+              Enregistrer
+            </Button>
+          </div>
+        </div>
+      </form>
+    </div>
+  )
+}
+
 function ImmeublesContent() {
   const [immeubles, setImmeubles] = React.useState<Immeuble[]>([])
   const [count, setCount] = React.useState(0)
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
+  const [editingImmeuble, setEditingImmeuble] = React.useState<Immeuble | null>(
+    null
+  )
 
   const loadImmeubles = React.useCallback(async (signal?: AbortSignal) => {
     try {
@@ -128,162 +468,197 @@ function ImmeublesContent() {
     void loadImmeubles()
   }
 
+  function updateImmeuble(updatedImmeuble: Immeuble) {
+    const updatedId = immeubleId(updatedImmeuble)
+
+    setImmeubles((current) =>
+      current.map((immeuble) =>
+        immeubleId(immeuble) === updatedId ? updatedImmeuble : immeuble
+      )
+    )
+    setEditingImmeuble(null)
+  }
+
   return (
-    <DashboardShell title="Immeubles" breadcrumbs={[{ label: "Immeubles" }]}>
-      <section className="rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Gestion des immeubles
-            </p>
-            <h2 className="mt-1 text-2xl font-semibold">Immeubles</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Creez les immeubles qui pourront ensuite etre associes aux
-              appartements.
-            </p>
+    <>
+      <DashboardShell title="Immeubles" breadcrumbs={[{ label: "Immeubles" }]}>
+        <section className="rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Gestion des immeubles
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold">Immeubles</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Creez les immeubles qui pourront ensuite etre associes aux
+                appartements.
+              </p>
+            </div>
+            <Button asChild className="h-10 w-full lg:w-auto">
+              <Link href="/dashboard/immeubles/new">
+                <Plus />
+                Creer un immeuble
+              </Link>
+            </Button>
           </div>
-          <Button asChild className="h-10 w-full lg:w-auto">
-            <Link href="/dashboard/immeubles/new">
-              <Plus />
-              Creer un immeuble
-            </Link>
-          </Button>
-        </div>
-      </section>
+        </section>
 
-      <section className="grid gap-4 sm:grid-cols-2">
-        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <p className="text-sm text-muted-foreground">Total immeubles</p>
-          {loading ? (
-            <Skeleton className="mt-3 h-9 w-20" />
-          ) : (
-            <p className="mt-3 text-3xl font-semibold">{count}</p>
-          )}
-        </article>
-        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <p className="text-sm text-muted-foreground">Usage</p>
-          <p className="mt-3 text-sm font-medium">
-            Selection obligatoire lors de la creation d&apos;un appartement.
-          </p>
-        </article>
-      </section>
-
-      <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold">Liste des immeubles</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Selectionnez ou creez les immeubles disponibles pour les
-              appartements.
+        <section className="grid gap-4 sm:grid-cols-2">
+          <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">Total immeubles</p>
+            {loading ? (
+              <Skeleton className="mt-3 h-9 w-20" />
+            ) : (
+              <p className="mt-3 text-3xl font-semibold">{count}</p>
+            )}
+          </article>
+          <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">Usage</p>
+            <p className="mt-3 text-sm font-medium">
+              Selection obligatoire lors de la creation d&apos;un appartement.
             </p>
+          </article>
+        </section>
+
+        <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Liste des immeubles</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Selectionnez ou creez les immeubles disponibles pour les
+                appartements.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={reloadImmeubles}
+              disabled={loading}
+            >
+              <RefreshCw className={cn(loading && "animate-spin")} />
+              Actualiser
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={reloadImmeubles}
-            disabled={loading}
-          >
-            <RefreshCw className={cn(loading && "animate-spin")} />
-            Actualiser
-          </Button>
-        </div>
 
-        {error ? (
-          <div className="m-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {error}
-          </div>
-        ) : null}
+          {error ? (
+            <div className="m-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          ) : null}
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-sm">
-            <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Immeuble</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Etages</th>
-                <th className="px-4 py-3 font-medium">Equipements</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? <ImmeublesTableSkeleton /> : null}
-
-              {!loading && immeubles.length === 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[860px] text-sm">
+              <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
-                  <td colSpan={4} className="px-4 py-12">
-                    <div className="mx-auto flex max-w-md flex-col items-center text-center">
-                      <span className="flex size-12 items-center justify-center rounded-md bg-secondary text-primary">
-                        <Building2 className="size-6" />
-                      </span>
-                      <h3 className="mt-4 text-base font-semibold">
-                        Aucun immeuble pour le moment
-                      </h3>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        Creez un immeuble pour pouvoir l&apos;associer a un
-                        appartement.
-                      </p>
-                      <Button asChild className="mt-4">
-                        <Link href="/dashboard/immeubles/new">
-                          <Plus />
-                          Creer un immeuble
-                        </Link>
-                      </Button>
-                    </div>
-                  </td>
+                  <th className="px-4 py-3 font-medium">Immeuble</th>
+                  <th className="px-4 py-3 font-medium">Type</th>
+                  <th className="px-4 py-3 font-medium">Etages</th>
+                  <th className="px-4 py-3 font-medium">Equipements</th>
+                  <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
-              ) : null}
+              </thead>
+              <tbody>
+                {loading ? <ImmeublesTableSkeleton /> : null}
 
-              {!loading
-                ? immeubles.map((immeuble, index) => {
-                    const key =
-                      immeubleId(immeuble) || `${immeuble.nom}-${index}`
+                {!loading && immeubles.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-12">
+                      <div className="mx-auto flex max-w-md flex-col items-center text-center">
+                        <span className="flex size-12 items-center justify-center rounded-md bg-secondary text-primary">
+                          <Building2 className="size-6" />
+                        </span>
+                        <h3 className="mt-4 text-base font-semibold">
+                          Aucun immeuble pour le moment
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          Creez un immeuble pour pouvoir l&apos;associer a un
+                          appartement.
+                        </p>
+                        <Button asChild className="mt-4">
+                          <Link href="/dashboard/immeubles/new">
+                            <Plus />
+                            Creer un immeuble
+                          </Link>
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
 
-                    return (
-                      <tr
-                        key={key}
-                        className="border-b border-border last:border-b-0"
-                      >
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
-                              <Building2 className="size-5" />
-                            </span>
-                            <span className="font-semibold">
-                              {immeubleDisplayName(immeuble)}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          {immeubleTypeLabel(immeuble.type_immeuble)}
-                        </td>
-                        <td className="px-4 py-4">
-                          {immeuble.nombre_etages ?? "-"}
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            <FeaturePill
-                              label="Ascenseur"
-                              active={immeuble.ascenseur}
-                            />
-                            <FeaturePill
-                              label="Piscine"
-                              active={immeuble.piscine}
-                            />
-                            <FeaturePill
-                              label="Jardin"
-                              active={immeuble.jardin}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })
-                : null}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </DashboardShell>
+                {!loading
+                  ? immeubles.map((immeuble, index) => {
+                      const key =
+                        immeubleId(immeuble) || `${immeuble.nom}-${index}`
+                      const canEdit = Boolean(immeubleId(immeuble))
+
+                      return (
+                        <tr
+                          key={key}
+                          className="border-b border-border last:border-b-0"
+                        >
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                                <Building2 className="size-5" />
+                              </span>
+                              <span className="font-semibold">
+                                {immeubleDisplayName(immeuble)}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            {immeubleTypeLabel(immeuble.type_immeuble)}
+                          </td>
+                          <td className="px-4 py-4">
+                            {immeuble.nombre_etages ?? "-"}
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex flex-wrap gap-2">
+                              <FeaturePill
+                                label="Ascenseur"
+                                active={immeuble.ascenseur}
+                              />
+                              <FeaturePill
+                                label="Piscine"
+                                active={immeuble.piscine}
+                              />
+                              <FeaturePill
+                                label="Jardin"
+                                active={immeuble.jardin}
+                              />
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-right">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={!canEdit}
+                              onClick={() => setEditingImmeuble(immeuble)}
+                            >
+                              <Pencil />
+                              Modifier
+                            </Button>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  : null}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </DashboardShell>
+
+      {editingImmeuble ? (
+        <ImmeubleEditDialog
+          immeuble={editingImmeuble}
+          onClose={() => setEditingImmeuble(null)}
+          onUpdated={updateImmeuble}
+        />
+      ) : null}
+    </>
   )
 }
 
