@@ -72,6 +72,10 @@ function categoryHref(item: PropertyCategory) {
     return "/dashboard/appartements"
   }
 
+  if (item.slug === "bureaux") {
+    return "/dashboard/bureaux"
+  }
+
   if (item.slug === "immeubles") {
     return "/dashboard/immeubles"
   }
@@ -84,6 +88,7 @@ const categoryPathPrefixes: Partial<
 > = {
   agences: ["/dashboard/agencies"],
   appartements: ["/dashboard/appartements"],
+  bureaux: ["/dashboard/bureaux"],
   immeubles: ["/dashboard/immeubles"],
 }
 
