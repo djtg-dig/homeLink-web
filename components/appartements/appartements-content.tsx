@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Building2, Plus, Ruler } from "lucide-react"
+import { Building2, Landmark, Plus, Ruler } from "lucide-react"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
@@ -35,7 +35,27 @@ function AppartementsContent() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-4 md:grid-cols-3">
+        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 items-center justify-center rounded-md bg-secondary text-primary">
+              <Landmark className="size-5" />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold">Immeuble requis</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Creez l&apos;immeuble avant de publier ses appartements.
+              </p>
+            </div>
+          </div>
+          <Button asChild variant="outline" className="mt-4">
+            <Link href="/dashboard/immeubles/new">
+              <Plus />
+              Creer un immeuble
+            </Link>
+          </Button>
+        </article>
+
         <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
           <div className="flex items-center gap-3">
             <span className="flex size-10 items-center justify-center rounded-md bg-secondary text-primary">

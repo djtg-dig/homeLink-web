@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   Building2,
@@ -36,6 +37,14 @@ import {
 } from "@/lib/agencies"
 import { ApiError, apiFetch, apiPostJson } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
+import {
+  immeubleDisplayName,
+  immeubleId,
+  immeubleTypeLabel,
+  parseImmeubles,
+  type Immeuble,
+  type ImmeublesResponse,
+} from "@/lib/immeubles"
 
 type AppartementFormValues = {
   agency_id: string
@@ -175,20 +184,6 @@ function requiredInteger(value: string, label: string) {
   return Number(nextValue)
 }
 
-function optionalInteger(value: string, label: string) {
-  const nextValue = value.trim()
-
-  if (!nextValue) {
-    return undefined
-  }
-
-  if (!/^-?\d+$/.test(nextValue)) {
-    throw new Error(`${label} doit etre un nombre entier.`)
-  }
-
-  return Number(nextValue)
-}
-
 function selectedLabel(
   options: Array<{ label: string; value: string }>,
   value: string
@@ -206,6 +201,14 @@ function selectedAgencyName(agencies: Agency[], agencyId: string) {
         agencies.find((agency) => String(agency.id ?? "") === agencyId)!
       )
     : "-"
+}
+
+function selectedImmeubleName(immeubles: Immeuble[], selectedId: string) {
+  const immeuble = immeubles.find(
+    (item) => String(item.id ?? "") === selectedId
+  )
+
+  return immeuble ? immeubleDisplayName(immeuble) : "-"
 }
 
 function TextField({
@@ -344,7 +347,10 @@ function AppartementCreateContent() {
     React.useState<ImmovableAddressSummary>(emptyAddressSummary)
   const [agencies, setAgencies] = React.useState<Agency[]>([])
   const [agenciesError, setAgenciesError] = React.useState("")
+  const [immeubles, setImmeubles] = React.useState<Immeuble[]>([])
+  const [immeublesError, setImmeublesError] = React.useState("")
   const [loadingAgencies, setLoadingAgencies] = React.useState(true)
+  const [loadingImmeubles, setLoadingImmeubles] = React.useState(true)
   const [error, setError] = React.useState("")
   const [pending, setPending] = React.useState(false)
 
@@ -387,6 +393,46 @@ function AppartementCreateContent() {
     }
   }, [])
 
+  const loadImmeubles = React.useCallback(async (signal?: AbortSignal) => {
+    try {
+      const response = await apiFetch<ImmeublesResponse>(
+        "/api/immovables/immeubles/",
+        { signal }
+      )
+      const parsed = parseImmeubles(response)
+
+      if (signal?.aborted) {
+        return
+      }
+
+      setImmeubles(parsed.immeubles)
+      setImmeublesError("")
+    } catch (caughtError) {
+      if (signal?.aborted) {
+        return
+      }
+
+      if (caughtError instanceof ApiError) {
+        setImmeublesError(
+          formatApiMessage(
+            caughtError.body,
+            "Chargement des immeubles impossible."
+          )
+        )
+      } else {
+        setImmeublesError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Chargement des immeubles impossible."
+        )
+      }
+    } finally {
+      if (!signal?.aborted) {
+        setLoadingImmeubles(false)
+      }
+    }
+  }, [])
+
   React.useEffect(() => {
     const controller = new AbortController()
     const timer = window.setTimeout(() => {
@@ -398,6 +444,18 @@ function AppartementCreateContent() {
       controller.abort()
     }
   }, [loadAgencies])
+
+  React.useEffect(() => {
+    const controller = new AbortController()
+    const timer = window.setTimeout(() => {
+      void loadImmeubles(controller.signal)
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [loadImmeubles])
 
   function updateValue(name: keyof AppartementFormValues, value: string) {
     setValues((current) => ({ ...current, [name]: value }))
@@ -423,6 +481,7 @@ function AppartementCreateContent() {
       values.surface_habitable,
       "La surface habitable"
     )
+    const immeuble = requiredInteger(values.immeuble, "L'immeuble")
     const superficie = requiredText(values.superficie, "La superficie")
     const price =
       values.type_transaction === "vente"
@@ -458,16 +517,12 @@ function AppartementCreateContent() {
       piscine: values.piscine,
       superficie,
       terrasse: values.terrasse,
+      immeuble,
     }
     const superficieTerrasse = optionalText(values.superficie_terrasse)
-    const immeuble = optionalInteger(values.immeuble, "L'immeuble")
 
     if (superficieTerrasse) {
       appartement.superficie_terrasse = superficieTerrasse
-    }
-
-    if (immeuble !== undefined) {
-      appartement.immeuble = immeuble
     }
 
     return {
@@ -610,6 +665,51 @@ function AppartementCreateContent() {
                   <p className="text-xs text-destructive">{agenciesError}</p>
                 ) : null}
               </div>
+              <div className="space-y-2">
+                <label className={labelClassName} htmlFor="immeuble">
+                  Immeuble *
+                </label>
+                {loadingImmeubles ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : (
+                  <Select
+                    value={values.immeuble}
+                    onValueChange={(nextValue) =>
+                      updateValue("immeuble", nextValue)
+                    }
+                  >
+                    <SelectTrigger id="immeuble" className="h-10 w-full">
+                      <SelectValue placeholder="Selectionner un immeuble" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {immeubles
+                        .filter((immeuble) => immeubleId(immeuble))
+                        .map((immeuble) => (
+                          <SelectItem
+                            key={immeubleId(immeuble)}
+                            value={immeubleId(immeuble)}
+                          >
+                            {immeubleDisplayName(immeuble)} -{" "}
+                            {immeubleTypeLabel(immeuble.type_immeuble)}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {immeublesError ? (
+                  <p className="text-xs text-destructive">{immeublesError}</p>
+                ) : null}
+                {!loadingImmeubles &&
+                !immeublesError &&
+                immeubles.length === 0 ? (
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/dashboard/immeubles/new">
+                      <Building2 />
+                      Creer un immeuble
+                    </Link>
+                  </Button>
+                ) : null}
+              </div>
               <SelectField
                 label="Statut"
                 name="statut"
@@ -725,13 +825,6 @@ function AppartementCreateContent() {
                 onChange={updateValue}
               />
               <TextField
-                label="Immeuble"
-                name="immeuble"
-                value={values.immeuble}
-                inputMode="numeric"
-                onChange={updateValue}
-              />
-              <TextField
                 label="Nombre de pieces *"
                 name="nombre_pieces"
                 value={values.nombre_pieces}
@@ -835,6 +928,14 @@ function AppartementCreateContent() {
                 </p>
                 <p className="mt-1">
                   {selectedAgencyName(agencies, values.agency_id)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase">
+                  Immeuble
+                </p>
+                <p className="mt-1">
+                  {selectedImmeubleName(immeubles, values.immeuble)}
                 </p>
               </div>
               <div>

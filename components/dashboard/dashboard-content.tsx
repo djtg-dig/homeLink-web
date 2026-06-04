@@ -20,6 +20,7 @@ const stats = [
 const categoryLinks: Partial<Record<string, string>> = {
   agences: "/dashboard/agencies",
   appartements: "/dashboard/appartements",
+  immeubles: "/dashboard/immeubles",
 }
 
 function DashboardContent() {
