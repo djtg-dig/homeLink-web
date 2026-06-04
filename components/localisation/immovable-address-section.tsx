@@ -348,7 +348,7 @@ function CountryCombobox({
                 </span>
               ) : (
                 <span className="text-muted-foreground">
-                  Selectionner un pays
+                  Sélectionner un pays
                 </span>
               )}
               <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
@@ -361,7 +361,7 @@ function CountryCombobox({
             <Command>
               <CommandInput placeholder="Rechercher un pays..." />
               <CommandList>
-                <CommandEmpty>Aucun pays trouve.</CommandEmpty>
+                <CommandEmpty>Aucun pays trouvé.</CommandEmpty>
                 <CommandGroup>
                   {countries.map((country) => {
                     const countryId = String(country.id)
@@ -472,7 +472,7 @@ const ImmovableAddressSection = forwardRef<
 >(function ImmovableAddressSection(
   {
     className,
-    description = "Adresse associee au bien.",
+    description = "Adresse associée au bien.",
     disabled = false,
     onSummaryChange,
     title = "Adresse",
@@ -629,7 +629,7 @@ const ImmovableAddressSection = forwardRef<
       .catch((caughtError) => {
         if (!isAbortError(caughtError)) {
           setError(
-            toErrorMessage(caughtError, "Impossible de charger les localites.")
+            toErrorMessage(caughtError, "Impossible de charger les localités.")
           )
         }
       })
@@ -663,7 +663,7 @@ const ImmovableAddressSection = forwardRef<
           setError(
             toErrorMessage(
               caughtError,
-              "Impossible de charger les sous-localites."
+              "Impossible de charger les sous-localités."
             )
           )
         }
@@ -729,10 +729,10 @@ const ImmovableAddressSection = forwardRef<
           values.administrative_area,
           "La division administrative"
         )
-        const localityId = requiredNumericValue(values.locality, "La localite")
+        const localityId = requiredNumericValue(values.locality, "La localité")
         const subLocalityId = requiredNumericValue(
           values.sub_locality,
-          "La sous-localite"
+          "La sous-localité"
         )
         const street = values.street.trim()
 
@@ -804,29 +804,29 @@ const ImmovableAddressSection = forwardRef<
           name="administrative_area"
           value={values.administrative_area}
           options={administrativeAreaOptions}
-          placeholder="Selectionner"
+          placeholder="Sélectionner"
           disabled={disabled || !values.country}
           loading={loadingAdministrativeAreas}
           onChange={updateValue}
         />
         <SelectField
           id={`${idPrefix}-locality`}
-          label="Localite *"
+          label="Localité *"
           name="locality"
           value={values.locality}
           options={localityOptions}
-          placeholder="Selectionner"
+          placeholder="Sélectionner"
           disabled={disabled || !values.administrative_area}
           loading={loadingLocalities}
           onChange={updateValue}
         />
         <SelectField
           id={`${idPrefix}-sub-locality`}
-          label="Sous-localite *"
+          label="Sous-localité *"
           name="sub_locality"
           value={values.sub_locality}
           options={subLocalityOptions}
-          placeholder="Selectionner"
+          placeholder="Sélectionner"
           disabled={disabled || !values.locality}
           loading={loadingSubLocalities}
           onChange={updateValue}
@@ -852,7 +852,7 @@ const ImmovableAddressSection = forwardRef<
         />
         <TextField
           id={`${idPrefix}-complement`}
-          label="Complement d'adresse"
+          label="Complément d'adresse"
           name="complement_adresse"
           value={values.complement_adresse}
           disabled={disabled}
@@ -860,7 +860,7 @@ const ImmovableAddressSection = forwardRef<
         />
         <TextField
           id={`${idPrefix}-transports`}
-          label="Proximite transports"
+          label="Proximité transports"
           name="proximite_transports"
           value={values.proximite_transports}
           disabled={disabled}
@@ -887,11 +887,11 @@ const ImmovableAddressSection = forwardRef<
         <div className="md:col-span-2">
           <TextField
             id={`${idPrefix}-formatted-address`}
-            label="Adresse affichee"
+            label="Adresse affichée"
             name="formatted_address"
             value={values.formatted_address}
             disabled={disabled}
-            placeholder={formattedAddress(summary) || "Adresse complete"}
+            placeholder={formattedAddress(summary) || "Adresse complète"}
             onChange={updateValue}
           />
         </div>

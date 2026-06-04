@@ -88,7 +88,7 @@ const fileFields: Array<{
   {
     accept: "image/*,.pdf",
     field: "national_id_document",
-    label: "Document d'identite",
+    label: "Document d'identité",
   },
   {
     accept: "image/*,.pdf",
@@ -181,7 +181,7 @@ function FileInput({
         {label}
       </span>
       <span className="mt-3 truncate text-xs text-muted-foreground">
-        {file ? file.name : "Aucun fichier selectionne"}
+        {file ? file.name : "Aucun fichier sélectionné"}
       </span>
       <input
         className="sr-only"
@@ -295,15 +295,15 @@ function AgencyCreateContent() {
       })
       toast({
         description: "L'agence est maintenant disponible dans la liste.",
-        title: "Agence creee",
+        title: "Agence créée",
         variant: "success",
       })
       router.push("/dashboard/agencies")
     } catch (caughtError) {
       const fallback =
         currentStep === "address"
-          ? "Creation de l'adresse impossible."
-          : "Creation de l'agence impossible."
+          ? "Création de l'adresse impossible."
+          : "Création de l'agence impossible."
 
       if (caughtError instanceof ApiError) {
         setError(formatApiMessage(caughtError.body, fallback))
@@ -321,25 +321,25 @@ function AgencyCreateContent() {
       title="Nouvelle agence"
       breadcrumbs={[
         { href: "/dashboard/agencies", label: "Agences" },
-        { label: "Creation" },
+        { label: "Création" },
       ]}
     >
       <section className="rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
-              Creation d&apos;agence
+              Création d&apos;agence
             </p>
             <h2 className="mt-1 text-2xl font-semibold">
-              Enregistrer une nouvelle agence immobiliere
+              Enregistrer une nouvelle agence immobilière
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Renseignez les informations publiques, l&apos;adresse associee,
-              les donnees legales et les pieces justificatives avant validation.
+              Renseignez les informations publiques, l&apos;adresse associée,
+              les données légales et les pièces justificatives avant validation.
             </p>
           </div>
           <span className="rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground">
-            Champs obligatoires marques par *
+            Champs obligatoires marqués par *
           </span>
         </div>
       </section>
@@ -361,7 +361,7 @@ function AgencyCreateContent() {
           <Section
             icon={Building2}
             title="Informations publiques"
-            description="Ces informations definissent la presentation de l'agence."
+            description="Ces informations définissent la présentation de l'agence."
           >
             <div className="grid gap-4 md:grid-cols-2">
               <TextField
@@ -381,7 +381,7 @@ function AgencyCreateContent() {
                 placeholder="contact@agence.com"
               />
               <TextField
-                label="Telephone"
+                label="Téléphone"
                 name="phone"
                 value={values.phone}
                 onChange={updateValue}
@@ -404,7 +404,7 @@ function AgencyCreateContent() {
                   id="description"
                   name="description"
                   value={values.description}
-                  placeholder="Presentation courte de l'agence"
+                  placeholder="Présentation courte de l'agence"
                   onChange={(event) =>
                     updateValue("description", event.target.value)
                   }
@@ -415,7 +415,7 @@ function AgencyCreateContent() {
 
           <Section
             icon={ImagePlus}
-            title="Medias"
+            title="Médias"
             description="Ajoutez le logo et l'image de couverture si disponibles."
           >
             <div className="grid gap-4 md:grid-cols-2">
@@ -435,18 +435,18 @@ function AgencyCreateContent() {
           <AddressCreateSection
             ref={addressSectionRef}
             disabled={pending}
-            description="Creez l'adresse qui sera associee a cette agence."
+            description="Créez l'adresse qui sera associée à cette agence."
             onSummaryChange={setAddressSummary}
           />
 
           <Section
             icon={Scale}
-            title="Informations legales"
-            description="Ces donnees facilitent la verification administrative."
+            title="Informations légales"
+            description="Ces données facilitent la vérification administrative."
           >
             <div className="grid gap-4 md:grid-cols-2">
               <TextField
-                label="Nom legal"
+                label="Nom légal"
                 name="legal_name"
                 value={values.legal_name}
                 onChange={updateValue}
@@ -454,7 +454,7 @@ function AgencyCreateContent() {
               />
               <div className="space-y-2">
                 <label className={labelClassName} htmlFor="legal_status">
-                  Statut legal
+                  Statut légal
                 </label>
                 <select
                   className={inputClassName}
@@ -465,7 +465,7 @@ function AgencyCreateContent() {
                     updateValue("legal_status", event.target.value)
                   }
                 >
-                  <option value="">Selectionner</option>
+                  <option value="">Sélectionner</option>
                   {legalStatusOptions.map((item) => (
                     <option key={item.value} value={item.value}>
                       {item.label}
@@ -474,13 +474,13 @@ function AgencyCreateContent() {
                 </select>
               </div>
               <TextField
-                label="Numero RCCM"
+                label="Numéro RCCM"
                 name="rccm_number"
                 value={values.rccm_number}
                 onChange={updateValue}
               />
               <TextField
-                label="Numero fiscal"
+                label="Numéro fiscal"
                 name="tax_number"
                 value={values.tax_number}
                 onChange={updateValue}
@@ -491,7 +491,7 @@ function AgencyCreateContent() {
           <Section
             icon={FileCheck2}
             title="Documents"
-            description="Joignez les pieces utiles pour l'analyse du dossier."
+            description="Joignez les pièces utiles pour l'analyse du dossier."
           >
             <div className="grid gap-4 md:grid-cols-2">
               {fileFields.slice(2).map((item) => (
@@ -511,9 +511,9 @@ function AgencyCreateContent() {
         <aside className="xl:sticky xl:top-20 xl:self-start">
           <div className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
             <div className="border-b border-border p-4">
-              <h2 className="text-base font-semibold">Recapitulatif</h2>
+              <h2 className="text-base font-semibold">Récapitulatif</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Apercu avant validation.
+                Aperçu avant validation.
               </p>
             </div>
             <div className="space-y-4 p-4 text-sm">
@@ -535,7 +535,7 @@ function AgencyCreateContent() {
                   </p>
                 </div>
                 <div className="rounded-md bg-muted p-3">
-                  <p className="text-xs text-muted-foreground">Legal</p>
+                  <p className="text-xs text-muted-foreground">Légal</p>
                   <p className="mt-1 truncate font-medium">
                     {legalStatusLabel(values.legal_status)}
                   </p>
@@ -618,7 +618,7 @@ function AgencyCreateContent() {
 
               <Button className="h-10 w-full" type="submit" disabled={pending}>
                 {pending ? <Loader2 className="animate-spin" /> : <Send />}
-                Creer l&apos;agence
+                Créer l&apos;agence
               </Button>
             </div>
           </div>

@@ -58,7 +58,7 @@ export async function apiFetch<TResponse>(
     const body = await readResponseBody(response)
 
     throw new ApiError(
-      "La requete API a echoue.",
+      "La requête API a échoué.",
       response.status,
       response.statusText,
       body

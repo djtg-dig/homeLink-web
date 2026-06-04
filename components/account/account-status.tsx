@@ -207,7 +207,7 @@ function AccountStatus() {
             className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-destructive transition hover:bg-destructive/10"
           >
             <LogOut className="size-4" />
-            Deconnexion
+            Déconnexion
           </button>
         </div>
       </div>

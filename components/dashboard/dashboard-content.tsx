@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button"
 import { propertyCategories } from "@/lib/property-categories"
 
 const stats = [
-  { label: "Biens publies", value: "0", change: "A configurer" },
-  { label: "Demandes actives", value: "0", change: "A connecter" },
-  { label: "Agences", value: "0", change: "A synchroniser" },
-  { label: "Visites", value: "0", change: "A suivre" },
+  { label: "Biens publiés", value: "0", change: "À configurer" },
+  { label: "Demandes actives", value: "0", change: "À connecter" },
+  { label: "Agences", value: "0", change: "À synchroniser" },
+  { label: "Visites", value: "0", change: "À suivre" },
 ]
 
 const categoryLinks: Partial<Record<string, string>> = {
@@ -34,12 +34,12 @@ function DashboardContent() {
             </p>
             <h2 className="mt-1 text-2xl font-semibold">Dashboard Homelink</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Espace d&apos;administration pour organiser les categories, suivre
-              les publications et preparer les prochains modules de gestion.
+              Espace d&apos;administration pour organiser les catégories, suivre
+              les publications et préparer les prochains modules de gestion.
             </p>
           </div>
           <Button asChild className="w-full xl:w-auto">
-            <Link href="/dashboard/agencies/new">Creer une agence</Link>
+            <Link href="/dashboard/agencies/new">Créer une agence</Link>
           </Button>
         </div>
       </section>
@@ -67,10 +67,10 @@ function DashboardContent() {
         <div className="border-b border-border p-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold">Categories de biens</h2>
+              <h2 className="text-lg font-semibold">Catégories de biens</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Les memes entrees que la navigation principale, avec un espace
-                dedie pour les futurs modules.
+                Les mêmes entrées que la navigation principale, avec un espace
+                dédié pour les futurs modules.
               </p>
             </div>
             <Button asChild variant="outline">
@@ -83,7 +83,7 @@ function DashboardContent() {
           <table className="w-full min-w-[720px] text-sm">
             <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
               <tr>
-                <th className="px-4 py-3 font-medium">Categorie</th>
+                <th className="px-4 py-3 font-medium">Catégorie</th>
                 <th className="px-4 py-3 font-medium">Description</th>
                 <th className="px-4 py-3 font-medium">Statut</th>
                 <th className="px-4 py-3 text-right font-medium">Action</th>
@@ -114,7 +114,7 @@ function DashboardContent() {
                     </td>
                     <td className="px-4 py-4">
                       <span className="rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
-                        {categoryIsAvailable ? "Disponible" : "En preparation"}
+                        {categoryIsAvailable ? "Disponible" : "En préparation"}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-right">
@@ -138,12 +138,12 @@ function DashboardContent() {
 
       <section className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
         <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <h2 className="text-lg font-semibold">Activite recente</h2>
+          <h2 className="text-lg font-semibold">Activité récente</h2>
           <div className="mt-4 space-y-3">
             {[
               "Connexion utilisateur",
               "Chargement du profil",
-              "Dashboard pret",
+              "Dashboard prêt",
             ].map((item) => (
               <div
                 key={item}
@@ -162,7 +162,7 @@ function DashboardContent() {
             <h2 className="text-lg font-semibold">Configuration</h2>
           </div>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Les modules metier pourront etre branches ici au fur et a mesure que
+            Les modules métier pourront être branchés ici au fur et à mesure que
             les endpoints deviennent disponibles.
           </p>
         </article>

@@ -53,7 +53,7 @@ function LoginForm({
       const tokens = extractAuthTokens(body)
 
       if (!tokens) {
-        setError("Connexion reussie, mais aucun token n'a ete renvoye.")
+        setError("Connexion réussie, mais aucun token n'a été renvoyé.")
         return
       }
 
@@ -71,7 +71,7 @@ function LoginForm({
     <form className="mt-6 space-y-4" onSubmit={onSubmit}>
       {registered ? (
         <p className="rounded-md border border-brand-cyan/35 bg-secondary px-3 py-2 text-sm text-secondary-foreground">
-          Inscription reussie. Vous pouvez maintenant vous connecter.
+          Inscription réussie. Vous pouvez maintenant vous connecter.
         </p>
       ) : null}
 

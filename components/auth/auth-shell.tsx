@@ -24,7 +24,7 @@ function AuthShell({
       <section className="grid min-h-svh lg:grid-cols-[0.85fr_1.15fr]">
         <div className="bg-brand-navy px-4 py-5 text-brand-white sm:px-8 lg:flex lg:flex-col lg:justify-between lg:px-10 lg:py-8">
           <div className="flex items-center justify-between gap-4">
-            <Link href="/" aria-label="Retour a l'accueil">
+            <Link href="/" aria-label="Retour à l'accueil">
               <HomelinkLogo
                 priority
                 sizes="(min-width: 640px) 176px, 144px"
@@ -52,7 +52,7 @@ function AuthShell({
               Connecter les bons profils aux bons biens.
             </h1>
             <p className="mt-5 text-sm leading-7 text-white/72">
-              Un acces simple, protege par le proxy serveur, pour commencer a
+              Un accès simple, protégé par le proxy serveur, pour commencer à
               construire les parcours immobiliers de la plateforme.
             </p>
           </div>

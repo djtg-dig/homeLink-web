@@ -11,8 +11,8 @@ export default function RegisterPage() {
   return (
     <AuthShell
       title="Inscription"
-      description="Creez votre compte Homelink pour rejoindre la plateforme."
-      actionText="Vous avez deja un compte ?"
+      description="Créez votre compte Homelink pour rejoindre la plateforme."
+      actionText="Vous avez déjà un compte ?"
       actionLabel="Se connecter"
       actionHref="/login"
     >

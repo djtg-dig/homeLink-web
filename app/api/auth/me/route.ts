@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
           errors: body,
           message: formatApiMessage(
             body,
-            "Impossible de recuperer le profil connecte."
+            "Impossible de récupérer le profil connecté."
           ),
         },
         { status: response.status }

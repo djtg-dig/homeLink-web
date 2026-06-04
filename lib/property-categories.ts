@@ -1,6 +1,6 @@
 export const propertyCategories = [
   {
-    description: "Gerer les agences et leurs portefeuilles.",
+    description: "Gérer les agences et leurs portefeuilles.",
     label: "Agences",
     slug: "agences",
   },
@@ -15,12 +15,12 @@ export const propertyCategories = [
     slug: "bureaux",
   },
   {
-    description: "Piloter les biens hoteliers et leurs informations cles.",
-    label: "Hotels",
+    description: "Piloter les biens hôteliers et leurs informations clés.",
+    label: "Hôtels",
     slug: "hotels",
   },
   {
-    description: "Centraliser les immeubles et leurs lots associes.",
+    description: "Centraliser les immeubles et leurs lots associés.",
     label: "Immeubles",
     slug: "immeubles",
   },
@@ -30,12 +30,12 @@ export const propertyCategories = [
     slug: "kiosques",
   },
   {
-    description: "Gerer les maisons et leurs details de publication.",
+    description: "Gérer les maisons et leurs détails de publication.",
     label: "Maisons",
     slug: "maisons",
   },
   {
-    description: "Referencer les terrains et leurs caracteristiques.",
+    description: "Référencer les terrains et leurs caractéristiques.",
     label: "Terrains",
     slug: "terrains",
   },

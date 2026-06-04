@@ -58,10 +58,10 @@ const legalStatusLabels: Record<string, string> = {
 }
 
 const verificationStatusLabels: Record<string, string> = {
-  approved: "Approuvee",
+  approved: "Approuvée",
   pending: "En attente",
-  rejected: "Rejetee",
-  verified: "Verifiee",
+  rejected: "Rejetée",
+  verified: "Vérifiée",
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -214,7 +214,7 @@ function formatDate(value?: string | null) {
 function createdDateLabel(value?: string | null) {
   const date = formatDate(value)
 
-  return date === "-" ? "Date non disponible" : `Cree le ${date}`
+  return date === "-" ? "Date non disponible" : `Créé le ${date}`
 }
 
 function agencyDisplayName(agency: Agency) {

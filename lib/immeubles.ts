@@ -21,7 +21,7 @@ type ImmeublesResponse =
 const immeubleTypeLabels: Record<string, string> = {
   COM: "Commercial",
   MIX: "Mixte",
-  RES: "Residentiel",
+  RES: "Résidentiel",
 }
 
 function parseImmeubles(response: ImmeublesResponse) {

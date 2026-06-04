@@ -248,7 +248,7 @@ function createdAddressId(response: AddressCreateResponse): string {
     return createdAddressId(response.data)
   }
 
-  throw new Error("L'adresse creee ne contient pas d'identifiant.")
+  throw new Error("L'adresse créée ne contient pas d'identifiant.")
 }
 
 function AddressTextField({
@@ -365,7 +365,7 @@ function CountryComboboxField({
             <Command>
               <CommandInput placeholder="Rechercher un pays..." />
               <CommandList>
-                <CommandEmpty>Aucun pays trouve.</CommandEmpty>
+                <CommandEmpty>Aucun pays trouvé.</CommandEmpty>
                 <CommandGroup>
                   {countries.map((country) => {
                     const countryId = String(country.id)
@@ -479,7 +479,7 @@ const AddressCreateSection = forwardRef<
 >(function AddressCreateSection(
   {
     className,
-    description = "Creez l'adresse a associer au dossier.",
+    description = "Créez l'adresse à associer au dossier.",
     disabled = false,
     onSummaryChange,
     title = "Adresse",
@@ -660,7 +660,7 @@ const AddressCreateSection = forwardRef<
       .catch((caughtError) => {
         if (!isAbortError(caughtError)) {
           setError(
-            toErrorMessage(caughtError, "Impossible de charger les localites.")
+            toErrorMessage(caughtError, "Impossible de charger les localités.")
           )
         }
       })
@@ -694,7 +694,7 @@ const AddressCreateSection = forwardRef<
           setError(
             toErrorMessage(
               caughtError,
-              "Impossible de charger les sous-localites."
+              "Impossible de charger les sous-localités."
             )
           )
         }
@@ -775,12 +775,12 @@ const AddressCreateSection = forwardRef<
             "La division administrative"
           ),
           country: requiredNumericValue(values.country, "Le pays"),
-          locality: requiredNumericValue(values.locality, "La localite"),
+          locality: requiredNumericValue(values.locality, "La localité"),
           postal_code: values.postal_code.trim(),
           street: values.street.trim(),
           sub_locality: requiredNumericValue(
             values.sub_locality,
-            "La sous-localite"
+            "La sous-localité"
           ),
         }
       )
@@ -793,7 +793,7 @@ const AddressCreateSection = forwardRef<
     } catch (caughtError) {
       const message = toErrorMessage(
         caughtError,
-        "Creation de l'adresse impossible."
+        "Création de l'adresse impossible."
       )
 
       setError(message)
@@ -858,7 +858,7 @@ const AddressCreateSection = forwardRef<
           disabled={disabled}
           required
           onChange={updateValue}
-          placeholder="Selectionner un pays"
+          placeholder="Sélectionner un pays"
         />
         <AddressSelectField
           id={`${idPrefix}-administrative-area`}
@@ -871,12 +871,12 @@ const AddressCreateSection = forwardRef<
           required
           onChange={updateValue}
           placeholder={
-            values.country ? "Selectionner une division" : "Choisir un pays"
+            values.country ? "Sélectionner une division" : "Choisir un pays"
           }
         />
         <AddressSelectField
           id={`${idPrefix}-locality`}
-          label="Localite *"
+          label="Localité *"
           name="locality"
           value={values.locality}
           options={localityOptions}
@@ -888,13 +888,13 @@ const AddressCreateSection = forwardRef<
           onChange={updateValue}
           placeholder={
             values.administrative_area
-              ? "Selectionner une localite"
+              ? "Sélectionner une localité"
               : "Choisir une division"
           }
         />
         <AddressSelectField
           id={`${idPrefix}-sub-locality`}
-          label="Sous-localite *"
+          label="Sous-localité *"
           name="sub_locality"
           value={values.sub_locality}
           options={subLocalityOptions}
@@ -909,8 +909,8 @@ const AddressCreateSection = forwardRef<
           onChange={updateValue}
           placeholder={
             values.locality
-              ? "Selectionner une sous-localite"
-              : "Choisir une localite"
+              ? "Sélectionner une sous-localité"
+              : "Choisir une localité"
           }
         />
         <AddressTextField

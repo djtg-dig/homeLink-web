@@ -163,17 +163,17 @@ function AgenciesListContent() {
               Gestion des agences
             </p>
             <h2 className="mt-1 text-2xl font-semibold">
-              Agences immobilieres
+              Agences immobilières
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Retrouvez les agences enregistrees et creez de nouveaux dossiers
-              avec leur adresse associee.
+              Retrouvez les agences enregistrées et créez de nouveaux dossiers
+              avec leur adresse associée.
             </p>
           </div>
           <Button asChild className="h-10 w-full lg:w-auto">
             <Link href="/dashboard/agencies/new">
               <Plus />
-              Creer une agence maintenant
+              Créer une agence maintenant
             </Link>
           </Button>
         </div>
@@ -206,7 +206,7 @@ function AgenciesListContent() {
           <div>
             <h2 className="text-lg font-semibold">Liste des agences</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Suivez les agences ajoutees sur la plateforme.
+              Suivez les agences ajoutées sur la plateforme.
             </p>
           </div>
           <Button
@@ -233,9 +233,9 @@ function AgenciesListContent() {
               <tr>
                 <th className="px-4 py-3 font-medium">Agence</th>
                 <th className="px-4 py-3 font-medium">Contact</th>
-                <th className="px-4 py-3 font-medium">Statut legal</th>
+                <th className="px-4 py-3 font-medium">Statut légal</th>
                 <th className="px-4 py-3 font-medium">Adresse</th>
-                <th className="px-4 py-3 font-medium">Etat</th>
+                <th className="px-4 py-3 font-medium">État</th>
                 <th className="px-4 py-3 text-right font-medium">Action</th>
               </tr>
             </thead>
@@ -253,12 +253,12 @@ function AgenciesListContent() {
                         Aucune agence pour le moment
                       </h3>
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        Creez une premiere agence pour alimenter cette liste.
+                        Créez une première agence pour alimenter cette liste.
                       </p>
                       <Button asChild className="mt-4">
                         <Link href="/dashboard/agencies/new">
                           <Plus />
-                          Creer une agence maintenant
+                          Créer une agence maintenant
                         </Link>
                       </Button>
                     </div>
@@ -320,13 +320,13 @@ function AgenciesListContent() {
                             <Button asChild variant="outline" size="sm">
                               <Link href={agencyDetailPath(agencySlug(agency))}>
                                 <Eye />
-                                Voir les details
+                                Voir les détails
                               </Link>
                             </Button>
                           ) : (
                             <Button variant="outline" size="sm" disabled>
                               <Eye />
-                              Voir les details
+                              Voir les détails
                             </Button>
                           )}
                         </td>

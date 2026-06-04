@@ -76,7 +76,7 @@ function RegisterForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label className={labelClassName} htmlFor="first_name">
-            Prenom
+            Prénom
           </label>
           <input
             className={inputClassName}
@@ -159,7 +159,7 @@ function RegisterForm() {
         disabled={pending}
       >
         {pending ? <Loader2 className="animate-spin" /> : <UserPlus />}
-        Creer un compte
+        Créer un compte
       </Button>
     </form>
   )

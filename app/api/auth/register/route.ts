@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
 
   if (!payload) {
     return NextResponse.json(
-      { errors, message: "Verifier les informations d'inscription." },
+      { errors, message: "Vérifier les informations d'inscription." },
       { status: 400 }
     )
   }
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         data: stripAuthTokens(body),
-        message: "Inscription reussie.",
+        message: "Inscription réussie.",
       },
       { status: response.status === 204 ? 200 : response.status }
     )

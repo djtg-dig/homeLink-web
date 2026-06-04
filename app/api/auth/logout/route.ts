@@ -7,7 +7,7 @@ import {
 } from "@/lib/auth-cookies"
 
 export async function POST() {
-  const response = NextResponse.json({ message: "Deconnexion reussie." })
+  const response = NextResponse.json({ message: "Déconnexion réussie." })
 
   response.cookies.delete(AUTH_ACCESS_TOKEN_COOKIE)
   response.cookies.delete(AUTH_REFRESH_TOKEN_COOKIE)

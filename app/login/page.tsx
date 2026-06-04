@@ -28,9 +28,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthShell
       title="Connexion"
-      description="Accedez a votre espace Homelink avec votre email et votre mot de passe."
+      description="Accédez à votre espace Homelink avec votre email et votre mot de passe."
       actionText="Pas encore de compte ?"
-      actionLabel="Creer un compte"
+      actionLabel="Créer un compte"
       actionHref="/register"
     >
       <LoginForm

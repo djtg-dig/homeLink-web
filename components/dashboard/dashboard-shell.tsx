@@ -152,7 +152,7 @@ function DashboardShellLoading({
 
         <div className="mt-8 rounded-lg border border-white/10 bg-white/8 p-3 text-sm text-white/72">
           <p className="font-medium text-white">Homelink Admin</p>
-          <p className="mt-1 leading-5">Gestion des biens et des categories.</p>
+          <p className="mt-1 leading-5">Gestion des biens et des catégories.</p>
         </div>
       </aside>
       <section className="min-w-0 flex-1">
@@ -313,7 +313,7 @@ function SidebarContent({
 
       <div className="mt-auto rounded-lg border border-white/10 bg-white/8 p-3 text-sm text-white/72">
         <p className="font-medium text-white">Homelink Admin</p>
-        <p className="mt-1 leading-5">Gestion des biens et des categories.</p>
+        <p className="mt-1 leading-5">Gestion des biens et des catégories.</p>
       </div>
     </div>
   )
@@ -573,7 +573,7 @@ function DashboardShell({
                       className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-destructive transition hover:bg-destructive/10"
                     >
                       <LogOut className="size-4" />
-                      Deconnexion
+                      Déconnexion
                     </button>
                   </div>
                 </div>

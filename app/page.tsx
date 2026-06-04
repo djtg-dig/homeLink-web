@@ -10,19 +10,19 @@ const strengths = [
     id: "biens",
     icon: Search,
     label: "Biens clairs",
-    text: "Une recherche lisible pour comparer rapidement les opportunites.",
+    text: "Une recherche lisible pour comparer rapidement les opportunités.",
   },
   {
     id: "connexion",
     icon: Link2,
     label: "Mise en relation",
-    text: "Des contacts directs entre proprietaires, agences et clients.",
+    text: "Des contacts directs entre propriétaires, agences et clients.",
   },
   {
     id: "fiabilite",
     icon: ShieldCheck,
     label: "Parcours fiable",
-    text: "Un socle sobre pour faire evoluer le produit avec confiance.",
+    text: "Un socle sobre pour faire évoluer le produit avec confiance.",
   },
 ]
 
@@ -44,8 +44,8 @@ export default function Page() {
                 Connecter. Simplifier. Vivre mieux.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-                Homelink rapproche les biens, les personnes et les decisions
-                dans une experience immobiliere simple et fluide.
+                Homelink rapproche les biens, les personnes et les décisions
+                dans une expérience immobilière simple et fluide.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -55,7 +55,7 @@ export default function Page() {
                 className="bg-brand-orange text-brand-navy hover:bg-brand-orange/90"
               >
                 <Link href="/register">
-                  Creer un compte
+                  Créer un compte
                   <ArrowRight />
                 </Link>
               </Button>
@@ -110,7 +110,7 @@ export default function Page() {
             </h2>
             <p className="mt-2 text-sm leading-6 text-white/72">
               Homelink pose un cadre simple pour rapprocher l&apos;offre
-              immobiliere et les bons contacts.
+              immobilière et les bons contacts.
             </p>
           </div>
           <Button
@@ -118,7 +118,7 @@ export default function Page() {
             className="w-full bg-brand-orange text-brand-navy hover:bg-brand-orange/90 sm:w-auto"
           >
             <Link href="/register">
-              Demarrer
+              Démarrer
               <ArrowRight />
             </Link>
           </Button>

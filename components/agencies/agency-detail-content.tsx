@@ -326,8 +326,8 @@ function AgencyEditForm({
 
       onUpdated(updatedAgency)
       toast({
-        description: "Les informations de l'agence ont ete mises a jour.",
-        title: "Agence modifiee",
+        description: "Les informations de l'agence ont été mises à jour.",
+        title: "Agence modifiée",
         variant: "success",
       })
     } catch (caughtError) {
@@ -355,7 +355,7 @@ function AgencyEditForm({
         <div>
           <h2 className="text-lg font-semibold">Modifier l&apos;agence</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Mettez a jour les informations principales de cette agence.
+            Mettez à jour les informations principales de cette agence.
           </p>
         </div>
         <Button type="button" variant="outline" onClick={onCancel}>
@@ -386,7 +386,7 @@ function AgencyEditForm({
           onChange={updateValue}
         />
         <Field
-          label="Telephone"
+          label="Téléphone"
           name="phone"
           value={values.phone}
           onChange={updateValue}
@@ -399,14 +399,14 @@ function AgencyEditForm({
           onChange={updateValue}
         />
         <Field
-          label="Nom legal"
+          label="Nom légal"
           name="legal_name"
           value={values.legal_name}
           onChange={updateValue}
         />
         <div className="space-y-2">
           <label className={labelClassName} htmlFor="edit-legal_status">
-            Statut legal
+            Statut légal
           </label>
           <select
             className={inputClassName}
@@ -417,7 +417,7 @@ function AgencyEditForm({
               updateValue("legal_status", event.target.value)
             }
           >
-            <option value="">Selectionner</option>
+            <option value="">Sélectionner</option>
             {legalStatusOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -426,13 +426,13 @@ function AgencyEditForm({
           </select>
         </div>
         <Field
-          label="Numero RCCM"
+          label="Numéro RCCM"
           name="rccm_number"
           value={values.rccm_number}
           onChange={updateValue}
         />
         <Field
-          label="Numero fiscal"
+          label="Numéro fiscal"
           name="tax_number"
           value={values.tax_number}
           onChange={updateValue}
@@ -550,10 +550,10 @@ function AgencyDetailContent({ slug }: { slug: string }) {
 
   return (
     <DashboardShell
-      title={agency ? agencyDisplayName(agency) : "Details agence"}
+      title={agency ? agencyDisplayName(agency) : "Détails agence"}
       breadcrumbs={[
         { href: "/dashboard/agencies", label: "Agences" },
-        { label: "Details" },
+        { label: "Détails" },
       ]}
     >
       {loading ? <AgencyDetailSkeleton /> : null}
@@ -571,7 +571,7 @@ function AgencyDetailContent({ slug }: { slug: string }) {
             </Button>
             <Button type="button" onClick={reloadAgency}>
               <RefreshCw />
-              Reessayer
+              Réessayer
             </Button>
           </div>
         </section>
@@ -601,7 +601,7 @@ function AgencyDetailContent({ slug }: { slug: string }) {
                       "Aucune description pour cette agence."}
                   </p>
                   <p className="mt-3 text-sm text-muted-foreground">
-                    Derniere mise a jour : {formatDate(agency.updated_at)}
+                    Dernière mise à jour : {formatDate(agency.updated_at)}
                   </p>
                 </div>
               </div>
@@ -641,18 +641,18 @@ function AgencyDetailContent({ slug }: { slug: string }) {
                   label="Division administrative"
                   value={agency.administrative_area}
                 />
-                <DetailRow label="Localite" value={agency.locality} />
-                <DetailRow label="Sous-localite" value={agency.sub_locality} />
+                <DetailRow label="Localité" value={agency.locality} />
+                <DetailRow label="Sous-localité" value={agency.sub_locality} />
               </InfoCard>
 
-              <InfoCard icon={ShieldCheck} title="Informations legales">
-                <DetailRow label="Nom legal" value={agency.legal_name} />
+              <InfoCard icon={ShieldCheck} title="Informations légales">
+                <DetailRow label="Nom légal" value={agency.legal_name} />
                 <DetailRow
-                  label="Statut legal"
+                  label="Statut légal"
                   value={legalStatusLabel(agency.legal_status)}
                 />
-                <DetailRow label="Numero RCCM" value={agency.rccm_number} />
-                <DetailRow label="Numero fiscal" value={agency.tax_number} />
+                <DetailRow label="Numéro RCCM" value={agency.rccm_number} />
+                <DetailRow label="Numéro fiscal" value={agency.tax_number} />
               </InfoCard>
             </div>
 
@@ -675,7 +675,7 @@ function AgencyDetailContent({ slug }: { slug: string }) {
                   }
                 />
                 <DetailRow
-                  label="Telephone"
+                  label="Téléphone"
                   value={
                     agency.phone ? (
                       <a
@@ -710,9 +710,9 @@ function AgencyDetailContent({ slug }: { slug: string }) {
                 />
               </InfoCard>
 
-              <InfoCard icon={BadgeCheck} title="Verification">
+              <InfoCard icon={BadgeCheck} title="Vérification">
                 <DetailRow
-                  label="Agence verifiee"
+                  label="Agence vérifiée"
                   value={yesNoLabel(agency.is_verified)}
                 />
                 <DetailRow
@@ -720,7 +720,7 @@ function AgencyDetailContent({ slug }: { slug: string }) {
                   value={verificationStatusLabel(agency.verification_status)}
                 />
                 <DetailRow
-                  label="Verification le"
+                  label="Vérification le"
                   value={formatDate(agency.verified_at)}
                 />
                 <DetailRow
@@ -733,7 +733,7 @@ function AgencyDetailContent({ slug }: { slug: string }) {
                 <DetailRow label="Nom" value={agencyOwnerName(agency.owner)} />
                 <DetailRow label="Email" value={agency.owner?.email} />
                 <DetailRow
-                  label="Telephone"
+                  label="Téléphone"
                   value={agency.owner?.phone_number}
                 />
               </InfoCard>
@@ -742,7 +742,7 @@ function AgencyDetailContent({ slug }: { slug: string }) {
 
           <InfoCard icon={FileText} title="Documents">
             <DocumentLink
-              label="Document d'identite"
+              label="Document d'identité"
               value={agency.national_id_document}
             />
             <DocumentLink

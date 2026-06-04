@@ -37,7 +37,7 @@ const initialValues: ImmeubleFormValues = {
 }
 
 const typeOptions = [
-  { label: "Residentiel", value: "RES" },
+  { label: "Résidentiel", value: "RES" },
   { label: "Mixte", value: "MIX" },
   { label: "Commercial", value: "COM" },
 ]
@@ -60,7 +60,7 @@ function requiredPositiveInteger(value: string, label: string) {
   const nextValue = requiredText(value, label)
 
   if (!/^\d+$/.test(nextValue) || Number(nextValue) <= 0) {
-    throw new Error(`${label} doit etre un nombre entier positif.`)
+    throw new Error(`${label} doit être un nombre entier positif.`)
   }
 
   return Number(nextValue)
@@ -146,7 +146,7 @@ function ImmeubleCreateContent() {
       nom: requiredText(values.nom, "Le nom"),
       nombre_etages: requiredPositiveInteger(
         values.nombre_etages,
-        "Le nombre d'etages"
+        "Le nombre d'étages"
       ),
       piscine: values.piscine,
       type_immeuble: values.type_immeuble,
@@ -164,19 +164,19 @@ function ImmeubleCreateContent() {
       await apiPostJson<unknown>("/api/immovables/immeubles/", payload)
       toast({
         description:
-          "L'immeuble peut maintenant etre selectionne pour un appartement.",
-        title: "Immeuble cree",
+          "L'immeuble peut maintenant être sélectionné pour un appartement.",
+        title: "Immeuble créé",
         variant: "success",
       })
       router.push("/dashboard/immeubles")
     } catch (caughtError) {
       if (caughtError instanceof ApiError) {
-        setError(formatApiMessage(caughtError.body, "Creation impossible."))
+        setError(formatApiMessage(caughtError.body, "Création impossible."))
       } else {
         setError(
           caughtError instanceof Error
             ? caughtError.message
-            : "Creation impossible."
+            : "Création impossible."
         )
       }
     } finally {
@@ -189,25 +189,25 @@ function ImmeubleCreateContent() {
       title="Nouvel immeuble"
       breadcrumbs={[
         { href: "/dashboard/immeubles", label: "Immeubles" },
-        { label: "Creation" },
+        { label: "Création" },
       ]}
     >
       <section className="rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
-              Creation d&apos;immeuble
+              Création d&apos;immeuble
             </p>
             <h2 className="mt-1 text-2xl font-semibold">
               Enregistrer un immeuble
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Creez l&apos;immeuble avant de rattacher des appartements a ses
-              etages.
+              Créez l&apos;immeuble avant de rattacher des appartements à ses
+              étages.
             </p>
           </div>
           <span className="rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground">
-            Champs obligatoires marques par *
+            Champs obligatoires marqués par *
           </span>
         </div>
       </section>
@@ -224,7 +224,7 @@ function ImmeubleCreateContent() {
             <div>
               <h2 className="text-base font-semibold">Informations</h2>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Donnees necessaires pour selectionner cet immeuble dans un
+                Données nécessaires pour sélectionner cet immeuble dans un
                 appartement.
               </p>
             </div>
@@ -242,7 +242,7 @@ function ImmeubleCreateContent() {
               name="nom"
               value={values.nom}
               required
-              placeholder="Residence Maman Yemo"
+              placeholder="Résidence Maman Yemo"
               onChange={updateValue}
             />
             <div className="space-y-2">
@@ -268,7 +268,7 @@ function ImmeubleCreateContent() {
               </Select>
             </div>
             <TextField
-              label="Nombre d'etages *"
+              label="Nombre d'étages *"
               name="nombre_etages"
               value={values.nombre_etages}
               inputMode="numeric"
@@ -299,9 +299,9 @@ function ImmeubleCreateContent() {
         <aside className="xl:sticky xl:top-20 xl:self-start">
           <div className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
             <div className="border-b border-border p-4">
-              <h2 className="text-base font-semibold">Recapitulatif</h2>
+              <h2 className="text-base font-semibold">Récapitulatif</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Apercu avant validation.
+                Aperçu avant validation.
               </p>
             </div>
             <div className="space-y-4 p-4 text-sm">
@@ -315,14 +315,14 @@ function ImmeubleCreateContent() {
                 </p>
               </div>
               <div className="rounded-md bg-muted p-3">
-                <p className="text-xs text-muted-foreground">Etages</p>
+                <p className="text-xs text-muted-foreground">Étages</p>
                 <p className="mt-1 font-medium">
                   {values.nombre_etages.trim() || "-"}
                 </p>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground uppercase">
-                  Equipements
+                  Équipements
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {[
@@ -344,7 +344,7 @@ function ImmeubleCreateContent() {
               </div>
               <Button className="h-10 w-full" type="submit" disabled={pending}>
                 {pending ? <Loader2 className="animate-spin" /> : <Save />}
-                Creer l&apos;immeuble
+                Créer l&apos;immeuble
               </Button>
             </div>
           </div>

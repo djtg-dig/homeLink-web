@@ -57,7 +57,7 @@ function SiteHeader() {
         <AccountStatus />
       </div>
       <nav
-        aria-label="Categories de biens"
+        aria-label="Catégories de biens"
         className="border-t border-white/10"
       >
         <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2 sm:px-8 lg:px-10">

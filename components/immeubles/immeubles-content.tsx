@@ -47,7 +47,7 @@ type ImmeubleFormValues = {
 }
 
 const typeOptions = [
-  { label: "Residentiel", value: "RES" },
+  { label: "Résidentiel", value: "RES" },
   { label: "Mixte", value: "MIX" },
   { label: "Commercial", value: "COM" },
 ]
@@ -70,7 +70,7 @@ function requiredPositiveInteger(value: string, label: string) {
   const nextValue = requiredText(value, label)
 
   if (!/^\d+$/.test(nextValue) || Number(nextValue) <= 0) {
-    throw new Error(`${label} doit etre un nombre entier positif.`)
+    throw new Error(`${label} doit être un nombre entier positif.`)
   }
 
   return Number(nextValue)
@@ -97,7 +97,7 @@ function buildImmeublePayload(values: ImmeubleFormValues) {
     nom: requiredText(values.nom, "Le nom"),
     nombre_etages: requiredPositiveInteger(
       values.nombre_etages,
-      "Le nombre d'etages"
+      "Le nombre d'étages"
     ),
     piscine: values.piscine,
     type_immeuble: values.type_immeuble,
@@ -267,8 +267,8 @@ function ImmeubleEditDialog({
         ...(updatedImmeuble ?? {}),
       })
       toast({
-        description: "Les informations de l'immeuble ont ete mises a jour.",
-        title: "Immeuble modifie",
+        description: "Les informations de l'immeuble ont été mises à jour.",
+        title: "Immeuble modifié",
         variant: "success",
       })
     } catch (caughtError) {
@@ -332,7 +332,7 @@ function ImmeubleEditDialog({
               name="nom"
               value={values.nom}
               required
-              placeholder="Residence Maman Yemo"
+              placeholder="Résidence Maman Yemo"
               onChange={updateValue}
             />
             <div className="space-y-2">
@@ -358,7 +358,7 @@ function ImmeubleEditDialog({
               </Select>
             </div>
             <TextField
-              label="Nombre d'etages *"
+              label="Nombre d'étages *"
               name="nombre_etages"
               value={values.nombre_etages}
               inputMode="numeric"
@@ -490,14 +490,14 @@ function ImmeublesContent() {
               </p>
               <h2 className="mt-1 text-2xl font-semibold">Immeubles</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Creez les immeubles qui pourront ensuite etre associes aux
+                Créez les immeubles qui pourront ensuite être associés aux
                 appartements.
               </p>
             </div>
             <Button asChild className="h-10 w-full lg:w-auto">
               <Link href="/dashboard/immeubles/new">
                 <Plus />
-                Creer un immeuble
+                Créer un immeuble
               </Link>
             </Button>
           </div>
@@ -515,7 +515,7 @@ function ImmeublesContent() {
           <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
             <p className="text-sm text-muted-foreground">Usage</p>
             <p className="mt-3 text-sm font-medium">
-              Selection obligatoire lors de la creation d&apos;un appartement.
+              Sélection obligatoire lors de la création d&apos;un appartement.
             </p>
           </article>
         </section>
@@ -525,7 +525,7 @@ function ImmeublesContent() {
             <div>
               <h2 className="text-lg font-semibold">Liste des immeubles</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Selectionnez ou creez les immeubles disponibles pour les
+                Sélectionnez ou créez les immeubles disponibles pour les
                 appartements.
               </p>
             </div>
@@ -553,8 +553,8 @@ function ImmeublesContent() {
                 <tr>
                   <th className="px-4 py-3 font-medium">Immeuble</th>
                   <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Etages</th>
-                  <th className="px-4 py-3 font-medium">Equipements</th>
+                  <th className="px-4 py-3 font-medium">Étages</th>
+                  <th className="px-4 py-3 font-medium">Équipements</th>
                   <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
@@ -572,13 +572,13 @@ function ImmeublesContent() {
                           Aucun immeuble pour le moment
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                          Creez un immeuble pour pouvoir l&apos;associer a un
+                          Créez un immeuble pour pouvoir l&apos;associer à un
                           appartement.
                         </p>
                         <Button asChild className="mt-4">
                           <Link href="/dashboard/immeubles/new">
                             <Plus />
-                            Creer un immeuble
+                            Créer un immeuble
                           </Link>
                         </Button>
                       </div>

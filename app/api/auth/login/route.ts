@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
   if (!payload) {
     return NextResponse.json(
-      { errors, message: "Verifier les informations de connexion." },
+      { errors, message: "Vérifier les informations de connexion." },
       { status: 400 }
     )
   }
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     if (!tokens) {
       return NextResponse.json(
-        { message: "Connexion acceptee, mais aucun token n'a ete renvoye." },
+        { message: "Connexion acceptée, mais aucun token n'a été renvoyé." },
         { status: 502 }
       )
     }

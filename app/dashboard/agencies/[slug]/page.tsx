@@ -9,7 +9,7 @@ type AgencyDetailPageProps = {
 }
 
 export const metadata: Metadata = {
-  title: "Details agence | Homelink",
+  title: "Détails agence | Homelink",
 }
 
 export default async function AgencyDetailPage({
