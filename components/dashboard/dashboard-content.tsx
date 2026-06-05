@@ -23,6 +23,7 @@ const categoryLinks: Partial<Record<string, string>> = {
   bureaux: "/dashboard/bureaux",
   hotels: "/dashboard/hotels",
   immeubles: "/dashboard/immeubles",
+  kiosques: "/dashboard/kiosques",
 }
 
 function DashboardContent() {
@@ -165,7 +166,7 @@ function DashboardContent() {
           </div>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
             Les modules métier pourront être branchés ici au fur et à mesure que
-            les endpoints deviennent disponibles.
+            les services deviennent disponibles.
           </p>
         </article>
       </section>

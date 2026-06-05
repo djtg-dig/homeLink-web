@@ -84,6 +84,10 @@ function categoryHref(item: PropertyCategory) {
     return "/dashboard/immeubles"
   }
 
+  if (item.slug === "kiosques") {
+    return "/dashboard/kiosques"
+  }
+
   return `/dashboard#${item.slug}`
 }
 
@@ -95,6 +99,7 @@ const categoryPathPrefixes: Partial<
   bureaux: ["/dashboard/bureaux"],
   hotels: ["/dashboard/hotels"],
   immeubles: ["/dashboard/immeubles"],
+  kiosques: ["/dashboard/kiosques"],
 }
 
 function isCategoryActive(item: PropertyCategory, pathname: string) {
