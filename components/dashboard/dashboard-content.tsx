@@ -21,6 +21,7 @@ const categoryLinks: Partial<Record<string, string>> = {
   agences: "/dashboard/agencies",
   appartements: "/dashboard/appartements",
   bureaux: "/dashboard/bureaux",
+  hotels: "/dashboard/hotels",
   immeubles: "/dashboard/immeubles",
 }
 
