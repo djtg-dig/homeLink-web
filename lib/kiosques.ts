@@ -77,7 +77,12 @@ const transactionLabels: Record<string, string> = {
 }
 
 const kiosqueTypeLabels: Record<string, string> = {
+  alimentaire: "Alimentaire",
+  autre: "Autre",
+  boutique: "Boutique",
   mobile_money: "Mobile money",
+  presse: "Presse",
+  service: "Service",
 }
 
 function parseKiosques(response: KiosquesResponse) {

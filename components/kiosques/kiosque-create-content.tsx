@@ -96,7 +96,14 @@ const transactionOptions = [
   { label: "Vente", value: "vente" },
 ]
 
-const kiosqueTypeOptions = [{ label: "Mobile money", value: "mobile_money" }]
+const kiosqueTypeOptions = [
+  { label: "Alimentaire", value: "alimentaire" },
+  { label: "Presse", value: "presse" },
+  { label: "Service", value: "service" },
+  { label: "Mobile money", value: "mobile_money" },
+  { label: "Boutique", value: "boutique" },
+  { label: "Autre", value: "autre" },
+]
 
 const equipmentFields: Array<{
   label: string
