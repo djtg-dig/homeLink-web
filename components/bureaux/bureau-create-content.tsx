@@ -45,7 +45,6 @@ type BureauFormValues = {
   alarm: boolean
   area: string
   available_from: string
-  batiment: string
   charges: string
   condition: string
   deposit_months: string
@@ -95,7 +94,6 @@ const initialValues: BureauFormValues = {
   alarm: false,
   area: "",
   available_from: "",
-  batiment: "",
   charges: "",
   condition: "neuf",
   deposit_months: "",
@@ -530,7 +528,6 @@ function BureauCreateContent() {
       "network_ports",
       "minimum_lease_months",
       "deposit_months",
-      "batiment",
     ]
 
     integerFields.forEach((field) => {
@@ -850,13 +847,6 @@ function BureauCreateContent() {
                 label="Capacité recommandée"
                 name="recommended_capacity"
                 value={values.recommended_capacity}
-                inputMode="numeric"
-                onChange={updateValue}
-              />
-              <TextField
-                label="Bâtiment"
-                name="batiment"
-                value={values.batiment}
                 inputMode="numeric"
                 onChange={updateValue}
               />
