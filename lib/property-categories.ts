@@ -39,6 +39,11 @@ export const propertyCategories = [
     label: "Terrains",
     slug: "terrains",
   },
+  {
+    description: "Gérer les salles destinées aux événements.",
+    label: "Salles événement",
+    slug: "salles-evenement",
+  },
 ] as const
 
 export type PropertyCategory = (typeof propertyCategories)[number]

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
   Building2,
+  CalendarDays,
   ChevronDown,
   ChevronRight,
   Home,
@@ -47,6 +48,7 @@ const categoryIcons: Record<PropertyCategory["slug"], LucideIcon> = {
   immeubles: Building2,
   kiosques: Store,
   maisons: House,
+  "salles-evenement": CalendarDays,
   terrains: Map,
 }
 
@@ -96,6 +98,10 @@ function categoryHref(item: PropertyCategory) {
     return "/dashboard/terrains"
   }
 
+  if (item.slug === "salles-evenement") {
+    return "/dashboard/salles-evenement"
+  }
+
   return "/dashboard"
 }
 
@@ -109,6 +115,7 @@ const categoryPathPrefixes: Partial<
   immeubles: ["/dashboard/immeubles"],
   kiosques: ["/dashboard/kiosques"],
   maisons: ["/dashboard/maisons"],
+  "salles-evenement": ["/dashboard/salles-evenement"],
   terrains: ["/dashboard/terrains"],
 }
 
