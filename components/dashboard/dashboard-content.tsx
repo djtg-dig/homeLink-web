@@ -25,6 +25,7 @@ const categoryLinks: Partial<Record<string, string>> = {
   immeubles: "/dashboard/immeubles",
   kiosques: "/dashboard/kiosques",
   maisons: "/dashboard/maisons",
+  terrains: "/dashboard/terrains",
 }
 
 function DashboardContent() {

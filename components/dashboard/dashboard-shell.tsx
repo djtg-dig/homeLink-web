@@ -92,7 +92,11 @@ function categoryHref(item: PropertyCategory) {
     return "/dashboard/maisons"
   }
 
-  return `/dashboard#${item.slug}`
+  if (item.slug === "terrains") {
+    return "/dashboard/terrains"
+  }
+
+  return "/dashboard"
 }
 
 const categoryPathPrefixes: Partial<
@@ -105,6 +109,7 @@ const categoryPathPrefixes: Partial<
   immeubles: ["/dashboard/immeubles"],
   kiosques: ["/dashboard/kiosques"],
   maisons: ["/dashboard/maisons"],
+  terrains: ["/dashboard/terrains"],
 }
 
 function isCategoryActive(item: PropertyCategory, pathname: string) {
