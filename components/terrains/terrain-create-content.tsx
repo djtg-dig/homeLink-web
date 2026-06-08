@@ -131,10 +131,30 @@ function requiredText(value: string, label: string) {
   return nextValue
 }
 
-function optionalText(value: string) {
+function parseDecimalText(value: string, label: string) {
+  const nextValue = value.trim().replace(",", ".")
+
+  if (!/^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(nextValue)) {
+    throw new Error(`${label} doit être un nombre valide.`)
+  }
+
+  const parsed = Number(nextValue)
+
+  if (!Number.isFinite(parsed)) {
+    throw new Error(`${label} doit être un nombre valide.`)
+  }
+
+  return nextValue
+}
+
+function requiredDecimalText(value: string, label: string) {
+  return parseDecimalText(requiredText(value, label), label)
+}
+
+function optionalDecimalText(value: string, label: string) {
   const nextValue = value.trim()
 
-  return nextValue || undefined
+  return nextValue ? parseDecimalText(nextValue, label) : undefined
 }
 
 function fieldValue(value: string) {
@@ -361,22 +381,22 @@ function TerrainCreateContent() {
 
     const address = addressSectionRef.current.getAddressPayload()
     const title = requiredText(values.title, "Le titre")
-    const surfaceTotale = requiredText(
+    const surfaceTotale = requiredDecimalText(
       values.surface_totale,
       "La surface totale"
     )
-    const surfaceHabitable = requiredText(
+    const surfaceHabitable = requiredDecimalText(
       values.surface_habitable,
       "La surface exploitable"
     )
-    const surfaceTerrain = requiredText(
+    const surfaceTerrain = requiredDecimalText(
       values.surface_terrain,
       "La surface du terrain"
     )
     const price =
       values.type_transaction === "vente"
-        ? requiredText(values.prix_vente, "Le prix de vente")
-        : requiredText(
+        ? requiredDecimalText(values.prix_vente, "Le prix de vente")
+        : requiredDecimalText(
             values.prix_location_mensuel,
             "Le prix de location mensuel"
           )
@@ -392,11 +412,14 @@ function TerrainCreateContent() {
       prix_location_mensuel:
         values.type_transaction === "location"
           ? price
-          : optionalText(values.prix_location_mensuel),
+          : optionalDecimalText(
+              values.prix_location_mensuel,
+              "Le prix de location mensuel"
+            ),
       prix_vente:
         values.type_transaction === "vente"
           ? price
-          : optionalText(values.prix_vente),
+          : optionalDecimalText(values.prix_vente, "Le prix de vente"),
       statut: values.statut,
       surface_habitable: surfaceHabitable,
       surface_totale: surfaceTotale,
