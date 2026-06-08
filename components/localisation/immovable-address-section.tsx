@@ -24,13 +24,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ApiError, apiFetch } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
@@ -411,8 +404,9 @@ function CountryCombobox({
   )
 }
 
-function SelectField({
+function ComboboxField({
   disabled,
+  emptyLabel = "Aucun résultat trouvé.",
   id,
   label,
   loading,
@@ -420,9 +414,11 @@ function SelectField({
   onChange,
   options,
   placeholder,
+  searchPlaceholder = "Rechercher...",
   value,
 }: {
   disabled?: boolean
+  emptyLabel?: string
   id: string
   label: string
   loading?: boolean
@@ -430,8 +426,12 @@ function SelectField({
   onChange: (name: keyof ImmovableAddressValues, value: string) => void
   options: Array<{ label: string; meta?: string; value: string }>
   placeholder: string
+  searchPlaceholder?: string
   value: string
 }) {
+  const [open, setOpen] = useState(false)
+  const selectedOption = options.find((option) => option.value === value)
+
   return (
     <div className="space-y-2">
       <label className={labelClassName} htmlFor={id}>
@@ -440,27 +440,78 @@ function SelectField({
       {loading ? (
         <Skeleton className="h-10 w-full" />
       ) : (
-        <Select
-          value={value}
-          disabled={disabled}
-          onValueChange={(nextValue) => onChange(name, nextValue)}
-        >
-          <SelectTrigger id={id} className="h-10 w-full rounded-md">
-            <SelectValue placeholder={placeholder} />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                <span className="min-w-0 truncate">{option.label}</span>
-                {option.meta ? (
-                  <span className="text-xs text-muted-foreground">
-                    {option.meta}
-                  </span>
-                ) : null}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              id={id}
+              type="button"
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              aria-required
+              disabled={disabled}
+              className="h-10 w-full justify-between rounded-md px-3 font-normal"
+            >
+              {selectedOption ? (
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate">{selectedOption.label}</span>
+                  {selectedOption.meta ? (
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {selectedOption.meta}
+                    </span>
+                  ) : null}
+                </span>
+              ) : (
+                <span className="truncate text-muted-foreground">
+                  {placeholder}
+                </span>
+              )}
+              <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="start"
+            className="w-(--radix-popover-trigger-width) p-0"
+          >
+            <Command>
+              <CommandInput placeholder={searchPlaceholder} />
+              <CommandList>
+                <CommandEmpty>{emptyLabel}</CommandEmpty>
+                <CommandGroup>
+                  {options.map((option) => {
+                    const selected = option.value === value
+
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        value={`${option.label} ${option.meta ?? ""}`}
+                        onSelect={() => {
+                          onChange(name, option.value)
+                          setOpen(false)
+                        }}
+                      >
+                        <span className="min-w-0 flex-1 truncate">
+                          {option.label}
+                        </span>
+                        {option.meta ? (
+                          <span className="text-xs text-muted-foreground">
+                            {option.meta}
+                          </span>
+                        ) : null}
+                        <Check
+                          className={cn(
+                            "size-4 shrink-0",
+                            selected ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    )
+                  })}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       )}
     </div>
   )
@@ -798,38 +849,54 @@ const ImmovableAddressSection = forwardRef<
           value={values.country}
           onChange={updateValue}
         />
-        <SelectField
+        <ComboboxField
           id={`${idPrefix}-administrative-area`}
           label="Division administrative *"
           name="administrative_area"
           value={values.administrative_area}
           options={administrativeAreaOptions}
-          placeholder="Sélectionner"
+          placeholder={
+            values.country ? "Sélectionner une division" : "Choisir un pays"
+          }
           disabled={disabled || !values.country}
           loading={loadingAdministrativeAreas}
           onChange={updateValue}
+          searchPlaceholder="Rechercher une division..."
+          emptyLabel="Aucune division trouvée."
         />
-        <SelectField
+        <ComboboxField
           id={`${idPrefix}-locality`}
           label="Localité *"
           name="locality"
           value={values.locality}
           options={localityOptions}
-          placeholder="Sélectionner"
+          placeholder={
+            values.administrative_area
+              ? "Sélectionner une localité"
+              : "Choisir une division"
+          }
           disabled={disabled || !values.administrative_area}
           loading={loadingLocalities}
           onChange={updateValue}
+          searchPlaceholder="Rechercher une localité..."
+          emptyLabel="Aucune localité trouvée."
         />
-        <SelectField
+        <ComboboxField
           id={`${idPrefix}-sub-locality`}
           label="Sous-localité *"
           name="sub_locality"
           value={values.sub_locality}
           options={subLocalityOptions}
-          placeholder="Sélectionner"
+          placeholder={
+            values.locality
+              ? "Sélectionner une sous-localité"
+              : "Choisir une localité"
+          }
           disabled={disabled || !values.locality}
           loading={loadingSubLocalities}
           onChange={updateValue}
+          searchPlaceholder="Rechercher une sous-localité..."
+          emptyLabel="Aucune sous-localité trouvée."
         />
         <TextField
           id={`${idPrefix}-street`}

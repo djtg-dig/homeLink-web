@@ -25,13 +25,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ApiError, apiFetch, apiPostJson } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
@@ -415,8 +408,9 @@ function CountryComboboxField({
   )
 }
 
-function AddressSelectField({
+function AddressComboboxField({
   disabled,
+  emptyLabel = "Aucun résultat trouvé.",
   id,
   label,
   loading,
@@ -425,9 +419,11 @@ function AddressSelectField({
   options,
   placeholder,
   required,
+  searchPlaceholder = "Rechercher...",
   value,
 }: {
   disabled?: boolean
+  emptyLabel?: string
   id: string
   label: string
   loading?: boolean
@@ -436,8 +432,12 @@ function AddressSelectField({
   options: Array<{ label: string; meta?: string; value: string }>
   placeholder: string
   required?: boolean
+  searchPlaceholder?: string
   value: string
 }) {
+  const [open, setOpen] = useState(false)
+  const selectedOption = options.find((option) => option.value === value)
+
   return (
     <div className="space-y-2">
       <label className={labelClassName} htmlFor={id}>
@@ -446,28 +446,78 @@ function AddressSelectField({
       {loading ? (
         <Skeleton className="h-10 w-full" />
       ) : (
-        <Select
-          value={value}
-          disabled={disabled}
-          required={required}
-          onValueChange={(nextValue) => onChange(name, nextValue)}
-        >
-          <SelectTrigger id={id} className="h-10 w-full rounded-md">
-            <SelectValue placeholder={placeholder} />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                <span className="min-w-0 truncate">{option.label}</span>
-                {option.meta ? (
-                  <span className="text-xs text-muted-foreground">
-                    {option.meta}
-                  </span>
-                ) : null}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              id={id}
+              type="button"
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              aria-required={required}
+              disabled={disabled}
+              className="h-10 w-full justify-between rounded-md px-3 font-normal"
+            >
+              {selectedOption ? (
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate">{selectedOption.label}</span>
+                  {selectedOption.meta ? (
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {selectedOption.meta}
+                    </span>
+                  ) : null}
+                </span>
+              ) : (
+                <span className="truncate text-muted-foreground">
+                  {placeholder}
+                </span>
+              )}
+              <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="start"
+            className="w-(--radix-popover-trigger-width) p-0"
+          >
+            <Command>
+              <CommandInput placeholder={searchPlaceholder} />
+              <CommandList>
+                <CommandEmpty>{emptyLabel}</CommandEmpty>
+                <CommandGroup>
+                  {options.map((option) => {
+                    const selected = option.value === value
+
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        value={`${option.label} ${option.meta ?? ""}`}
+                        onSelect={() => {
+                          onChange(name, option.value)
+                          setOpen(false)
+                        }}
+                      >
+                        <span className="min-w-0 flex-1 truncate">
+                          {option.label}
+                        </span>
+                        {option.meta ? (
+                          <span className="text-xs text-muted-foreground">
+                            {option.meta}
+                          </span>
+                        ) : null}
+                        <Check
+                          className={cn(
+                            "size-4 shrink-0",
+                            selected ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    )
+                  })}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       )}
     </div>
   )
@@ -860,7 +910,7 @@ const AddressCreateSection = forwardRef<
           onChange={updateValue}
           placeholder="Sélectionner un pays"
         />
-        <AddressSelectField
+        <AddressComboboxField
           id={`${idPrefix}-administrative-area`}
           label="Division administrative *"
           name="administrative_area"
@@ -873,8 +923,10 @@ const AddressCreateSection = forwardRef<
           placeholder={
             values.country ? "Sélectionner une division" : "Choisir un pays"
           }
+          searchPlaceholder="Rechercher une division..."
+          emptyLabel="Aucune division trouvée."
         />
-        <AddressSelectField
+        <AddressComboboxField
           id={`${idPrefix}-locality`}
           label="Localité *"
           name="locality"
@@ -891,8 +943,10 @@ const AddressCreateSection = forwardRef<
               ? "Sélectionner une localité"
               : "Choisir une division"
           }
+          searchPlaceholder="Rechercher une localité..."
+          emptyLabel="Aucune localité trouvée."
         />
-        <AddressSelectField
+        <AddressComboboxField
           id={`${idPrefix}-sub-locality`}
           label="Sous-localité *"
           name="sub_locality"
@@ -912,6 +966,8 @@ const AddressCreateSection = forwardRef<
               ? "Sélectionner une sous-localité"
               : "Choisir une localité"
           }
+          searchPlaceholder="Rechercher une sous-localité..."
+          emptyLabel="Aucune sous-localité trouvée."
         />
         <AddressTextField
           id={`${idPrefix}-street`}
