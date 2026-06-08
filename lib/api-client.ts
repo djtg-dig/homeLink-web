@@ -2,6 +2,12 @@ import { readResponseBody } from "@/lib/api-errors"
 import { getStoredAuthorizationHeader } from "@/lib/auth-storage"
 
 const API_PROXY_PREFIX = "/api/proxy"
+const NETWORK_ERROR_EVENT_NAME = "homelink:network-error"
+const NETWORK_ERROR_STATUSES = new Set([502, 503, 504])
+
+type NetworkErrorEventDetail = {
+  message: string
+}
 
 export class ApiError extends Error {
   constructor(
@@ -13,6 +19,25 @@ export class ApiError extends Error {
     super(message)
     this.name = "ApiError"
   }
+}
+
+export class ApiNetworkError extends Error {
+  constructor(message = "Connexion indisponible.") {
+    super(message)
+    this.name = "ApiNetworkError"
+  }
+}
+
+function dispatchNetworkError(message: string) {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  window.dispatchEvent(
+    new CustomEvent<NetworkErrorEventDetail>(NETWORK_ERROR_EVENT_NAME, {
+      detail: { message },
+    })
+  )
 }
 
 export function apiUrl(path = "") {
@@ -49,13 +74,34 @@ export async function apiFetch<TResponse>(
     }
   }
 
-  const response = await fetch(apiUrl(path), {
-    ...init,
-    headers,
-  })
+  let response: Response
+
+  try {
+    response = await fetch(apiUrl(path), {
+      ...init,
+      headers,
+    })
+  } catch (caughtError) {
+    if (init?.signal?.aborted) {
+      throw caughtError
+    }
+
+    const message =
+      "Votre connexion semble interrompue. Vérifiez le réseau puis réessayez."
+
+    dispatchNetworkError(message)
+
+    throw new ApiNetworkError(message)
+  }
 
   if (!response.ok) {
     const body = await readResponseBody(response)
+
+    if (NETWORK_ERROR_STATUSES.has(response.status)) {
+      dispatchNetworkError(
+        "Le service ne répond pas pour le moment. Réessayez dans un instant."
+      )
+    }
 
     throw new ApiError(
       "La requête a échoué.",
@@ -97,4 +143,9 @@ export function apiPostJson<TResponse>(
     headers: jsonHeaders(init?.headers),
     method: "POST",
   })
+}
+
+export {
+  NETWORK_ERROR_EVENT_NAME,
+  type NetworkErrorEventDetail,
 }
