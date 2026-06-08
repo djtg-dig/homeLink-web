@@ -253,10 +253,10 @@ const booleanFields: Array<{ label: string; name: keyof MaisonFormValues }> = [
 ]
 
 const compositionFields = [
-  { label: "Chambres", name: "chamber_number" },
-  { label: "Salles de bain", name: "bathroom_number" },
-  { label: "Occupants", name: "lodger_number" },
-  { label: "Année de construction", name: "building_year" },
+  { label: "Chambres", name: "chamber_number", required: false },
+  { label: "Salles de bain", name: "bathroom_number", required: false },
+  { label: "Occupants", name: "lodger_number", required: false },
+  { label: "Année de construction *", name: "building_year", required: true },
 ] as const
 
 const areaFields = [
@@ -296,6 +296,16 @@ function optionalInteger(value: string, label: string) {
   }
 
   if (!/^-?\d+$/.test(nextValue)) {
+    throw new Error(`${label} doit être un nombre entier.`)
+  }
+
+  return Number(nextValue)
+}
+
+function requiredInteger(value: string, label: string) {
+  const nextValue = requiredText(value, label)
+
+  if (!/^\d+$/.test(nextValue)) {
     throw new Error(`${label} doit être un nombre entier.`)
   }
 
@@ -541,6 +551,10 @@ function MaisonCreateContent() {
 
   function buildMaisonPayload() {
     const maison: Record<string, unknown> = {
+      building_year: requiredInteger(
+        values.building_year,
+        "L'année de construction"
+      ),
       energy_class: values.energy_class,
       heating: values.heating,
       home_type: values.home_type,
@@ -555,7 +569,6 @@ function MaisonCreateContent() {
 
     const integerFields: Array<keyof MaisonFormValues> = [
       "bathroom_number",
-      "building_year",
       "chamber_number",
       "lodger_number",
       "place_number_garage",
@@ -894,6 +907,7 @@ function MaisonCreateContent() {
                   name={field.name}
                   value={values[field.name]}
                   inputMode="numeric"
+                  required={field.required}
                   onChange={updateValue}
                 />
               ))}
