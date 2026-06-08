@@ -56,6 +56,7 @@ type Hotel = {
   is_active?: boolean | null
   owner?: HotelOwner | null
   prix_affiche?: string | null
+  prix_location_mensuel?: number | string | null
   prix_vente?: number | string | null
   reference?: string | null
   statut?: string | null
@@ -126,6 +127,10 @@ function hotelId(hotel: Hotel) {
   return hotel.id === undefined || hotel.id === null ? "" : String(hotel.id)
 }
 
+function hotelDetailPath(id: string) {
+  return `/dashboard/hotels/${encodeURIComponent(id)}`
+}
+
 function hotelDisplayName(hotel: Hotel) {
   return hotel.title?.trim() || hotel.reference?.trim() || "Hôtel sans titre"
 }
@@ -192,6 +197,10 @@ function standingLabel(value?: string | null) {
   return standingLabels[value] ?? value
 }
 
+function booleanLabel(value?: boolean | null) {
+  return value ? "Oui" : "Non"
+}
+
 function formatDate(value?: string | null) {
   if (!value) {
     return "-"
@@ -223,6 +232,12 @@ function priceLabel(hotel: Hotel) {
     return displayPrice
   }
 
+  if (hotel.type_transaction === "location") {
+    const rent = textValue(hotel.prix_location_mensuel)
+
+    return rent ? `${rent} / mois` : "-"
+  }
+
   const price = textValue(hotel.prix_vente)
 
   return price || "-"
@@ -241,8 +256,11 @@ function roomLabel(value?: number | string | null) {
 }
 
 export {
+  booleanLabel,
   createdDateLabel,
+  formatDate,
   hotelAddressLabel,
+  hotelDetailPath,
   hotelDisplayName,
   hotelId,
   hotelReferenceLabel,

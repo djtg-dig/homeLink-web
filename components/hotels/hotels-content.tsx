@@ -5,18 +5,25 @@ import Link from "next/link"
 import {
   BedDouble,
   CheckCircle2,
+  Eye,
   Hotel,
   MapPin,
+  Pencil,
   Plus,
   RefreshCw,
+  Trash2,
 } from "lucide-react"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { HotelEditDialog } from "@/components/hotels/hotel-edit-dialog"
 import { Button } from "@/components/ui/button"
+import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "@/components/ui/toaster"
 import {
   createdDateLabel,
   hotelAddressLabel,
+  hotelDetailPath,
   hotelDisplayName,
   hotelId,
   hotelReferenceLabel,
@@ -64,6 +71,13 @@ function HotelsTableSkeleton() {
       <td className="px-4 py-4">
         <Skeleton className="h-4 w-24" />
       </td>
+      <td className="px-4 py-4">
+        <div className="flex justify-end gap-2">
+          <Skeleton className="h-7 w-32" />
+          <Skeleton className="h-7 w-24" />
+          <Skeleton className="h-7 w-24" />
+        </div>
+      </td>
     </tr>
   ))
 }
@@ -106,6 +120,12 @@ function numericValue(value: unknown) {
 function HotelsContent() {
   const [hotels, setHotels] = React.useState<HotelItem[]>([])
   const [count, setCount] = React.useState(0)
+  const [deleteError, setDeleteError] = React.useState("")
+  const [deletePending, setDeletePending] = React.useState(false)
+  const [deletingHotel, setDeletingHotel] = React.useState<HotelItem | null>(
+    null
+  )
+  const [editingHotel, setEditingHotel] = React.useState<HotelItem | null>(null)
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
 
@@ -183,216 +203,350 @@ function HotelsContent() {
   }, [loadHotels])
 
   function reloadHotels() {
+    setLoading(true)
+    setError("")
     void loadHotels()
   }
 
+  function updateHotel(updatedHotel: HotelItem) {
+    const updatedId = hotelId(updatedHotel)
+
+    setHotels((current) =>
+      current.map((hotel) =>
+        hotelId(hotel) === updatedId ? updatedHotel : hotel
+      )
+    )
+    setEditingHotel(null)
+  }
+
+  function openDeleteDialog(hotel: HotelItem) {
+    setDeleteError("")
+    setDeletingHotel(hotel)
+  }
+
+  async function deleteHotel() {
+    if (!deletingHotel) {
+      return
+    }
+
+    const id = hotelId(deletingHotel)
+
+    if (!id) {
+      setDeleteError("Cet hôtel ne contient pas d'identifiant.")
+      return
+    }
+
+    setDeletePending(true)
+    setDeleteError("")
+
+    try {
+      await apiFetch<void>(
+        `/api/immovables/hotels/${encodeURIComponent(id)}/`,
+        {
+          method: "DELETE",
+        }
+      )
+
+      setHotels((current) => current.filter((hotel) => hotelId(hotel) !== id))
+      setCount((current) => Math.max(0, current - 1))
+      setDeletingHotel(null)
+      toast({
+        description: "L'hôtel a été supprimé.",
+        title: "Hôtel supprimé",
+        variant: "success",
+      })
+    } catch (caughtError) {
+      if (caughtError instanceof ApiError) {
+        setDeleteError(
+          formatApiMessage(caughtError.body, "Suppression impossible.")
+        )
+      } else {
+        setDeleteError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Suppression impossible."
+        )
+      }
+    } finally {
+      setDeletePending(false)
+    }
+  }
+
   return (
-    <DashboardShell title="Hôtels" breadcrumbs={[{ label: "Hôtels" }]}>
-      <section className="rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Gestion des hôtels
-            </p>
-            <h2 className="mt-1 text-2xl font-semibold">Hôtels entiers</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Créez et suivez les hôtels gérés comme biens immobiliers entiers.
-            </p>
+    <>
+      <DashboardShell title="Hôtels" breadcrumbs={[{ label: "Hôtels" }]}>
+        <section className="rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Gestion des hôtels
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold">Hôtels entiers</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Créez et suivez les hôtels gérés comme biens immobiliers
+                entiers.
+              </p>
+            </div>
+            <Button asChild className="h-10 w-full lg:w-auto">
+              <Link href="/dashboard/hotels/new">
+                <Plus />
+                Créer un hôtel
+              </Link>
+            </Button>
           </div>
-          <Button asChild className="h-10 w-full lg:w-auto">
-            <Link href="/dashboard/hotels/new">
-              <Plus />
-              Créer un hôtel
-            </Link>
-          </Button>
-        </div>
-      </section>
+        </section>
 
-      <section
-        aria-label="Indicateurs hôtels"
-        className="grid gap-4 md:grid-cols-4"
-      >
-        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <p className="text-sm text-muted-foreground">Total hôtels</p>
-          {loading ? (
-            <Skeleton className="mt-3 h-9 w-20" />
-          ) : (
-            <p className="mt-3 text-3xl font-semibold">{count}</p>
-          )}
-        </article>
-        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <p className="text-sm text-muted-foreground">Actifs</p>
-          {loading ? (
-            <Skeleton className="mt-3 h-9 w-20" />
-          ) : (
-            <p className="mt-3 text-3xl font-semibold">{activeCount}</p>
-          )}
-        </article>
-        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <p className="text-sm text-muted-foreground">Opérationnels</p>
-          {loading ? (
-            <Skeleton className="mt-3 h-9 w-20" />
-          ) : (
-            <p className="mt-3 text-3xl font-semibold">{operationalCount}</p>
-          )}
-        </article>
-        <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
-          <p className="text-sm text-muted-foreground">Chambres</p>
-          {loading ? (
-            <Skeleton className="mt-3 h-9 w-20" />
-          ) : (
-            <p className="mt-3 text-3xl font-semibold">{roomsCount}</p>
-          )}
-        </article>
-      </section>
+        <section
+          aria-label="Indicateurs hôtels"
+          className="grid gap-4 md:grid-cols-4"
+        >
+          <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">Total hôtels</p>
+            {loading ? (
+              <Skeleton className="mt-3 h-9 w-20" />
+            ) : (
+              <p className="mt-3 text-3xl font-semibold">{count}</p>
+            )}
+          </article>
+          <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">Actifs</p>
+            {loading ? (
+              <Skeleton className="mt-3 h-9 w-20" />
+            ) : (
+              <p className="mt-3 text-3xl font-semibold">{activeCount}</p>
+            )}
+          </article>
+          <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">Opérationnels</p>
+            {loading ? (
+              <Skeleton className="mt-3 h-9 w-20" />
+            ) : (
+              <p className="mt-3 text-3xl font-semibold">{operationalCount}</p>
+            )}
+          </article>
+          <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+            <p className="text-sm text-muted-foreground">Chambres</p>
+            {loading ? (
+              <Skeleton className="mt-3 h-9 w-20" />
+            ) : (
+              <p className="mt-3 text-3xl font-semibold">{roomsCount}</p>
+            )}
+          </article>
+        </section>
 
-      <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold">Liste des hôtels</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Consultez les hôtels créés sur la plateforme.
-            </p>
+        <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Liste des hôtels</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Consultez les hôtels créés sur la plateforme.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={reloadHotels}
+              disabled={loading}
+            >
+              <RefreshCw className={cn(loading && "animate-spin")} />
+              Actualiser
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={reloadHotels}
-            disabled={loading}
-          >
-            <RefreshCw className={cn(loading && "animate-spin")} />
-            Actualiser
-          </Button>
-        </div>
 
-        {error ? (
-          <div className="m-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {error}
-          </div>
-        ) : null}
+          {error ? (
+            <div className="m-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          ) : null}
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[1080px] text-sm">
-            <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Hôtel</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Prix</th>
-                <th className="px-4 py-3 font-medium">Adresse</th>
-                <th className="px-4 py-3 font-medium">Statut</th>
-                <th className="px-4 py-3 font-medium">Capacité</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? <HotelsTableSkeleton /> : null}
-
-              {!loading && hotels.length === 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1220px] text-sm">
+              <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
-                  <td colSpan={6} className="px-4 py-12">
-                    <div className="mx-auto flex max-w-md flex-col items-center text-center">
-                      <span className="flex size-12 items-center justify-center rounded-md bg-secondary text-primary">
-                        <Hotel className="size-6" />
-                      </span>
-                      <h3 className="mt-4 text-base font-semibold">
-                        Aucun hôtel pour le moment
-                      </h3>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        Créez un hôtel pour alimenter cette liste.
-                      </p>
-                      <Button asChild className="mt-4">
-                        <Link href="/dashboard/hotels/new">
-                          <Plus />
-                          Créer un hôtel
-                        </Link>
-                      </Button>
-                    </div>
-                  </td>
+                  <th className="px-4 py-3 font-medium">Hôtel</th>
+                  <th className="px-4 py-3 font-medium">Type</th>
+                  <th className="px-4 py-3 font-medium">Prix</th>
+                  <th className="px-4 py-3 font-medium">Adresse</th>
+                  <th className="px-4 py-3 font-medium">Statut</th>
+                  <th className="px-4 py-3 font-medium">Capacité</th>
+                  <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
-              ) : null}
+              </thead>
+              <tbody>
+                {loading ? <HotelsTableSkeleton /> : null}
 
-              {!loading
-                ? hotels.map((hotel, index) => {
-                    const id = hotelId(hotel)
-                    const key = id || `${hotel.title}-${index}`
+                {!loading && hotels.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-12">
+                      <div className="mx-auto flex max-w-md flex-col items-center text-center">
+                        <span className="flex size-12 items-center justify-center rounded-md bg-secondary text-primary">
+                          <Hotel className="size-6" />
+                        </span>
+                        <h3 className="mt-4 text-base font-semibold">
+                          Aucun hôtel pour le moment
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          Créez un hôtel pour alimenter cette liste.
+                        </p>
+                        <Button asChild className="mt-4">
+                          <Link href="/dashboard/hotels/new">
+                            <Plus />
+                            Créer un hôtel
+                          </Link>
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
 
-                    return (
-                      <tr
-                        key={key}
-                        className="border-b border-border last:border-b-0"
-                      >
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
-                              <Hotel className="size-5" />
-                            </span>
-                            <div className="min-w-0">
-                              <p className="truncate font-semibold">
-                                {hotelDisplayName(hotel)}
-                              </p>
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                {hotelReferenceLabel(hotel)} ·{" "}
-                                {createdDateLabel(hotel.created_at)}
-                              </p>
+                {!loading
+                  ? hotels.map((hotel, index) => {
+                      const id = hotelId(hotel)
+                      const key = id || `${hotel.title}-${index}`
+
+                      return (
+                        <tr
+                          key={key}
+                          className="border-b border-border last:border-b-0"
+                        >
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                                <Hotel className="size-5" />
+                              </span>
+                              <div className="min-w-0">
+                                <p className="truncate font-semibold">
+                                  {hotelDisplayName(hotel)}
+                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {hotelReferenceLabel(hotel)} ·{" "}
+                                  {createdDateLabel(hotel.created_at)}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          {hotelTypeLabel(hotel.hotel?.hotel_type)}
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {standingLabel(hotel.hotel?.standing)} ·{" "}
-                            {surfaceLabel(hotel.surface_totale)}
-                          </p>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="font-medium">
-                            {priceLabel(hotel)}
-                          </span>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {transactionLabel(hotel.type_transaction)}
-                          </p>
-                        </td>
-                        <td className="max-w-80 px-4 py-4 text-muted-foreground">
-                          <span className="flex items-start gap-1.5">
-                            <MapPin className="mt-0.5 size-3.5 shrink-0" />
-                            <span className="line-clamp-2">
-                              {hotelAddressLabel(hotel)}
+                          </td>
+                          <td className="px-4 py-4">
+                            {hotelTypeLabel(hotel.hotel?.hotel_type)}
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {standingLabel(hotel.hotel?.standing)} ·{" "}
+                              {surfaceLabel(hotel.surface_totale)}
+                            </p>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className="font-medium">
+                              {priceLabel(hotel)}
                             </span>
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            <StatusPill active={hotel.statut === "disponible"}>
-                              {statusLabel(hotel.statut)}
-                            </StatusPill>
-                            <StatusPill
-                              active={hotel.hotel?.is_operational !== false}
-                            >
-                              <CheckCircle2 className="mr-1 size-3" />
-                              {hotel.hotel?.is_operational === false
-                                ? "Fermé"
-                                : "Opérationnel"}
-                            </StatusPill>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="inline-flex items-center gap-1.5">
-                            <BedDouble className="size-4 text-muted-foreground" />
-                            {roomLabel(hotel.hotel?.nombre_chambres)}
-                          </span>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {hotel.hotel?.nombre_lits_total ?? "-"} lits
-                          </p>
-                        </td>
-                      </tr>
-                    )
-                  })
-                : null}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </DashboardShell>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {transactionLabel(hotel.type_transaction)}
+                            </p>
+                          </td>
+                          <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                            <span className="flex items-start gap-1.5">
+                              <MapPin className="mt-0.5 size-3.5 shrink-0" />
+                              <span className="line-clamp-2">
+                                {hotelAddressLabel(hotel)}
+                              </span>
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex flex-wrap gap-2">
+                              <StatusPill
+                                active={hotel.statut === "disponible"}
+                              >
+                                {statusLabel(hotel.statut)}
+                              </StatusPill>
+                              <StatusPill
+                                active={hotel.hotel?.is_operational !== false}
+                              >
+                                <CheckCircle2 className="mr-1 size-3" />
+                                {hotel.hotel?.is_operational === false
+                                  ? "Fermé"
+                                  : "Opérationnel"}
+                              </StatusPill>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className="inline-flex items-center gap-1.5">
+                              <BedDouble className="size-4 text-muted-foreground" />
+                              {roomLabel(hotel.hotel?.nombre_chambres)}
+                            </span>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {hotel.hotel?.nombre_lits_total ?? "-"} lits
+                            </p>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex justify-end gap-2">
+                              {id ? (
+                                <Button asChild variant="outline" size="sm">
+                                  <Link href={hotelDetailPath(id)}>
+                                    <Eye />
+                                    Voir les détails
+                                  </Link>
+                                </Button>
+                              ) : (
+                                <Button variant="outline" size="sm" disabled>
+                                  <Eye />
+                                  Voir les détails
+                                </Button>
+                              )}
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={!id}
+                                onClick={() => setEditingHotel(hotel)}
+                              >
+                                <Pencil />
+                                Modifier
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                disabled={!id}
+                                onClick={() => openDeleteDialog(hotel)}
+                              >
+                                <Trash2 />
+                                Supprimer
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  : null}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </DashboardShell>
+
+      {editingHotel ? (
+        <HotelEditDialog
+          hotel={editingHotel}
+          onClose={() => setEditingHotel(null)}
+          onUpdated={updateHotel}
+        />
+      ) : null}
+
+      {deletingHotel ? (
+        <DeleteConfirmDialog
+          title="Supprimer l'hôtel"
+          description={`Vous allez supprimer ${hotelDisplayName(
+            deletingHotel
+          )}. Cette action est définitive.`}
+          error={deleteError}
+          pending={deletePending}
+          onClose={() => {
+            if (!deletePending) {
+              setDeletingHotel(null)
+            }
+          }}
+          onConfirm={deleteHotel}
+        />
+      ) : null}
+    </>
   )
 }
 
