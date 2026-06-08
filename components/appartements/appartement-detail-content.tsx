@@ -14,6 +14,7 @@ import {
   Landmark,
   Mail,
   MapPin,
+  Pencil,
   Phone,
   RefreshCw,
   Ruler,
@@ -23,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
+import { AppartementEditDialog } from "@/components/appartements/appartement-edit-dialog"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
@@ -190,6 +192,7 @@ function AppartementDetailContent({ id }: { id: string }) {
   const [deleteError, setDeleteError] = React.useState("")
   const [deletePending, setDeletePending] = React.useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false)
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
 
@@ -284,6 +287,11 @@ function AppartementDetailContent({ id }: { id: string }) {
     }
   }
 
+  function updateAppartement(updatedAppartement: Appartement) {
+    setAppartement(updatedAppartement)
+    setEditDialogOpen(false)
+  }
+
   const details = appartement?.appartement
   const agencySlug = appartement?.agency?.slug?.trim()
   const medias = appartement?.medias ?? []
@@ -365,6 +373,14 @@ function AppartementDetailContent({ id }: { id: string }) {
                 >
                   <RefreshCw className={cn(loading && "animate-spin")} />
                   Actualiser
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditDialogOpen(true)}
+                >
+                  <Pencil />
+                  Modifier
                 </Button>
                 <Button
                   type="button"
@@ -633,6 +649,14 @@ function AppartementDetailContent({ id }: { id: string }) {
                 }
               }}
               onConfirm={deleteAppartement}
+            />
+          ) : null}
+
+          {editDialogOpen ? (
+            <AppartementEditDialog
+              appartement={appartement}
+              onClose={() => setEditDialogOpen(false)}
+              onUpdated={updateAppartement}
             />
           ) : null}
         </>

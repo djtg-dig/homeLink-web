@@ -9,11 +9,13 @@ import {
   Home,
   Landmark,
   MapPin,
+  Pencil,
   Plus,
   RefreshCw,
   Trash2,
 } from "lucide-react"
 
+import { AppartementEditDialog } from "@/components/appartements/appartement-edit-dialog"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
@@ -101,6 +103,8 @@ function AppartementsContent() {
   const [deletePending, setDeletePending] = React.useState(false)
   const [deletingAppartement, setDeletingAppartement] =
     React.useState<Appartement | null>(null)
+  const [editingAppartement, setEditingAppartement] =
+    React.useState<Appartement | null>(null)
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
 
@@ -175,6 +179,25 @@ function AppartementsContent() {
   function openDeleteDialog(appartement: Appartement) {
     setDeleteError("")
     setDeletingAppartement(appartement)
+  }
+
+  function updateAppartement(updatedAppartement: Appartement) {
+    const updatedId = appartementId(updatedAppartement)
+
+    setEditingAppartement(null)
+
+    if (!updatedId) {
+      void loadAppartements()
+      return
+    }
+
+    setAppartements((current) =>
+      current.map((appartement) =>
+        appartementId(appartement) === updatedId
+          ? updatedAppartement
+          : appartement
+      )
+    )
   }
 
   async function deleteAppartement() {
@@ -428,6 +451,18 @@ function AppartementsContent() {
                               )}
                               <Button
                                 type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={!id}
+                                onClick={() =>
+                                  setEditingAppartement(appartement)
+                                }
+                              >
+                                <Pencil />
+                                Modifier
+                              </Button>
+                              <Button
+                                type="button"
                                 variant="destructive"
                                 size="sm"
                                 disabled={!id}
@@ -504,6 +539,14 @@ function AppartementsContent() {
             }
           }}
           onConfirm={deleteAppartement}
+        />
+      ) : null}
+
+      {editingAppartement ? (
+        <AppartementEditDialog
+          appartement={editingAppartement}
+          onClose={() => setEditingAppartement(null)}
+          onUpdated={updateAppartement}
         />
       ) : null}
     </>
