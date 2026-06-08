@@ -119,6 +119,10 @@ function kiosqueId(kiosque: Kiosque) {
     : String(kiosque.id)
 }
 
+function kiosqueDetailPath(id: string) {
+  return `/dashboard/kiosques/${encodeURIComponent(id)}`
+}
+
 function kiosqueDisplayName(kiosque: Kiosque) {
   return (
     kiosque.title?.trim() || kiosque.reference?.trim() || "Kiosque sans titre"
@@ -179,6 +183,10 @@ function kiosqueTypeLabel(value?: string | null) {
   return kiosqueTypeLabels[value] ?? value
 }
 
+function booleanLabel(value?: boolean | null) {
+  return value ? "Oui" : "Non"
+}
+
 function formatDate(value?: string | null) {
   if (!value) {
     return "-"
@@ -228,8 +236,11 @@ function surfaceLabel(value?: number | string | null) {
 }
 
 export {
+  booleanLabel,
   createdDateLabel,
+  formatDate,
   kiosqueAddressLabel,
+  kiosqueDetailPath,
   kiosqueDisplayName,
   kiosqueId,
   kiosqueReferenceLabel,
