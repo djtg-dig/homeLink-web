@@ -188,6 +188,14 @@ function maisonId(maison: Maison) {
   return maison.id === undefined || maison.id === null ? "" : String(maison.id)
 }
 
+function maisonDetailPath(id: string) {
+  return `/dashboard/maisons/${encodeURIComponent(id)}`
+}
+
+function maisonEditPath(id: string) {
+  return `/dashboard/maisons/${encodeURIComponent(id)}/edit`
+}
+
 function maisonDisplayName(maison: Maison) {
   return maison.title?.trim() || maison.reference?.trim() || "Maison sans titre"
 }
@@ -270,6 +278,10 @@ function isolationLabel(value?: string | null) {
   return isolationLabels[value] ?? value
 }
 
+function booleanLabel(value?: boolean | null) {
+  return value ? "Oui" : "Non"
+}
+
 function formatDate(value?: string | null) {
   if (!value) {
     return "-"
@@ -324,12 +336,16 @@ function agencyName(maison: Maison) {
 
 export {
   agencyName,
+  booleanLabel,
   createdDateLabel,
+  formatDate,
   heatingLabel,
   homeTypeLabel,
   isolationLabel,
   maisonAddressLabel,
+  maisonDetailPath,
   maisonDisplayName,
+  maisonEditPath,
   maisonId,
   maisonReferenceLabel,
   parseMaisons,
