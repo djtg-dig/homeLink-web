@@ -65,8 +65,8 @@ function PropertyIcon({ type }: { type?: string | null }) {
 function DetailSkeleton() {
   return (
     <>
+      <SiteHeader />
       <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
-        <SiteHeader />
         <section className="px-4 py-8 sm:px-8 lg:px-10">
           <div className="mx-auto max-w-6xl space-y-6">
             <Skeleton className="h-10 w-40" />
@@ -231,8 +231,8 @@ function PublicPropertyDetailContent({ id }: { id: string }) {
   if (error || !property) {
     return (
       <>
+        <SiteHeader />
         <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
-          <SiteHeader />
           <section className="px-4 py-8 sm:px-8 lg:px-10">
             <div className="mx-auto max-w-3xl rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-destructive">
               <p className="text-lg font-semibold">
@@ -271,9 +271,8 @@ function PublicPropertyDetailContent({ id }: { id: string }) {
 
   return (
     <>
+      <SiteHeader />
       <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
-        <SiteHeader />
-
         <section className="bg-muted/40 px-4 py-8 sm:px-8 sm:py-10 lg:px-10">
           <div className="mx-auto max-w-6xl space-y-6">
             <Button asChild variant="outline" className="bg-background">

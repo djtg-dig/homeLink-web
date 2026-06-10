@@ -502,9 +502,8 @@ function HomeContent({ initialFilters }: HomeContentProps) {
 
   return (
     <>
+      <SiteHeader />
       <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
-        <SiteHeader />
-
         <section className="bg-brand-navy text-brand-white">
           <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-9 px-4 py-10 sm:px-8 sm:py-14 lg:px-10">
             <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
