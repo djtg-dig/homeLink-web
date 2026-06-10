@@ -11,6 +11,7 @@ import {
   MapPin,
   RefreshCw,
   Store,
+  X,
 } from "lucide-react"
 import * as React from "react"
 
@@ -62,7 +63,7 @@ function PropertyIcon({ type }: { type?: string | null }) {
 
 function DetailSkeleton() {
   return (
-    <main className="min-h-svh bg-background text-foreground">
+    <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
       <SiteHeader />
       <section className="px-4 py-8 sm:px-8 lg:px-10">
         <div className="mx-auto max-w-6xl space-y-6">
@@ -99,6 +100,59 @@ function SummaryItem({
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-2 text-base font-semibold text-foreground">{value}</p>
     </div>
+  )
+}
+
+function CharacteristicValueCard({
+  label,
+  value,
+}: {
+  label: string
+  value: string
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-background p-4 shadow-sm">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-2 text-sm leading-6 font-semibold break-words text-foreground">
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function BooleanCharacteristicBadge({
+  active,
+  label,
+}: {
+  active: boolean
+  label: string
+}) {
+  return (
+    <span
+      aria-label={`${label}: ${active ? "disponible" : "non disponible"}`}
+      className={cn(
+        "inline-flex min-h-9 w-full max-w-full items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium sm:w-auto",
+        active
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-border bg-muted/45 text-muted-foreground"
+      )}
+    >
+      <span
+        className={cn(
+          "flex size-5 shrink-0 items-center justify-center rounded-full",
+          active
+            ? "bg-emerald-100 text-emerald-700"
+            : "bg-background text-muted-foreground"
+        )}
+      >
+        {active ? (
+          <CheckCircle2 className="size-3.5" />
+        ) : (
+          <X className="size-3.5" />
+        )}
+      </span>
+      <span className="break-words">{label}</span>
+    </span>
   )
 }
 
@@ -172,7 +226,7 @@ function PublicPropertyDetailContent({ id }: { id: string }) {
 
   if (error || !property) {
     return (
-      <main className="min-h-svh bg-background text-foreground">
+      <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
         <SiteHeader />
         <section className="px-4 py-8 sm:px-8 lg:px-10">
           <div className="mx-auto max-w-3xl rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-destructive">
@@ -204,9 +258,12 @@ function PublicPropertyDetailContent({ id }: { id: string }) {
   const amenities = publicImmovableAmenityLabels(property)
   const rows = publicImmovableDetailRows(property)
   const highlights = publicImmovableHighlights(property)
+  const booleanRows = rows.filter((row) => row.kind === "boolean")
+  const valueRows = rows.filter((row) => row.kind === "value")
+  const activeBooleanCount = booleanRows.filter((row) => row.active).length
 
   return (
-    <main className="min-h-svh bg-background text-foreground">
+    <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
       <SiteHeader />
 
       <section className="bg-muted/40 px-4 py-8 sm:px-8 sm:py-10 lg:px-10">
@@ -255,7 +312,7 @@ function PublicPropertyDetailContent({ id }: { id: string }) {
                   <p className="text-sm font-medium text-muted-foreground">
                     {publicImmovableReferenceLabel(property)}
                   </p>
-                  <h1 className="mt-2 text-3xl leading-tight font-semibold sm:text-4xl">
+                  <h1 className="mt-2 text-3xl leading-tight font-semibold break-words sm:text-4xl">
                     {publicImmovableTitle(property)}
                   </h1>
                 </div>
@@ -335,24 +392,62 @@ function PublicPropertyDetailContent({ id }: { id: string }) {
 
       {rows.length > 0 ? (
         <section className="bg-muted/40 px-4 py-8 sm:px-8 sm:py-10 lg:px-10">
-          <div className="mx-auto max-w-6xl">
-            <h2 className="text-xl font-semibold">Caractéristiques</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {rows.map((row) => (
-                <div
-                  key={`${row.label}-${row.value}`}
-                  className={cn(
-                    "rounded-lg border border-border bg-background p-4",
-                    row.value === "Non" && "text-muted-foreground"
-                  )}
-                >
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {row.label}
-                  </p>
-                  <p className="mt-2 text-sm font-semibold">{row.value}</p>
-                </div>
-              ))}
+          <div className="mx-auto max-w-6xl space-y-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-primary">
+                  Détails du bien
+                </p>
+                <h2 className="mt-1 text-2xl font-semibold">
+                  Caractéristiques
+                </h2>
+              </div>
+              <span className="w-fit rounded-md border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground">
+                {rows.length} élément{rows.length > 1 ? "s" : ""}
+              </span>
             </div>
+
+            {valueRows.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {valueRows.map((row) => (
+                  <CharacteristicValueCard
+                    key={`${row.label}-${row.value}`}
+                    label={row.label}
+                    value={row.value}
+                  />
+                ))}
+              </div>
+            ) : null}
+
+            {booleanRows.length > 0 ? (
+              <div className="rounded-lg border border-border bg-background p-4 shadow-sm sm:p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-base font-semibold">
+                      Équipements et options
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {activeBooleanCount} actif
+                      {activeBooleanCount > 1 ? "s" : ""} sur{" "}
+                      {booleanRows.length}
+                    </p>
+                  </div>
+                  <span className="w-fit rounded-md bg-secondary px-3 py-1.5 text-xs font-semibold text-primary">
+                    Options
+                  </span>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {booleanRows.map((row) => (
+                    <BooleanCharacteristicBadge
+                      key={`${row.label}-${row.active}`}
+                      active={row.active}
+                      label={row.label}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         </section>
       ) : null}

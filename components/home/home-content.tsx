@@ -500,23 +500,23 @@ function HomeContent({ initialFilters }: HomeContentProps) {
   }
 
   return (
-    <main className="min-h-svh bg-background text-foreground">
+    <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
       <SiteHeader />
 
       <section className="bg-brand-navy text-brand-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-9 px-4 py-10 sm:px-8 sm:py-14 lg:px-10">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
-            <div className="max-w-3xl space-y-6">
+        <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-9 px-4 py-10 sm:px-8 sm:py-14 lg:px-10">
+          <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
+            <div className="max-w-3xl min-w-0 space-y-6">
               <HomelinkLogo
                 priority
                 sizes="(min-width: 1024px) 360px, (min-width: 640px) 320px, 80vw"
                 className="h-24 w-full max-w-[20rem] sm:h-28 sm:max-w-[24rem]"
               />
               <div className="space-y-4">
-                <h1 className="max-w-3xl text-4xl leading-tight font-semibold sm:text-5xl lg:text-6xl">
+                <h1 className="max-w-[22rem] text-[1.75rem] leading-tight font-semibold break-words sm:max-w-3xl sm:text-5xl lg:text-6xl">
                   Trouvez le bien qui cadre avec votre projet.
                 </h1>
-                <p className="max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
+                <p className="max-w-full text-base leading-7 text-white/78 sm:max-w-2xl sm:text-lg">
                   Appartements, maisons, bureaux, hôtels, kiosques, terrains et
                   salles événement sont regroupés dans une recherche simple à
                   affiner selon vos critères.
@@ -524,7 +524,7 @@ function HomeContent({ initialFilters }: HomeContentProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 rounded-lg border border-white/12 bg-white/8 p-2 backdrop-blur">
+            <div className="grid w-full max-w-[22rem] min-w-0 grid-cols-1 gap-2 rounded-lg border border-white/12 bg-white/8 p-2 backdrop-blur md:max-w-none md:grid-cols-3">
               {heroStats.map((stat) => (
                 <div
                   key={stat.label}

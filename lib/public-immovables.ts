@@ -172,6 +172,7 @@ const DETAIL_FIELD_LABELS: Record<string, string> = {
   climatisation: "Climatisation",
   condition: "État",
   digicode: "Digicode",
+  description_equipements: "Description des équipements",
   energy_class: "Classe énergétique",
   etage: "Étage",
   floor_number: "Étage",
@@ -304,10 +305,17 @@ const DETAIL_VALUE_LABELS: Record<string, Record<string, string>> = {
   },
 }
 
-type DetailRow = {
-  label: string
-  value: string
-}
+type DetailRow =
+  | {
+      active: boolean
+      kind: "boolean"
+      label: string
+    }
+  | {
+      kind: "value"
+      label: string
+      value: string
+    }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -574,6 +582,7 @@ export function publicImmovableHighlights(property: PublicImmovable) {
       ]).slice(0, 3)
     default:
       return publicImmovableDetailRows(property)
+        .filter((row) => row.kind === "value")
         .slice(0, 3)
         .map((row) => row.value)
   }
@@ -589,11 +598,28 @@ export function publicImmovableDetailRows(
   }
 
   return Object.entries(details)
-    .map(([key, value]) => ({
-      label: DETAIL_FIELD_LABELS[key] ?? humanizeKey(key),
-      value: detailValue(key, value),
-    }))
-    .filter((row) => row.value)
+    .map(([key, value]): DetailRow | null => {
+      const label = DETAIL_FIELD_LABELS[key] ?? humanizeKey(key)
+
+      if (typeof value === "boolean") {
+        return {
+          active: value,
+          kind: "boolean",
+          label,
+        }
+      }
+
+      const rowValue = detailValue(key, value)
+
+      return rowValue
+        ? {
+            kind: "value",
+            label,
+            value: rowValue,
+          }
+        : null
+    })
+    .filter((row): row is DetailRow => Boolean(row))
 }
 
 export function publicImmovableAmenityLabels(property: PublicImmovable) {
