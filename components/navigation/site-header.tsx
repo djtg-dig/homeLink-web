@@ -9,6 +9,7 @@ import { propertyCategories } from "@/lib/property-categories"
 import { cn } from "@/lib/utils"
 
 const publicCategoryLinks: Record<string, string> = {
+  agences: "/#biens",
   appartements: "/?type_bien=appartement#biens",
   bureaux: "/?type_bien=bureau#biens",
   hotels: "/?type_bien=hotel#biens",
@@ -74,7 +75,7 @@ function SiteHeader() {
           {propertyCategories.map((item) => (
             <Link
               key={item.slug}
-              href={publicCategoryLinks[item.slug] ?? "#biens"}
+              href={publicCategoryLinks[item.slug] ?? "/#biens"}
               className="shrink-0 rounded-md px-3 py-2 text-sm font-medium text-white/76 transition hover:bg-white/8 hover:text-white"
             >
               {item.label}
