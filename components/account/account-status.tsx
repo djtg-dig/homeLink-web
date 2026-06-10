@@ -29,7 +29,7 @@ function AccountStatusChecking() {
       size="sm"
       variant="outline"
       disabled
-      className="h-9 border-white/15 bg-white/8 px-3 text-white disabled:opacity-80 sm:px-4"
+      className="h-8 border-white/15 bg-white/8 px-2 text-xs text-white disabled:opacity-80 sm:h-9 sm:px-4 sm:text-sm"
     >
       Compte
     </Button>
@@ -127,13 +127,29 @@ function AccountStatus() {
 
   if (state.status === "anonymous") {
     return (
-      <Button
-        asChild
-        size="sm"
-        className="h-9 bg-brand-orange px-3 text-brand-navy hover:bg-brand-orange/90 sm:px-4"
-      >
-        <Link href="/register">S&apos;inscrire</Link>
-      </Button>
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <Button
+          asChild
+          size="sm"
+          variant="outline"
+          className="h-8 border-white/15 bg-white/8 px-1.5 text-[0.72rem] text-white hover:bg-white/14 hover:text-white sm:h-9 sm:px-3 sm:text-sm"
+        >
+          <Link href="/login">
+            <span className="sm:hidden">Login</span>
+            <span className="hidden sm:inline">Se connecter</span>
+          </Link>
+        </Button>
+        <Button
+          asChild
+          size="sm"
+          className="h-8 bg-brand-orange px-1.5 text-[0.72rem] text-brand-navy hover:bg-brand-orange/90 sm:h-9 sm:px-3 sm:text-sm"
+        >
+          <Link href="/register">
+            <span className="sm:hidden">Créer</span>
+            <span className="hidden sm:inline">S&apos;inscrire</span>
+          </Link>
+        </Button>
+      </div>
     )
   }
 

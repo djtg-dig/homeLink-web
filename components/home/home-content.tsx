@@ -19,6 +19,7 @@ import {
 import * as React from "react"
 
 import { HomelinkLogo } from "@/components/homelink-logo"
+import { SiteFooter } from "@/components/navigation/site-footer"
 import { SiteHeader } from "@/components/navigation/site-header"
 import { Button } from "@/components/ui/button"
 import {
@@ -500,272 +501,277 @@ function HomeContent({ initialFilters }: HomeContentProps) {
   }
 
   return (
-    <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
-      <SiteHeader />
+    <>
+      <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
+        <SiteHeader />
 
-      <section className="bg-brand-navy text-brand-white">
-        <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-9 px-4 py-10 sm:px-8 sm:py-14 lg:px-10">
-          <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
-            <div className="max-w-3xl min-w-0 space-y-6">
-              <HomelinkLogo
-                priority
-                sizes="(min-width: 1024px) 360px, (min-width: 640px) 320px, 80vw"
-                className="h-24 w-full max-w-[20rem] sm:h-28 sm:max-w-[24rem]"
-              />
-              <div className="space-y-4">
-                <h1 className="max-w-[22rem] text-[1.75rem] leading-tight font-semibold break-words sm:max-w-3xl sm:text-5xl lg:text-6xl">
-                  Trouvez le bien qui cadre avec votre projet.
-                </h1>
-                <p className="max-w-full text-base leading-7 text-white/78 sm:max-w-2xl sm:text-lg">
-                  Appartements, maisons, bureaux, hôtels, kiosques, terrains et
-                  salles événement sont regroupés dans une recherche simple à
-                  affiner selon vos critères.
-                </p>
+        <section className="bg-brand-navy text-brand-white">
+          <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-9 px-4 py-10 sm:px-8 sm:py-14 lg:px-10">
+            <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
+              <div className="max-w-3xl min-w-0 space-y-6">
+                <HomelinkLogo
+                  priority
+                  sizes="(min-width: 1024px) 360px, (min-width: 640px) 320px, 80vw"
+                  className="h-24 w-full max-w-[20rem] sm:h-28 sm:max-w-[24rem]"
+                />
+                <div className="space-y-4">
+                  <h1 className="max-w-[22rem] text-[1.75rem] leading-tight font-semibold break-words sm:max-w-3xl sm:text-5xl lg:text-6xl">
+                    Trouvez le bien qui cadre avec votre projet.
+                  </h1>
+                  <p className="max-w-full text-base leading-7 text-white/78 sm:max-w-2xl sm:text-lg">
+                    Appartements, maisons, bureaux, hôtels, kiosques, terrains
+                    et salles événement sont regroupés dans une recherche simple
+                    à affiner selon vos critères.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid w-full max-w-[22rem] min-w-0 grid-cols-1 gap-2 rounded-lg border border-white/12 bg-white/8 p-2 backdrop-blur md:max-w-none md:grid-cols-3">
+                {heroStats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-md bg-white/9 px-3 py-4 text-center"
+                  >
+                    <p className="text-lg font-semibold text-brand-orange">
+                      {stat.value}
+                    </p>
+                    <p className="mt-1 text-xs font-medium text-white/70">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="grid w-full max-w-[22rem] min-w-0 grid-cols-1 gap-2 rounded-lg border border-white/12 bg-white/8 p-2 backdrop-blur md:max-w-none md:grid-cols-3">
-              {heroStats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-md bg-white/9 px-3 py-4 text-center"
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {publicTypeOptions.map((type) => (
+                <button
+                  key={type.value}
+                  type="button"
+                  onClick={() => applyType(type.value)}
+                  className={cn(
+                    "shrink-0 rounded-md border px-3 py-2 text-sm font-medium transition",
+                    draftFilters.type_bien === type.value
+                      ? "border-brand-orange bg-brand-orange text-brand-navy"
+                      : "border-white/16 bg-white/7 text-white/78 hover:bg-white/12 hover:text-white"
+                  )}
                 >
-                  <p className="text-lg font-semibold text-brand-orange">
-                    {stat.value}
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-white/70">
-                    {stat.label}
-                  </p>
-                </div>
+                  {type.label}
+                </button>
               ))}
             </div>
           </div>
+        </section>
 
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {publicTypeOptions.map((type) => (
-              <button
-                key={type.value}
-                type="button"
-                onClick={() => applyType(type.value)}
-                className={cn(
-                  "shrink-0 rounded-md border px-3 py-2 text-sm font-medium transition",
-                  draftFilters.type_bien === type.value
-                    ? "border-brand-orange bg-brand-orange text-brand-navy"
-                    : "border-white/16 bg-white/7 text-white/78 hover:bg-white/12 hover:text-white"
-                )}
-              >
-                {type.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="biens"
-        className="scroll-mt-28 bg-muted/40 px-4 py-8 sm:px-8 sm:py-10 lg:px-10"
-      >
-        <div className="mx-auto max-w-6xl space-y-6">
-          <form
-            onSubmit={onSubmit}
-            className="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-5"
-          >
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(12rem,0.7fr)_minmax(12rem,0.7fr)_auto] lg:items-end">
-              <TextField
-                label="Recherche"
-                name="search"
-                value={draftFilters.search}
-                placeholder="Titre, description, quartier..."
-                onChange={updateFilter}
-              />
-              <SelectField
-                label="Type de bien"
-                name="type_bien"
-                value={draftFilters.type_bien}
-                placeholder="Tous les biens"
-                options={publicTypeOptions}
-                onChange={updateFilter}
-              />
-              <SelectField
-                label="Transaction"
-                name="type_transaction"
-                value={draftFilters.type_transaction}
-                placeholder="Toutes"
-                options={publicTransactionOptions}
-                onChange={updateFilter}
-              />
-              <div className="flex gap-2">
-                <Button type="submit" className="h-10 flex-1 lg:flex-none">
-                  <Search />
-                  Rechercher
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-10 px-3"
-                  aria-expanded={advancedOpen}
-                  onClick={() => setAdvancedOpen((open) => !open)}
-                >
-                  <SlidersHorizontal />
-                  <span className="sr-only">Filtres avancés</span>
-                </Button>
-              </div>
-            </div>
-
-            <div
-              className={cn(
-                "grid transition-all",
-                advancedOpen
-                  ? "mt-5 grid-rows-[1fr] opacity-100"
-                  : "grid-rows-[0fr] opacity-0"
-              )}
+        <section
+          id="biens"
+          className="scroll-mt-28 bg-muted/40 px-4 py-8 sm:px-8 sm:py-10 lg:px-10"
+        >
+          <div className="mx-auto max-w-6xl space-y-6">
+            <form
+              onSubmit={onSubmit}
+              className="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-5"
             >
-              <div className="overflow-hidden">
-                <div className="grid gap-4 border-t border-border pt-5 md:grid-cols-2 xl:grid-cols-4">
-                  <SelectField
-                    label="Statut"
-                    name="statut"
-                    value={draftFilters.statut}
-                    placeholder="Tous les statuts"
-                    options={publicStatusOptions}
-                    onChange={updateFilter}
-                  />
-                  <TextField
-                    label="Ville"
-                    name="city"
-                    value={draftFilters.city}
-                    placeholder="Kinshasa"
-                    onChange={updateFilter}
-                  />
-                  <TextField
-                    label="Quartier"
-                    name="neighborhood"
-                    value={draftFilters.neighborhood}
-                    placeholder="Gombe, UPN..."
-                    onChange={updateFilter}
-                  />
-                  <label className="grid gap-2 text-sm font-medium text-foreground">
-                    Images
-                    <Select
-                      value={draftFilters.has_medias || "all"}
-                      onValueChange={(nextValue) =>
-                        updateFilter(
-                          "has_medias",
-                          nextValue === "all" ? "" : nextValue
-                        )
-                      }
-                    >
-                      <SelectTrigger className="h-10 w-full bg-background">
-                        <SelectValue placeholder="Tous" />
-                      </SelectTrigger>
-                      <SelectContent position="popper">
-                        <SelectItem value="all">Tous</SelectItem>
-                        <SelectItem value="true">Avec image</SelectItem>
-                        <SelectItem value="false">Sans image</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </label>
-                  <TextField
-                    inputMode="decimal"
-                    label="Prix min."
-                    name="min_price"
-                    value={draftFilters.min_price}
-                    placeholder="50000"
-                    onChange={updateFilter}
-                  />
-                  <TextField
-                    inputMode="decimal"
-                    label="Prix max."
-                    name="max_price"
-                    value={draftFilters.max_price}
-                    placeholder="500000"
-                    onChange={updateFilter}
-                  />
-                  <TextField
-                    inputMode="decimal"
-                    label="Surface min."
-                    name="min_surface"
-                    value={draftFilters.min_surface}
-                    placeholder="50"
-                    onChange={updateFilter}
-                  />
-                  <TextField
-                    inputMode="decimal"
-                    label="Surface max."
-                    name="max_surface"
-                    value={draftFilters.max_surface}
-                    placeholder="500"
-                    onChange={updateFilter}
-                  />
-                </div>
-                <div className="mt-4 grid gap-4 border-t border-border pt-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-                  <SortField value={draftFilters} onChange={updateFilter} />
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(12rem,0.7fr)_minmax(12rem,0.7fr)_auto] lg:items-end">
+                <TextField
+                  label="Recherche"
+                  name="search"
+                  value={draftFilters.search}
+                  placeholder="Titre, description, quartier..."
+                  onChange={updateFilter}
+                />
+                <SelectField
+                  label="Type de bien"
+                  name="type_bien"
+                  value={draftFilters.type_bien}
+                  placeholder="Tous les biens"
+                  options={publicTypeOptions}
+                  onChange={updateFilter}
+                />
+                <SelectField
+                  label="Transaction"
+                  name="type_transaction"
+                  value={draftFilters.type_transaction}
+                  placeholder="Toutes"
+                  options={publicTransactionOptions}
+                  onChange={updateFilter}
+                />
+                <div className="flex gap-2">
+                  <Button type="submit" className="h-10 flex-1 lg:flex-none">
+                    <Search />
+                    Rechercher
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-10"
-                    onClick={resetFilters}
+                    className="h-10 px-3"
+                    aria-expanded={advancedOpen}
+                    onClick={() => setAdvancedOpen((open) => !open)}
                   >
-                    <X />
-                    Réinitialiser
+                    <SlidersHorizontal />
+                    <span className="sr-only">Filtres avancés</span>
                   </Button>
                 </div>
               </div>
-            </div>
-          </form>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-2xl font-semibold">Biens disponibles</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {loading
-                  ? "Chargement en cours..."
-                  : `${count} bien${count > 1 ? "s" : ""} trouvé${
-                      count > 1 ? "s" : ""
-                    }`}
-                {activeFiltersCount > 0
-                  ? ` avec ${activeFiltersCount} filtre${
-                      activeFiltersCount > 1 ? "s" : ""
-                    } actif${activeFiltersCount > 1 ? "s" : ""}`
-                  : ""}
-              </p>
+              <div
+                className={cn(
+                  "grid transition-all",
+                  advancedOpen
+                    ? "mt-5 grid-rows-[1fr] opacity-100"
+                    : "grid-rows-[0fr] opacity-0"
+                )}
+              >
+                <div className="overflow-hidden">
+                  <div className="grid gap-4 border-t border-border pt-5 md:grid-cols-2 xl:grid-cols-4">
+                    <SelectField
+                      label="Statut"
+                      name="statut"
+                      value={draftFilters.statut}
+                      placeholder="Tous les statuts"
+                      options={publicStatusOptions}
+                      onChange={updateFilter}
+                    />
+                    <TextField
+                      label="Ville"
+                      name="city"
+                      value={draftFilters.city}
+                      placeholder="Kinshasa"
+                      onChange={updateFilter}
+                    />
+                    <TextField
+                      label="Quartier"
+                      name="neighborhood"
+                      value={draftFilters.neighborhood}
+                      placeholder="Gombe, UPN..."
+                      onChange={updateFilter}
+                    />
+                    <label className="grid gap-2 text-sm font-medium text-foreground">
+                      Images
+                      <Select
+                        value={draftFilters.has_medias || "all"}
+                        onValueChange={(nextValue) =>
+                          updateFilter(
+                            "has_medias",
+                            nextValue === "all" ? "" : nextValue
+                          )
+                        }
+                      >
+                        <SelectTrigger className="h-10 w-full bg-background">
+                          <SelectValue placeholder="Tous" />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                          <SelectItem value="all">Tous</SelectItem>
+                          <SelectItem value="true">Avec image</SelectItem>
+                          <SelectItem value="false">Sans image</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </label>
+                    <TextField
+                      inputMode="decimal"
+                      label="Prix min."
+                      name="min_price"
+                      value={draftFilters.min_price}
+                      placeholder="50000"
+                      onChange={updateFilter}
+                    />
+                    <TextField
+                      inputMode="decimal"
+                      label="Prix max."
+                      name="max_price"
+                      value={draftFilters.max_price}
+                      placeholder="500000"
+                      onChange={updateFilter}
+                    />
+                    <TextField
+                      inputMode="decimal"
+                      label="Surface min."
+                      name="min_surface"
+                      value={draftFilters.min_surface}
+                      placeholder="50"
+                      onChange={updateFilter}
+                    />
+                    <TextField
+                      inputMode="decimal"
+                      label="Surface max."
+                      name="max_surface"
+                      value={draftFilters.max_surface}
+                      placeholder="500"
+                      onChange={updateFilter}
+                    />
+                  </div>
+                  <div className="mt-4 grid gap-4 border-t border-border pt-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                    <SortField value={draftFilters} onChange={updateFilter} />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-10"
+                      onClick={resetFilters}
+                    >
+                      <X />
+                      Réinitialiser
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold">Biens disponibles</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {loading
+                    ? "Chargement en cours..."
+                    : `${count} bien${count > 1 ? "s" : ""} trouvé${
+                        count > 1 ? "s" : ""
+                      }`}
+                  {activeFiltersCount > 0
+                    ? ` avec ${activeFiltersCount} filtre${
+                        activeFiltersCount > 1 ? "s" : ""
+                      } actif${activeFiltersCount > 1 ? "s" : ""}`
+                    : ""}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={reload}
+                disabled={loading}
+              >
+                <RefreshCw className={cn(loading && "animate-spin")} />
+                Actualiser
+              </Button>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full sm:w-auto"
-              onClick={reload}
-              disabled={loading}
-            >
-              <RefreshCw className={cn(loading && "animate-spin")} />
-              Actualiser
-            </Button>
+
+            {error ? (
+              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-5 text-sm text-destructive">
+                <p className="font-medium">
+                  Oups, impossible d’afficher les biens.
+                </p>
+                <p className="mt-1 text-destructive/80">{error}</p>
+              </div>
+            ) : loading ? (
+              <ResultsSkeleton />
+            ) : hasResults ? (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {properties.map((property) => (
+                  <PropertyCard
+                    key={
+                      property.id ?? property.reference ?? property.detail_url
+                    }
+                    property={property}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState onReset={resetFilters} />
+            )}
           </div>
-
-          {error ? (
-            <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-5 text-sm text-destructive">
-              <p className="font-medium">
-                Oups, impossible d’afficher les biens.
-              </p>
-              <p className="mt-1 text-destructive/80">{error}</p>
-            </div>
-          ) : loading ? (
-            <ResultsSkeleton />
-          ) : hasResults ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {properties.map((property) => (
-                <PropertyCard
-                  key={property.id ?? property.reference ?? property.detail_url}
-                  property={property}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState onReset={resetFilters} />
-          )}
-        </div>
-      </section>
-    </main>
+        </section>
+      </main>
+      <SiteFooter />
+    </>
   )
 }
 

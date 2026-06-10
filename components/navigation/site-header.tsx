@@ -6,18 +6,8 @@ import * as React from "react"
 import { AccountStatus } from "@/components/account/account-status"
 import { HomelinkLogo } from "@/components/homelink-logo"
 import { propertyCategories } from "@/lib/property-categories"
+import { publicCategoryLinks } from "@/lib/public-navigation"
 import { cn } from "@/lib/utils"
-
-const publicCategoryLinks: Record<string, string> = {
-  agences: "/#biens",
-  appartements: "/?type_bien=appartement#biens",
-  bureaux: "/?type_bien=bureau#biens",
-  hotels: "/?type_bien=hotel#biens",
-  kiosques: "/?type_bien=kiosque#biens",
-  maisons: "/?type_bien=maison#biens",
-  "salles-evenement": "/?type_bien=salle_evenement#biens",
-  terrains: "/?type_bien=terrain#biens",
-}
 
 function SiteHeader() {
   const [hidden, setHidden] = React.useState(false)
@@ -57,12 +47,12 @@ function SiteHeader() {
       )}
     >
       <div className="h-1 bg-brand-orange" />
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:h-20 sm:px-8 lg:px-10">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:h-20 sm:gap-3 sm:px-8 lg:px-10">
         <Link href="/" aria-label="Accueil Homelink" className="shrink-0">
           <HomelinkLogo
             priority
             sizes="(min-width: 640px) 176px, 144px"
-            className="h-11 w-36 sm:h-14 sm:w-44"
+            className="h-8 w-24 sm:h-14 sm:w-44"
           />
         </Link>
         <AccountStatus />
