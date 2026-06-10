@@ -8,6 +8,16 @@ import { HomelinkLogo } from "@/components/homelink-logo"
 import { propertyCategories } from "@/lib/property-categories"
 import { cn } from "@/lib/utils"
 
+const publicCategoryLinks: Record<string, string> = {
+  appartements: "/?type_bien=appartement#biens",
+  bureaux: "/?type_bien=bureau#biens",
+  hotels: "/?type_bien=hotel#biens",
+  kiosques: "/?type_bien=kiosque#biens",
+  maisons: "/?type_bien=maison#biens",
+  "salles-evenement": "/?type_bien=salle_evenement#biens",
+  terrains: "/?type_bien=terrain#biens",
+}
+
 function SiteHeader() {
   const [hidden, setHidden] = React.useState(false)
 
@@ -64,7 +74,7 @@ function SiteHeader() {
           {propertyCategories.map((item) => (
             <Link
               key={item.slug}
-              href="#biens"
+              href={publicCategoryLinks[item.slug] ?? "#biens"}
               className="shrink-0 rounded-md px-3 py-2 text-sm font-medium text-white/76 transition hover:bg-white/8 hover:text-white"
             >
               {item.label}
