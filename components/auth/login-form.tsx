@@ -13,6 +13,22 @@ const inputClassName =
   "h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-60"
 const labelClassName = "text-sm font-medium text-foreground"
 
+function getDjanaLoginUrl(redirectTo: string) {
+  const configuredLoginUrl =
+    process.env.NEXT_PUBLIC_DJANA_AUTH_LOGIN_URL?.trim()
+
+  if (configuredLoginUrl) {
+    return configuredLoginUrl
+  }
+
+  const searchParams = new URLSearchParams()
+  const nextPath = redirectTo === "/" ? "/dashboard" : redirectTo
+
+  searchParams.set("next", nextPath)
+
+  return `/api/auth/djana/login?${searchParams.toString()}`
+}
+
 function LoginForm({
   redirectTo = "/",
   registered = false,
@@ -23,6 +39,7 @@ function LoginForm({
   const router = useRouter()
   const [error, setError] = useState("")
   const [pending, setPending] = useState(false)
+  const djanaLoginUrl = getDjanaLoginUrl(redirectTo)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -122,6 +139,26 @@ function LoginForm({
       >
         {pending ? <Loader2 className="animate-spin" /> : <LogIn />}
         Se connecter
+      </Button>
+
+      <div className="flex items-center gap-3">
+        <span className="h-px flex-1 bg-border" />
+        <span className="text-xs font-semibold text-muted-foreground uppercase">
+          ou
+        </span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <Button
+        asChild
+        className="h-11 w-full"
+        disabled={pending}
+        variant="outline"
+      >
+        <a href={djanaLoginUrl}>
+          <LogIn />
+          Se connecter avec Djana
+        </a>
       </Button>
     </form>
   )
