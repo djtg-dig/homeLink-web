@@ -46,6 +46,8 @@ import {
   type ImmeublesResponse,
 } from "@/lib/immeubles"
 
+const NO_AGENCY_VALUE = "__none__"
+
 type AppartementFormValues = {
   agency_id: string
   balcon: boolean
@@ -80,7 +82,7 @@ type AppartementFormValues = {
 }
 
 const initialValues: AppartementFormValues = {
-  agency_id: "",
+  agency_id: NO_AGENCY_VALUE,
   balcon: false,
   cave: false,
   cheminee: false,
@@ -196,11 +198,13 @@ function fieldValue(value: string) {
 }
 
 function selectedAgencyName(agencies: Agency[], agencyId: string) {
-  return agencies.find((agency) => String(agency.id ?? "") === agencyId)
-    ? agencyDisplayName(
-        agencies.find((agency) => String(agency.id ?? "") === agencyId)!
-      )
-    : "-"
+  if (agencyId === NO_AGENCY_VALUE) {
+    return "Sans agence"
+  }
+
+  const agency = agencies.find((item) => String(item.id ?? "") === agencyId)
+
+  return agency ? agencyDisplayName(agency) : "-"
 }
 
 function selectedImmeubleName(immeubles: Immeuble[], selectedId: string) {
@@ -472,7 +476,6 @@ function AppartementCreateContent() {
 
     const address = addressSectionRef.current.getAddressPayload()
     const title = requiredText(values.title, "Le titre")
-    const agencyId = requiredText(values.agency_id, "L'agence")
     const surfaceTotale = requiredText(
       values.surface_totale,
       "La surface totale"
@@ -527,7 +530,9 @@ function AppartementCreateContent() {
 
     return {
       adresse: address,
-      agency_id: agencyId,
+      ...(values.agency_id === NO_AGENCY_VALUE
+        ? {}
+        : { agency_id: values.agency_id }),
       appartement,
       description: values.description.trim(),
       est_proprietaire: values.est_proprietaire,
@@ -596,8 +601,8 @@ function AppartementCreateContent() {
               Enregistrer un nouvel appartement
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Renseignez les informations du bien, son adresse, l&apos;agence et
-              les caractéristiques de l&apos;appartement.
+              Renseignez les informations du bien, son adresse et les
+              caractéristiques de l&apos;appartement.
             </p>
           </div>
           <span className="rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground">
@@ -633,7 +638,7 @@ function AppartementCreateContent() {
               />
               <div className="space-y-2">
                 <label className={labelClassName} htmlFor="agency_id">
-                  Agence *
+                  Agence
                 </label>
                 {loadingAgencies ? (
                   <Skeleton className="h-10 w-full" />
@@ -648,6 +653,9 @@ function AppartementCreateContent() {
                       <SelectValue placeholder="Sélectionner une agence" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value={NO_AGENCY_VALUE}>
+                        Sans agence
+                      </SelectItem>
                       {agencies
                         .filter((agency) => agency.id)
                         .map((agency) => (
