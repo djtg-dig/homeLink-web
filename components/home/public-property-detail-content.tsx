@@ -8,9 +8,12 @@ import {
   CheckCircle2,
   Home,
   Hotel,
+  Mail,
   MapPin,
+  Phone,
   RefreshCw,
   Store,
+  UserRound,
   X,
 } from "lucide-react"
 import * as React from "react"
@@ -157,6 +160,96 @@ function BooleanCharacteristicBadge({
       </span>
       <span className="break-words">{label}</span>
     </span>
+  )
+}
+
+function phoneHref(phone: string) {
+  const normalizedPhone = phone.replace(/[^\d+]/g, "")
+
+  return normalizedPhone ? `tel:${normalizedPhone}` : ""
+}
+
+function OwnerContactCard({ property }: { property: PublicImmovable }) {
+  const owner = property.owner
+  const name = owner?.full_name?.trim() ?? ""
+  const email = owner?.email?.trim() ?? ""
+  const phone = owner?.phone_number?.trim() ?? ""
+  const hrefPhone = phoneHref(phone)
+
+  if (!name && !email && !phone) {
+    return null
+  }
+
+  return (
+    <article className="rounded-lg border border-border bg-card p-5 shadow-sm">
+      <div className="flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+          <UserRound className="size-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-primary">Contact</p>
+          <h2 className="mt-1 text-xl font-semibold">Propriétaire</h2>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-3 text-sm">
+        <div>
+          <p className="text-xs font-medium text-muted-foreground">Nom</p>
+          <p className="mt-1 font-semibold break-words text-foreground">
+            {name || "Propriétaire"}
+          </p>
+        </div>
+
+        {email ? (
+          <div>
+            <p className="text-xs font-medium text-muted-foreground">Email</p>
+            <a
+              className="mt-1 block break-words text-primary underline-offset-4 hover:underline"
+              href={`mailto:${email}`}
+            >
+              {email}
+            </a>
+          </div>
+        ) : null}
+
+        {phone ? (
+          <div>
+            <p className="text-xs font-medium text-muted-foreground">
+              Téléphone
+            </p>
+            {hrefPhone ? (
+              <a
+                className="mt-1 block break-words text-primary underline-offset-4 hover:underline"
+                href={hrefPhone}
+              >
+                {phone}
+              </a>
+            ) : (
+              <p className="mt-1 break-words text-foreground">{phone}</p>
+            )}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-5 grid gap-2">
+        {email ? (
+          <Button asChild variant="outline" className="w-full justify-start">
+            <a href={`mailto:${email}`}>
+              <Mail />
+              Envoyer un email
+            </a>
+          </Button>
+        ) : null}
+        {phone && hrefPhone ? (
+          <Button asChild className="w-full justify-start">
+            <a href={hrefPhone}>
+              <Phone />
+              Appeler
+            </a>
+          </Button>
+        ) : null}
+      </div>
+    </article>
   )
 }
 
@@ -374,26 +467,30 @@ function PublicPropertyDetailContent({ id }: { id: string }) {
               </p>
             </article>
 
-            <article className="rounded-lg border border-border bg-card p-5 shadow-sm">
-              <h2 className="text-xl font-semibold">Atouts</h2>
-              {amenities.length > 0 ? (
-                <div className="mt-4 grid gap-2">
-                  {amenities.map((amenity) => (
-                    <div
-                      key={amenity}
-                      className="flex items-center gap-2 text-sm text-muted-foreground"
-                    >
-                      <CheckCircle2 className="size-4 shrink-0 text-primary" />
-                      {amenity}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  Aucun atout spécifique n’a encore été renseigné.
-                </p>
-              )}
-            </article>
+            <aside className="space-y-6">
+              <OwnerContactCard property={property} />
+
+              <article className="rounded-lg border border-border bg-card p-5 shadow-sm">
+                <h2 className="text-xl font-semibold">Atouts</h2>
+                {amenities.length > 0 ? (
+                  <div className="mt-4 grid gap-2">
+                    {amenities.map((amenity) => (
+                      <div
+                        key={amenity}
+                        className="flex items-center gap-2 text-sm text-muted-foreground"
+                      >
+                        <CheckCircle2 className="size-4 shrink-0 text-primary" />
+                        {amenity}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    Aucun atout spécifique n’a encore été renseigné.
+                  </p>
+                )}
+              </article>
+            </aside>
           </div>
         </section>
 

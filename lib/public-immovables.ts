@@ -14,6 +14,12 @@ export type PublicImmovableMedia = {
   url?: string | null
 }
 
+export type PublicImmovableOwner = {
+  email?: string | null
+  full_name?: string | null
+  phone_number?: string | null
+}
+
 export type PublicImmovable = {
   adresse?: PublicImmovableAddress | null
   appartement?: Record<string, unknown> | null
@@ -26,6 +32,7 @@ export type PublicImmovable = {
   kiosque?: Record<string, unknown> | null
   maison?: Record<string, unknown> | null
   medias?: PublicImmovableMedia[] | null
+  owner?: PublicImmovableOwner | null
   primary_image_thumbnail?: string | null
   prix_affiche?: string | null
   reference?: string | null
