@@ -31,14 +31,11 @@ import { cn } from "@/lib/utils"
 
 type ImmovableAddressValues = {
   administrative_area: string
-  complement_adresse: string
   country: string
-  formatted_address: string
   latitude: string
   locality: string
   longitude: string
   postal_code: string
-  proximite_transports: string
   street: string
   sub_locality: string
 }
@@ -88,17 +85,11 @@ type ListResponse<TItem> =
 
 type ImmovableAddressPayload = {
   administrative_area: number
-  city: string
-  complement_adresse: string
-  country_id: number
-  formatted_address: string
+  country: number
   latitude: string
   locality: number
   longitude: string
-  neighborhood: string
   postal_code: string
-  proximite_transports: string
-  state: string
   street: string
   sub_locality: number
 }
@@ -126,14 +117,11 @@ type ImmovableAddressSectionProps = {
 
 const initialValues: ImmovableAddressValues = {
   administrative_area: "",
-  complement_adresse: "",
   country: "",
-  formatted_address: "",
   latitude: "",
   locality: "",
   longitude: "",
   postal_code: "",
-  proximite_transports: "",
   street: "",
   sub_locality: "",
 }
@@ -230,18 +218,6 @@ function requiredNumericValue(value: string, label: string) {
   }
 
   return Number(nextValue)
-}
-
-function formattedAddress({
-  administrativeArea,
-  country,
-  locality,
-  street,
-  subLocality,
-}: ImmovableAddressSummary) {
-  return [street, subLocality, locality, administrativeArea, country]
-    .filter(Boolean)
-    .join(", ")
 }
 
 function TextField({
@@ -582,7 +558,7 @@ const ImmovableAddressSection = forwardRef<
         values.administrative_area
       ),
       country: selectedName(countries, values.country),
-      formattedAddress: values.formatted_address.trim(),
+      formattedAddress: "",
       locality: selectedName(localities, values.locality),
       street: values.street.trim(),
       subLocality: selectedName(subLocalities, values.sub_locality),
@@ -590,7 +566,6 @@ const ImmovableAddressSection = forwardRef<
     [
       values.administrative_area,
       values.country,
-      values.formatted_address,
       values.locality,
       values.street,
       values.sub_locality,
@@ -714,7 +689,7 @@ const ImmovableAddressSection = forwardRef<
           setError(
             toErrorMessage(
               caughtError,
-              "Impossible de charger les sous-localités."
+              "Impossible de charger les quartiers."
             )
           )
         }
@@ -783,7 +758,7 @@ const ImmovableAddressSection = forwardRef<
         const localityId = requiredNumericValue(values.locality, "La localité")
         const subLocalityId = requiredNumericValue(
           values.sub_locality,
-          "La sous-localité"
+          "Le quartier"
         )
         const street = values.street.trim()
 
@@ -791,28 +766,19 @@ const ImmovableAddressSection = forwardRef<
           throw new Error("La rue est obligatoire.")
         }
 
-        const fallbackFormattedAddress = formattedAddress(summary)
-
         return {
           administrative_area: administrativeAreaId,
-          city: summary.locality,
-          complement_adresse: values.complement_adresse.trim(),
-          country_id: countryId,
-          formatted_address:
-            values.formatted_address.trim() || fallbackFormattedAddress,
+          country: countryId,
           latitude: values.latitude.trim(),
           locality: localityId,
           longitude: values.longitude.trim(),
-          neighborhood: summary.subLocality,
           postal_code: values.postal_code.trim(),
-          proximite_transports: values.proximite_transports.trim(),
-          state: summary.administrativeArea,
           street,
           sub_locality: subLocalityId,
         }
       },
     }),
-    [summary, values]
+    [values]
   )
 
   return (
@@ -883,20 +849,20 @@ const ImmovableAddressSection = forwardRef<
         />
         <ComboboxField
           id={`${idPrefix}-sub-locality`}
-          label="Sous-localité *"
+          label="Quartier *"
           name="sub_locality"
           value={values.sub_locality}
           options={subLocalityOptions}
           placeholder={
             values.locality
-              ? "Sélectionner une sous-localité"
+              ? "Sélectionner un quartier"
               : "Choisir une localité"
           }
           disabled={disabled || !values.locality}
           loading={loadingSubLocalities}
           onChange={updateValue}
-          searchPlaceholder="Rechercher une sous-localité..."
-          emptyLabel="Aucune sous-localité trouvée."
+          searchPlaceholder="Rechercher un quartier..."
+          emptyLabel="Aucun quartier trouvé."
         />
         <TextField
           id={`${idPrefix}-street`}
@@ -918,22 +884,6 @@ const ImmovableAddressSection = forwardRef<
           onChange={updateValue}
         />
         <TextField
-          id={`${idPrefix}-complement`}
-          label="Complément d'adresse"
-          name="complement_adresse"
-          value={values.complement_adresse}
-          disabled={disabled}
-          onChange={updateValue}
-        />
-        <TextField
-          id={`${idPrefix}-transports`}
-          label="Proximité transports"
-          name="proximite_transports"
-          value={values.proximite_transports}
-          disabled={disabled}
-          onChange={updateValue}
-        />
-        <TextField
           id={`${idPrefix}-latitude`}
           label="Latitude"
           name="latitude"
@@ -951,17 +901,6 @@ const ImmovableAddressSection = forwardRef<
           disabled={disabled}
           onChange={updateValue}
         />
-        <div className="md:col-span-2">
-          <TextField
-            id={`${idPrefix}-formatted-address`}
-            label="Adresse affichée"
-            name="formatted_address"
-            value={values.formatted_address}
-            disabled={disabled}
-            placeholder={formattedAddress(summary) || "Adresse complète"}
-            onChange={updateValue}
-          />
-        </div>
       </div>
     </section>
   )

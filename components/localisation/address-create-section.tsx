@@ -33,7 +33,9 @@ import { cn } from "@/lib/utils"
 type AddressFormValues = {
   administrative_area: string
   country: string
+  latitude: string
   locality: string
+  longitude: string
   postal_code: string
   street: string
   sub_locality: string
@@ -115,7 +117,9 @@ type AddressCreateSectionProps = {
 const initialAddressValues: AddressFormValues = {
   administrative_area: "",
   country: "",
+  latitude: "",
   locality: "",
+  longitude: "",
   postal_code: "",
   street: "",
   sub_locality: "",
@@ -257,7 +261,7 @@ function AddressTextField({
 }: {
   disabled?: boolean
   id: string
-  inputMode?: "numeric" | "text"
+  inputMode?: "decimal" | "numeric" | "text"
   label: string
   name: keyof AddressFormValues
   onChange: (name: keyof AddressFormValues, value: string) => void
@@ -616,7 +620,9 @@ const AddressCreateSection = forwardRef<
       JSON.stringify({
         administrative_area: values.administrative_area,
         country: values.country,
+        latitude: values.latitude.trim(),
         locality: values.locality,
+        longitude: values.longitude.trim(),
         postal_code: values.postal_code.trim(),
         street: values.street.trim(),
         sub_locality: values.sub_locality,
@@ -624,7 +630,9 @@ const AddressCreateSection = forwardRef<
     [
       values.administrative_area,
       values.country,
+      values.latitude,
       values.locality,
+      values.longitude,
       values.postal_code,
       values.street,
       values.sub_locality,
@@ -744,7 +752,7 @@ const AddressCreateSection = forwardRef<
           setError(
             toErrorMessage(
               caughtError,
-              "Impossible de charger les sous-localités."
+              "Impossible de charger les quartiers."
             )
           )
         }
@@ -825,12 +833,14 @@ const AddressCreateSection = forwardRef<
             "La division administrative"
           ),
           country: requiredNumericValue(values.country, "Le pays"),
+          latitude: values.latitude.trim(),
           locality: requiredNumericValue(values.locality, "La localité"),
+          longitude: values.longitude.trim(),
           postal_code: values.postal_code.trim(),
           street: values.street.trim(),
           sub_locality: requiredNumericValue(
             values.sub_locality,
-            "La sous-localité"
+            "Le quartier"
           ),
         }
       )
@@ -854,7 +864,9 @@ const AddressCreateSection = forwardRef<
     createdAddress,
     values.administrative_area,
     values.country,
+    values.latitude,
     values.locality,
+    values.longitude,
     values.postal_code,
     values.street,
     values.sub_locality,
@@ -948,7 +960,7 @@ const AddressCreateSection = forwardRef<
         />
         <AddressComboboxField
           id={`${idPrefix}-sub-locality`}
-          label="Sous-localité *"
+          label="Quartier *"
           name="sub_locality"
           value={values.sub_locality}
           options={subLocalityOptions}
@@ -963,11 +975,11 @@ const AddressCreateSection = forwardRef<
           onChange={updateValue}
           placeholder={
             values.locality
-              ? "Sélectionner une sous-localité"
+              ? "Sélectionner un quartier"
               : "Choisir une localité"
           }
-          searchPlaceholder="Rechercher une sous-localité..."
-          emptyLabel="Aucune sous-localité trouvée."
+          searchPlaceholder="Rechercher un quartier..."
+          emptyLabel="Aucun quartier trouvé."
         />
         <AddressTextField
           id={`${idPrefix}-street`}
@@ -988,6 +1000,26 @@ const AddressCreateSection = forwardRef<
           inputMode="numeric"
           onChange={updateValue}
           placeholder="0000"
+        />
+        <AddressTextField
+          id={`${idPrefix}-latitude`}
+          label="Latitude"
+          name="latitude"
+          value={values.latitude}
+          disabled={disabled}
+          inputMode="decimal"
+          onChange={updateValue}
+          placeholder="-4.325000"
+        />
+        <AddressTextField
+          id={`${idPrefix}-longitude`}
+          label="Longitude"
+          name="longitude"
+          value={values.longitude}
+          disabled={disabled}
+          inputMode="decimal"
+          onChange={updateValue}
+          placeholder="15.322200"
         />
       </div>
     </section>

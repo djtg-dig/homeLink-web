@@ -698,7 +698,7 @@ function AgencyDetailContent({ slug }: { slug: string }) {
                   value={agency.administrative_area}
                 />
                 <DetailRow label="Localité" value={agency.locality} />
-                <DetailRow label="Sous-localité" value={agency.sub_locality} />
+                <DetailRow label="Quartier" value={agency.sub_locality} />
               </InfoCard>
 
               <InfoCard icon={ShieldCheck} title="Informations légales">
