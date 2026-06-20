@@ -26,17 +26,24 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useAddressFieldMetadata } from "@/components/localisation/use-address-field-metadata"
 import { ApiError, apiFetch, apiPostJson } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
 import { cn } from "@/lib/utils"
 
 type AddressFormValues = {
   administrative_area: string
+  city: string
+  complement_adresse: string
   country: string
+  formatted_address: string
   latitude: string
   locality: string
   longitude: string
+  neighborhood: string
   postal_code: string
+  proximite_transports: string
+  state: string
   street: string
   sub_locality: string
 }
@@ -116,11 +123,17 @@ type AddressCreateSectionProps = {
 
 const initialAddressValues: AddressFormValues = {
   administrative_area: "",
+  city: "",
+  complement_adresse: "",
   country: "",
+  formatted_address: "",
   latitude: "",
   locality: "",
   longitude: "",
+  neighborhood: "",
   postal_code: "",
+  proximite_transports: "",
+  state: "",
   street: "",
   sub_locality: "",
 }
@@ -228,6 +241,20 @@ function requiredNumericValue(value: string, label: string) {
   return Number(nextValue)
 }
 
+function optionalNumericValue(value: string, label: string) {
+  const nextValue = value.trim()
+
+  if (!nextValue) {
+    return undefined
+  }
+
+  if (!/^\d+$/.test(nextValue)) {
+    throw new Error(`${label} est invalide.`)
+  }
+
+  return Number(nextValue)
+}
+
 function createdAddressId(response: AddressCreateResponse): string {
   if (typeof response === "number" || typeof response === "string") {
     return String(response)
@@ -248,21 +275,39 @@ function createdAddressId(response: AddressCreateResponse): string {
   throw new Error("L'adresse créée ne contient pas d'identifiant.")
 }
 
+function FieldHelpText({
+  description,
+  id,
+}: {
+  description?: string
+  id: string
+}) {
+  return description ? (
+    <p id={`${id}-help`} className="text-xs leading-5 text-muted-foreground">
+      {description}
+    </p>
+  ) : null
+}
+
 function AddressTextField({
+  description,
   disabled,
   id,
   inputMode,
   label,
+  maxLength,
   name,
   onChange,
   placeholder,
   required,
   value,
 }: {
+  description?: string
   disabled?: boolean
   id: string
   inputMode?: "decimal" | "numeric" | "text"
   label: string
+  maxLength?: number
   name: keyof AddressFormValues
   onChange: (name: keyof AddressFormValues, value: string) => void
   placeholder?: string
@@ -275,6 +320,7 @@ function AddressTextField({
         {label}
       </label>
       <input
+        aria-describedby={description ? `${id}-help` : undefined}
         className={inputClassName}
         id={id}
         name={name}
@@ -282,16 +328,19 @@ function AddressTextField({
         value={value}
         disabled={disabled}
         inputMode={inputMode}
+        maxLength={maxLength}
         placeholder={placeholder}
         required={required}
         onChange={(event) => onChange(name, event.target.value)}
       />
+      <FieldHelpText description={description} id={id} />
     </div>
   )
 }
 
 function CountryComboboxField({
   countries,
+  description,
   disabled,
   id,
   label,
@@ -302,6 +351,7 @@ function CountryComboboxField({
   value,
 }: {
   countries: CountryOption[]
+  description?: string
   disabled?: boolean
   id: string
   label: string
@@ -325,6 +375,7 @@ function CountryComboboxField({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              aria-describedby={description ? `${id}-help` : undefined}
               id={id}
               type="button"
               variant="outline"
@@ -408,11 +459,13 @@ function CountryComboboxField({
           </PopoverContent>
         </Popover>
       )}
+      <FieldHelpText description={description} id={id} />
     </div>
   )
 }
 
 function AddressComboboxField({
+  description,
   disabled,
   emptyLabel = "Aucun résultat trouvé.",
   id,
@@ -426,6 +479,7 @@ function AddressComboboxField({
   searchPlaceholder = "Rechercher...",
   value,
 }: {
+  description?: string
   disabled?: boolean
   emptyLabel?: string
   id: string
@@ -453,6 +507,7 @@ function AddressComboboxField({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              aria-describedby={description ? `${id}-help` : undefined}
               id={id}
               type="button"
               variant="outline"
@@ -523,6 +578,7 @@ function AddressComboboxField({
           </PopoverContent>
         </Popover>
       )}
+      <FieldHelpText description={description} id={id} />
     </div>
   )
 }
@@ -541,6 +597,7 @@ const AddressCreateSection = forwardRef<
   ref
 ) {
   const idPrefix = useId()
+  const addressFields = useAddressFieldMetadata("LocalisationAddressRequest")
   const [values, setValues] = useState<AddressFormValues>(initialAddressValues)
   const [error, setError] = useState("")
   const [createdAddress, setCreatedAddress] = useState<{
@@ -591,21 +648,25 @@ const AddressCreateSection = forwardRef<
 
   const summary = useMemo<AddressSummary>(
     () => ({
-      administrativeArea: selectedName(
-        administrativeAreas,
-        values.administrative_area
-      ),
+      administrativeArea:
+        selectedName(administrativeAreas, values.administrative_area) ||
+        values.state.trim(),
       country: selectedName(countries, values.country),
-      locality: selectedName(localities, values.locality),
+      locality: selectedName(localities, values.locality) || values.city.trim(),
       postalCode: values.postal_code.trim(),
       street: values.street.trim(),
-      subLocality: selectedName(subLocalities, values.sub_locality),
+      subLocality:
+        selectedName(subLocalities, values.sub_locality) ||
+        values.neighborhood.trim(),
     }),
     [
       values.administrative_area,
+      values.city,
       values.country,
       values.locality,
+      values.neighborhood,
       values.postal_code,
+      values.state,
       values.street,
       values.sub_locality,
       administrativeAreas,
@@ -619,21 +680,33 @@ const AddressCreateSection = forwardRef<
     () =>
       JSON.stringify({
         administrative_area: values.administrative_area,
+        city: values.city.trim(),
+        complement_adresse: values.complement_adresse.trim(),
         country: values.country,
+        formatted_address: values.formatted_address.trim(),
         latitude: values.latitude.trim(),
         locality: values.locality,
         longitude: values.longitude.trim(),
+        neighborhood: values.neighborhood.trim(),
         postal_code: values.postal_code.trim(),
+        proximite_transports: values.proximite_transports.trim(),
+        state: values.state.trim(),
         street: values.street.trim(),
         sub_locality: values.sub_locality,
       }),
     [
       values.administrative_area,
+      values.city,
+      values.complement_adresse,
       values.country,
+      values.formatted_address,
       values.latitude,
       values.locality,
       values.longitude,
+      values.neighborhood,
       values.postal_code,
+      values.proximite_transports,
+      values.state,
       values.street,
       values.sub_locality,
     ]
@@ -750,10 +823,7 @@ const AddressCreateSection = forwardRef<
       .catch((caughtError) => {
         if (!isAbortError(caughtError)) {
           setError(
-            toErrorMessage(
-              caughtError,
-              "Impossible de charger les quartiers."
-            )
+            toErrorMessage(caughtError, "Impossible de charger les quartiers.")
           )
         }
       })
@@ -828,17 +898,23 @@ const AddressCreateSection = forwardRef<
       const response = await apiPostJson<AddressCreateResponse>(
         "/api/localisation/addresses/",
         {
-          administrative_area: requiredNumericValue(
+          administrative_area: optionalNumericValue(
             values.administrative_area,
             "La division administrative"
           ),
+          city: values.city.trim(),
+          complement_adresse: values.complement_adresse.trim(),
           country: requiredNumericValue(values.country, "Le pays"),
+          formatted_address: values.formatted_address.trim(),
           latitude: values.latitude.trim(),
-          locality: requiredNumericValue(values.locality, "La localité"),
+          locality: optionalNumericValue(values.locality, "La localité"),
           longitude: values.longitude.trim(),
+          neighborhood: values.neighborhood.trim(),
           postal_code: values.postal_code.trim(),
+          proximite_transports: values.proximite_transports.trim(),
+          state: values.state.trim(),
           street: values.street.trim(),
-          sub_locality: requiredNumericValue(
+          sub_locality: optionalNumericValue(
             values.sub_locality,
             "Le quartier"
           ),
@@ -863,11 +939,17 @@ const AddressCreateSection = forwardRef<
     addressSignature,
     createdAddress,
     values.administrative_area,
+    values.city,
+    values.complement_adresse,
     values.country,
+    values.formatted_address,
     values.latitude,
     values.locality,
     values.longitude,
+    values.neighborhood,
     values.postal_code,
+    values.proximite_transports,
+    values.state,
     values.street,
     values.sub_locality,
   ])
@@ -912,8 +994,9 @@ const AddressCreateSection = forwardRef<
 
       <div className="grid gap-4 md:grid-cols-2">
         <CountryComboboxField
+          description={addressFields.country.description}
           id={`${idPrefix}-country`}
-          label="Pays *"
+          label={`${addressFields.country.title} *`}
           value={values.country}
           countries={countries}
           loading={loadingCountries}
@@ -923,14 +1006,14 @@ const AddressCreateSection = forwardRef<
           placeholder="Sélectionner un pays"
         />
         <AddressComboboxField
+          description={addressFields.administrative_area.description}
           id={`${idPrefix}-administrative-area`}
-          label="Division administrative *"
+          label={addressFields.administrative_area.title}
           name="administrative_area"
           value={values.administrative_area}
           options={administrativeAreaOptions}
           loading={loadingAdministrativeAreas}
           disabled={selectDisabled || !values.country}
-          required
           onChange={updateValue}
           placeholder={
             values.country ? "Sélectionner une division" : "Choisir un pays"
@@ -938,9 +1021,21 @@ const AddressCreateSection = forwardRef<
           searchPlaceholder="Rechercher une division..."
           emptyLabel="Aucune division trouvée."
         />
+        <AddressTextField
+          description={addressFields.state.description}
+          id={`${idPrefix}-state`}
+          label={addressFields.state.title}
+          maxLength={addressFields.state.maxLength}
+          name="state"
+          value={values.state}
+          disabled={disabled}
+          onChange={updateValue}
+          placeholder="Kinshasa"
+        />
         <AddressComboboxField
+          description={addressFields.locality.description}
           id={`${idPrefix}-locality`}
-          label="Localité *"
+          label={addressFields.locality.title}
           name="locality"
           value={values.locality}
           options={localityOptions}
@@ -948,7 +1043,6 @@ const AddressCreateSection = forwardRef<
           disabled={
             selectDisabled || !values.country || !values.administrative_area
           }
-          required
           onChange={updateValue}
           placeholder={
             values.administrative_area
@@ -958,9 +1052,21 @@ const AddressCreateSection = forwardRef<
           searchPlaceholder="Rechercher une localité..."
           emptyLabel="Aucune localité trouvée."
         />
+        <AddressTextField
+          description={addressFields.city.description}
+          id={`${idPrefix}-city`}
+          label={addressFields.city.title}
+          maxLength={addressFields.city.maxLength}
+          name="city"
+          value={values.city}
+          disabled={disabled}
+          onChange={updateValue}
+          placeholder="Gombe"
+        />
         <AddressComboboxField
+          description={addressFields.sub_locality.description}
           id={`${idPrefix}-sub-locality`}
-          label="Quartier *"
+          label={addressFields.sub_locality.title}
           name="sub_locality"
           value={values.sub_locality}
           options={subLocalityOptions}
@@ -971,7 +1077,6 @@ const AddressCreateSection = forwardRef<
             !values.administrative_area ||
             !values.locality
           }
-          required
           onChange={updateValue}
           placeholder={
             values.locality
@@ -982,8 +1087,21 @@ const AddressCreateSection = forwardRef<
           emptyLabel="Aucun quartier trouvé."
         />
         <AddressTextField
+          description={addressFields.neighborhood.description}
+          id={`${idPrefix}-neighborhood`}
+          label={addressFields.neighborhood.title}
+          maxLength={addressFields.neighborhood.maxLength}
+          name="neighborhood"
+          value={values.neighborhood}
+          disabled={disabled}
+          onChange={updateValue}
+          placeholder="Quartier des affaires"
+        />
+        <AddressTextField
+          description={addressFields.street.description}
           id={`${idPrefix}-street`}
-          label="Rue / avenue *"
+          label={`${addressFields.street.title} *`}
+          maxLength={addressFields.street.maxLength}
           name="street"
           value={values.street}
           disabled={disabled}
@@ -992,8 +1110,21 @@ const AddressCreateSection = forwardRef<
           placeholder="Avenue de la Justice 10"
         />
         <AddressTextField
+          description={addressFields.complement_adresse.description}
+          id={`${idPrefix}-complement`}
+          label={addressFields.complement_adresse.title}
+          maxLength={addressFields.complement_adresse.maxLength}
+          name="complement_adresse"
+          value={values.complement_adresse}
+          disabled={disabled}
+          onChange={updateValue}
+          placeholder="Immeuble Homelink, 2e étage"
+        />
+        <AddressTextField
+          description={addressFields.postal_code.description}
           id={`${idPrefix}-postal-code`}
-          label="Code postal"
+          label={addressFields.postal_code.title}
+          maxLength={addressFields.postal_code.maxLength}
           name="postal_code"
           value={values.postal_code}
           disabled={disabled}
@@ -1002,8 +1133,30 @@ const AddressCreateSection = forwardRef<
           placeholder="0000"
         />
         <AddressTextField
+          description={addressFields.proximite_transports.description}
+          id={`${idPrefix}-transports`}
+          label={addressFields.proximite_transports.title}
+          name="proximite_transports"
+          value={values.proximite_transports}
+          disabled={disabled}
+          onChange={updateValue}
+          placeholder="À proximité de la Gare Centrale"
+        />
+        <AddressTextField
+          description={addressFields.formatted_address.description}
+          id={`${idPrefix}-formatted-address`}
+          label={addressFields.formatted_address.title}
+          maxLength={addressFields.formatted_address.maxLength}
+          name="formatted_address"
+          value={values.formatted_address}
+          disabled={disabled}
+          onChange={updateValue}
+          placeholder="Avenue de la Justice 10, Gombe, Kinshasa"
+        />
+        <AddressTextField
+          description={addressFields.latitude.description}
           id={`${idPrefix}-latitude`}
-          label="Latitude"
+          label={addressFields.latitude.title}
           name="latitude"
           value={values.latitude}
           disabled={disabled}
@@ -1012,8 +1165,9 @@ const AddressCreateSection = forwardRef<
           placeholder="-4.325000"
         />
         <AddressTextField
+          description={addressFields.longitude.description}
           id={`${idPrefix}-longitude`}
-          label="Longitude"
+          label={addressFields.longitude.title}
           name="longitude"
           value={values.longitude}
           disabled={disabled}

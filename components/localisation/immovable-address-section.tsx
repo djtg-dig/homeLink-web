@@ -25,17 +25,24 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useAddressFieldMetadata } from "@/components/localisation/use-address-field-metadata"
 import { ApiError, apiFetch } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
 import { cn } from "@/lib/utils"
 
 type ImmovableAddressValues = {
   administrative_area: string
+  city: string
+  complement_adresse: string
   country: string
+  formatted_address: string
   latitude: string
   locality: string
   longitude: string
+  neighborhood: string
   postal_code: string
+  proximite_transports: string
+  state: string
   street: string
   sub_locality: string
 }
@@ -84,14 +91,20 @@ type ListResponse<TItem> =
     }
 
 type ImmovableAddressPayload = {
-  administrative_area: number
-  country: number
+  administrative_area?: number
+  city: string
+  complement_adresse: string
+  country_id: number
+  formatted_address: string
   latitude: string
-  locality: number
+  locality?: number
   longitude: string
+  neighborhood: string
   postal_code: string
+  proximite_transports: string
+  state: string
   street: string
-  sub_locality: number
+  sub_locality?: number
 }
 
 type ImmovableAddressSummary = {
@@ -117,11 +130,17 @@ type ImmovableAddressSectionProps = {
 
 const initialValues: ImmovableAddressValues = {
   administrative_area: "",
+  city: "",
+  complement_adresse: "",
   country: "",
+  formatted_address: "",
   latitude: "",
   locality: "",
   longitude: "",
+  neighborhood: "",
   postal_code: "",
+  proximite_transports: "",
+  state: "",
   street: "",
   sub_locality: "",
 }
@@ -220,21 +239,53 @@ function requiredNumericValue(value: string, label: string) {
   return Number(nextValue)
 }
 
+function optionalNumericValue(value: string, label: string) {
+  const nextValue = value.trim()
+
+  if (!nextValue) {
+    return undefined
+  }
+
+  if (!/^\d+$/.test(nextValue)) {
+    throw new Error(`${label} est invalide.`)
+  }
+
+  return Number(nextValue)
+}
+
+function FieldHelpText({
+  description,
+  id,
+}: {
+  description?: string
+  id: string
+}) {
+  return description ? (
+    <p id={`${id}-help`} className="text-xs leading-5 text-muted-foreground">
+      {description}
+    </p>
+  ) : null
+}
+
 function TextField({
+  description,
   disabled,
   id,
   inputMode,
   label,
+  maxLength,
   name,
   onChange,
   placeholder,
   required,
   value,
 }: {
+  description?: string
   disabled?: boolean
   id: string
   inputMode?: "decimal" | "text"
   label: string
+  maxLength?: number
   name: keyof ImmovableAddressValues
   onChange: (name: keyof ImmovableAddressValues, value: string) => void
   placeholder?: string
@@ -247,6 +298,7 @@ function TextField({
         {label}
       </label>
       <input
+        aria-describedby={description ? `${id}-help` : undefined}
         className={inputClassName}
         id={id}
         name={name}
@@ -254,25 +306,31 @@ function TextField({
         value={value}
         disabled={disabled}
         inputMode={inputMode}
+        maxLength={maxLength}
         placeholder={placeholder}
         required={required}
         onChange={(event) => onChange(name, event.target.value)}
       />
+      <FieldHelpText description={description} id={id} />
     </div>
   )
 }
 
 function CountryCombobox({
   countries,
+  description,
   disabled,
   id,
+  label,
   loading,
   onChange,
   value,
 }: {
   countries: CountryOption[]
+  description?: string
   disabled?: boolean
   id: string
+  label: string
   loading?: boolean
   onChange: (name: keyof ImmovableAddressValues, value: string) => void
   value: string
@@ -283,7 +341,7 @@ function CountryCombobox({
   return (
     <div className="space-y-2">
       <label className={labelClassName} htmlFor={id}>
-        Pays *
+        {label}
       </label>
       {loading ? (
         <Skeleton className="h-10 w-full" />
@@ -291,6 +349,7 @@ function CountryCombobox({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              aria-describedby={description ? `${id}-help` : undefined}
               id={id}
               type="button"
               variant="outline"
@@ -376,11 +435,13 @@ function CountryCombobox({
           </PopoverContent>
         </Popover>
       )}
+      <FieldHelpText description={description} id={id} />
     </div>
   )
 }
 
 function ComboboxField({
+  description,
   disabled,
   emptyLabel = "Aucun résultat trouvé.",
   id,
@@ -390,9 +451,11 @@ function ComboboxField({
   onChange,
   options,
   placeholder,
+  required,
   searchPlaceholder = "Rechercher...",
   value,
 }: {
+  description?: string
   disabled?: boolean
   emptyLabel?: string
   id: string
@@ -402,6 +465,7 @@ function ComboboxField({
   onChange: (name: keyof ImmovableAddressValues, value: string) => void
   options: Array<{ label: string; meta?: string; value: string }>
   placeholder: string
+  required?: boolean
   searchPlaceholder?: string
   value: string
 }) {
@@ -419,12 +483,13 @@ function ComboboxField({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              aria-describedby={description ? `${id}-help` : undefined}
               id={id}
               type="button"
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              aria-required
+              aria-required={required}
               disabled={disabled}
               className="h-10 w-full justify-between rounded-md px-3 font-normal"
             >
@@ -489,6 +554,7 @@ function ComboboxField({
           </PopoverContent>
         </Popover>
       )}
+      <FieldHelpText description={description} id={id} />
     </div>
   )
 }
@@ -507,6 +573,7 @@ const ImmovableAddressSection = forwardRef<
   ref
 ) {
   const idPrefix = useId()
+  const addressFields = useAddressFieldMetadata("AddressRequest")
   const [values, setValues] = useState<ImmovableAddressValues>(initialValues)
   const [error, setError] = useState("")
   const [countries, setCountries] = useState<CountryOption[]>([])
@@ -553,20 +620,25 @@ const ImmovableAddressSection = forwardRef<
 
   const summary = useMemo<ImmovableAddressSummary>(
     () => ({
-      administrativeArea: selectedName(
-        administrativeAreas,
-        values.administrative_area
-      ),
+      administrativeArea:
+        selectedName(administrativeAreas, values.administrative_area) ||
+        values.state.trim(),
       country: selectedName(countries, values.country),
-      formattedAddress: "",
-      locality: selectedName(localities, values.locality),
+      formattedAddress: values.formatted_address.trim(),
+      locality: selectedName(localities, values.locality) || values.city.trim(),
       street: values.street.trim(),
-      subLocality: selectedName(subLocalities, values.sub_locality),
+      subLocality:
+        selectedName(subLocalities, values.sub_locality) ||
+        values.neighborhood.trim(),
     }),
     [
       values.administrative_area,
+      values.city,
       values.country,
+      values.formatted_address,
       values.locality,
+      values.neighborhood,
+      values.state,
       values.street,
       values.sub_locality,
       administrativeAreas,
@@ -687,10 +759,7 @@ const ImmovableAddressSection = forwardRef<
       .catch((caughtError) => {
         if (!isAbortError(caughtError)) {
           setError(
-            toErrorMessage(
-              caughtError,
-              "Impossible de charger les quartiers."
-            )
+            toErrorMessage(caughtError, "Impossible de charger les quartiers.")
           )
         }
       })
@@ -751,12 +820,12 @@ const ImmovableAddressSection = forwardRef<
     () => ({
       getAddressPayload() {
         const countryId = requiredNumericValue(values.country, "Le pays")
-        const administrativeAreaId = requiredNumericValue(
+        const administrativeAreaId = optionalNumericValue(
           values.administrative_area,
           "La division administrative"
         )
-        const localityId = requiredNumericValue(values.locality, "La localité")
-        const subLocalityId = requiredNumericValue(
+        const localityId = optionalNumericValue(values.locality, "La localité")
+        const subLocalityId = optionalNumericValue(
           values.sub_locality,
           "Le quartier"
         )
@@ -768,11 +837,17 @@ const ImmovableAddressSection = forwardRef<
 
         return {
           administrative_area: administrativeAreaId,
-          country: countryId,
+          city: values.city.trim(),
+          complement_adresse: values.complement_adresse.trim(),
+          country_id: countryId,
+          formatted_address: values.formatted_address.trim(),
           latitude: values.latitude.trim(),
           locality: localityId,
           longitude: values.longitude.trim(),
+          neighborhood: values.neighborhood.trim(),
           postal_code: values.postal_code.trim(),
+          proximite_transports: values.proximite_transports.trim(),
+          state: values.state.trim(),
           street,
           sub_locality: subLocalityId,
         }
@@ -809,15 +884,18 @@ const ImmovableAddressSection = forwardRef<
       <div className="grid gap-4 md:grid-cols-2">
         <CountryCombobox
           countries={countries}
+          description={addressFields.country_id.description}
           disabled={disabled}
           id={`${idPrefix}-country`}
+          label={`${addressFields.country_id.title} *`}
           loading={loadingCountries}
           value={values.country}
           onChange={updateValue}
         />
         <ComboboxField
+          description={addressFields.administrative_area.description}
           id={`${idPrefix}-administrative-area`}
-          label="Division administrative *"
+          label={addressFields.administrative_area.title}
           name="administrative_area"
           value={values.administrative_area}
           options={administrativeAreaOptions}
@@ -830,9 +908,21 @@ const ImmovableAddressSection = forwardRef<
           searchPlaceholder="Rechercher une division..."
           emptyLabel="Aucune division trouvée."
         />
+        <TextField
+          description={addressFields.state.description}
+          id={`${idPrefix}-state`}
+          label={addressFields.state.title}
+          maxLength={addressFields.state.maxLength}
+          name="state"
+          value={values.state}
+          disabled={disabled}
+          placeholder="Kinshasa"
+          onChange={updateValue}
+        />
         <ComboboxField
+          description={addressFields.locality.description}
           id={`${idPrefix}-locality`}
-          label="Localité *"
+          label={addressFields.locality.title}
           name="locality"
           value={values.locality}
           options={localityOptions}
@@ -847,9 +937,21 @@ const ImmovableAddressSection = forwardRef<
           searchPlaceholder="Rechercher une localité..."
           emptyLabel="Aucune localité trouvée."
         />
+        <TextField
+          description={addressFields.city.description}
+          id={`${idPrefix}-city`}
+          label={addressFields.city.title}
+          maxLength={addressFields.city.maxLength}
+          name="city"
+          value={values.city}
+          disabled={disabled}
+          placeholder="Gombe"
+          onChange={updateValue}
+        />
         <ComboboxField
+          description={addressFields.sub_locality.description}
           id={`${idPrefix}-sub-locality`}
-          label="Quartier *"
+          label={addressFields.sub_locality.title}
           name="sub_locality"
           value={values.sub_locality}
           options={subLocalityOptions}
@@ -865,8 +967,21 @@ const ImmovableAddressSection = forwardRef<
           emptyLabel="Aucun quartier trouvé."
         />
         <TextField
+          description={addressFields.neighborhood.description}
+          id={`${idPrefix}-neighborhood`}
+          label={addressFields.neighborhood.title}
+          maxLength={addressFields.neighborhood.maxLength}
+          name="neighborhood"
+          value={values.neighborhood}
+          disabled={disabled}
+          placeholder="Quartier des affaires"
+          onChange={updateValue}
+        />
+        <TextField
+          description={addressFields.street.description}
           id={`${idPrefix}-street`}
-          label="Rue *"
+          label={`${addressFields.street.title} *`}
+          maxLength={addressFields.street.maxLength}
           name="street"
           value={values.street}
           required
@@ -875,8 +990,21 @@ const ImmovableAddressSection = forwardRef<
           onChange={updateValue}
         />
         <TextField
+          description={addressFields.complement_adresse.description}
+          id={`${idPrefix}-complement`}
+          label={addressFields.complement_adresse.title}
+          maxLength={addressFields.complement_adresse.maxLength}
+          name="complement_adresse"
+          value={values.complement_adresse}
+          disabled={disabled}
+          placeholder="Immeuble Homelink, 2e étage"
+          onChange={updateValue}
+        />
+        <TextField
+          description={addressFields.postal_code.description}
           id={`${idPrefix}-postal-code`}
-          label="Code postal"
+          label={addressFields.postal_code.title}
+          maxLength={addressFields.postal_code.maxLength}
           name="postal_code"
           value={values.postal_code}
           disabled={disabled}
@@ -884,21 +1012,46 @@ const ImmovableAddressSection = forwardRef<
           onChange={updateValue}
         />
         <TextField
+          description={addressFields.proximite_transports.description}
+          id={`${idPrefix}-transports`}
+          label={addressFields.proximite_transports.title}
+          name="proximite_transports"
+          value={values.proximite_transports}
+          disabled={disabled}
+          placeholder="À proximité de la Gare Centrale"
+          onChange={updateValue}
+        />
+        <TextField
+          description={addressFields.formatted_address.description}
+          id={`${idPrefix}-formatted-address`}
+          label={addressFields.formatted_address.title}
+          maxLength={addressFields.formatted_address.maxLength}
+          name="formatted_address"
+          value={values.formatted_address}
+          disabled={disabled}
+          placeholder="Avenue de la Justice 10, Gombe, Kinshasa"
+          onChange={updateValue}
+        />
+        <TextField
+          description={addressFields.latitude.description}
           id={`${idPrefix}-latitude`}
-          label="Latitude"
+          label={addressFields.latitude.title}
           name="latitude"
           value={values.latitude}
           inputMode="decimal"
           disabled={disabled}
+          placeholder="-4.325000"
           onChange={updateValue}
         />
         <TextField
+          description={addressFields.longitude.description}
           id={`${idPrefix}-longitude`}
-          label="Longitude"
+          label={addressFields.longitude.title}
           name="longitude"
           value={values.longitude}
           inputMode="decimal"
           disabled={disabled}
+          placeholder="15.322200"
           onChange={updateValue}
         />
       </div>
