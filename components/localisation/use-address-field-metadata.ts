@@ -137,6 +137,14 @@ const addressFieldNames = Object.keys(
   fallbackAddressFields
 ) as AddressFieldName[]
 
+const technicalRelationFields = new Set<AddressFieldName>([
+  "administrative_area",
+  "country",
+  "country_id",
+  "locality",
+  "sub_locality",
+])
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
@@ -199,10 +207,23 @@ function parseAddressFields(
   const properties = schemaProperties(schema, schemaName)
 
   return Object.fromEntries(
-    addressFieldNames.map((name) => [
-      name,
-      metadataValue(properties[name], fallbackAddressFields[name]),
-    ])
+    addressFieldNames.map((name) => {
+      const metadata = metadataValue(
+        properties[name],
+        fallbackAddressFields[name]
+      )
+
+      return [
+        name,
+        technicalRelationFields.has(name)
+          ? {
+              ...metadata,
+              description: fallbackAddressFields[name].description,
+              title: fallbackAddressFields[name].title,
+            }
+          : metadata,
+      ]
+    })
   ) as AddressFieldMetadataMap
 }
 
