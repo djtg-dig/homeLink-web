@@ -47,6 +47,7 @@ import {
 } from "@/lib/immeubles"
 
 const NO_AGENCY_VALUE = "__none__"
+const NO_IMMEUBLE_VALUE = "__none__"
 
 type AppartementFormValues = {
   agency_id: string
@@ -92,7 +93,7 @@ const initialValues: AppartementFormValues = {
   emission_ges: "A",
   est_proprietaire: true,
   etage: "",
-  immeuble: "",
+  immeuble: NO_IMMEUBLE_VALUE,
   interphone: false,
   is_active: true,
   jardin: false,
@@ -186,6 +187,20 @@ function requiredInteger(value: string, label: string) {
   return Number(nextValue)
 }
 
+function optionalInteger(value: string, label: string) {
+  const nextValue = value.trim()
+
+  if (!nextValue || nextValue === NO_IMMEUBLE_VALUE) {
+    return undefined
+  }
+
+  if (!/^-?\d+$/.test(nextValue)) {
+    throw new Error(`${label} doit être un nombre entier.`)
+  }
+
+  return Number(nextValue)
+}
+
 function selectedLabel(
   options: Array<{ label: string; value: string }>,
   value: string
@@ -208,6 +223,10 @@ function selectedAgencyName(agencies: Agency[], agencyId: string) {
 }
 
 function selectedImmeubleName(immeubles: Immeuble[], selectedId: string) {
+  if (selectedId === NO_IMMEUBLE_VALUE || !selectedId.trim()) {
+    return "Sans immeuble"
+  }
+
   const immeuble = immeubles.find(
     (item) => String(item.id ?? "") === selectedId
   )
@@ -484,7 +503,7 @@ function AppartementCreateContent() {
       values.surface_habitable,
       "La surface habitable"
     )
-    const immeuble = requiredInteger(values.immeuble, "L'immeuble")
+    const immeuble = optionalInteger(values.immeuble, "L'immeuble")
     const superficie = requiredText(values.superficie, "La superficie")
     const price =
       values.type_transaction === "vente"
@@ -520,9 +539,12 @@ function AppartementCreateContent() {
       piscine: values.piscine,
       superficie,
       terrasse: values.terrasse,
-      immeuble,
     }
     const superficieTerrasse = optionalText(values.superficie_terrasse)
+
+    if (immeuble !== undefined) {
+      appartement.immeuble = immeuble
+    }
 
     if (superficieTerrasse) {
       appartement.superficie_terrasse = superficieTerrasse
@@ -675,7 +697,7 @@ function AppartementCreateContent() {
               </div>
               <div className="space-y-2">
                 <label className={labelClassName} htmlFor="immeuble">
-                  Immeuble *
+                  Immeuble
                 </label>
                 {loadingImmeubles ? (
                   <Skeleton className="h-10 w-full" />
@@ -690,6 +712,9 @@ function AppartementCreateContent() {
                       <SelectValue placeholder="Sélectionner un immeuble" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value={NO_IMMEUBLE_VALUE}>
+                        Sans immeuble
+                      </SelectItem>
                       {immeubles
                         .filter((immeuble) => immeubleId(immeuble))
                         .map((immeuble) => (

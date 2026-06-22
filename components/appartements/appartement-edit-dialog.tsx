@@ -36,6 +36,7 @@ import {
 } from "@/lib/immeubles"
 
 const NO_AGENCY_VALUE = "__none__"
+const NO_IMMEUBLE_VALUE = "__none__"
 
 type AppartementEditValues = {
   agency_id: string
@@ -140,6 +141,20 @@ function requiredInteger(value: string, label: string) {
   return Number(nextValue)
 }
 
+function optionalInteger(value: string, label: string) {
+  const nextValue = value.trim()
+
+  if (!nextValue || nextValue === NO_IMMEUBLE_VALUE) {
+    return undefined
+  }
+
+  if (!/^-?\d+$/.test(nextValue)) {
+    throw new Error(`${label} doit être un nombre entier.`)
+  }
+
+  return Number(nextValue)
+}
+
 function formValuesFromAppartement(
   appartement: Appartement
 ): AppartementEditValues {
@@ -158,7 +173,10 @@ function formValuesFromAppartement(
     emission_ges: details?.emission_ges?.trim() || "A",
     est_proprietaire: appartement.est_proprietaire !== false,
     etage: valueText(details?.etage),
-    immeuble: valueText(details?.immeuble),
+    immeuble:
+      details?.immeuble === undefined || details?.immeuble === null
+        ? NO_IMMEUBLE_VALUE
+        : valueText(details.immeuble),
     interphone: Boolean(details?.interphone),
     is_active: appartement.is_active !== false,
     jardin: Boolean(details?.jardin),
@@ -197,7 +215,6 @@ function buildPatchPayload(values: AppartementEditValues) {
     climatisation: values.climatisation,
     emission_ges: values.emission_ges,
     etage: requiredInteger(values.etage, "L'étage"),
-    immeuble: requiredInteger(values.immeuble, "L'immeuble"),
     interphone: values.interphone,
     jardin: values.jardin,
     meuble: values.meuble,
@@ -215,7 +232,10 @@ function buildPatchPayload(values: AppartementEditValues) {
     superficie: requiredText(values.superficie, "La superficie"),
     terrasse: values.terrasse,
   }
+  const immeuble = optionalInteger(values.immeuble, "L'immeuble")
   const superficieTerrasse = optionalText(values.superficie_terrasse)
+
+  appartement.immeuble = immeuble ?? null
 
   if (superficieTerrasse !== undefined) {
     appartement.superficie_terrasse = superficieTerrasse
@@ -686,7 +706,7 @@ function AppartementEditDialog({
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2 md:col-span-3">
                 <label className={labelClassName} htmlFor="edit-immeuble">
-                  Immeuble *
+                  Immeuble
                 </label>
                 {loadingImmeubles ? (
                   <Skeleton className="h-10 w-full" />
@@ -701,6 +721,9 @@ function AppartementEditDialog({
                       <SelectValue placeholder="Sélectionner un immeuble" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value={NO_IMMEUBLE_VALUE}>
+                        Sans immeuble
+                      </SelectItem>
                       {immeubles
                         .filter((immeuble) => immeubleId(immeuble))
                         .map((immeuble) => (

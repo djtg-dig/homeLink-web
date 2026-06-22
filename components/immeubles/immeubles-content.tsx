@@ -576,7 +576,7 @@ function ImmeublesContent() {
           <article className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
             <p className="text-sm text-muted-foreground">Usage</p>
             <p className="mt-3 text-sm font-medium">
-              Sélection obligatoire lors de la création d&apos;un appartement.
+              Sélection possible lors de la création d&apos;un appartement.
             </p>
           </article>
         </section>

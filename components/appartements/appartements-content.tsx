@@ -489,9 +489,10 @@ function AppartementsContent() {
                 <Building2 className="size-5" />
               </span>
               <div>
-                <h2 className="text-base font-semibold">Immeuble requis</h2>
+                <h2 className="text-base font-semibold">Immeuble optionnel</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Créez l’immeuble avant de publier ses appartements.
+                  Rattachez un appartement à un immeuble seulement si c’est
+                  nécessaire.
                 </p>
               </div>
             </div>
