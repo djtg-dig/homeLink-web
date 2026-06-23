@@ -54,8 +54,15 @@ function HouseAiResultsContent({
       setLoading(true)
 
       try {
+        const queryString = [
+          filterQuery,
+          query ? `search=${encodeURIComponent(query)}` : "",
+        ]
+          .filter(Boolean)
+          .join("&")
+
         const response = await apiFetch<PublicImmovablesResponse>(
-          `/api/immovables/public/maisons/${filterQuery ? `?${filterQuery}` : ""}`,
+          `/api/immovables/public/maisons/${queryString ? `?${queryString}` : ""}`,
           { signal }
         )
         const parsed = parsePublicImmovables(response)
@@ -95,7 +102,7 @@ function HouseAiResultsContent({
         }
       }
     },
-    [filterQuery]
+    [filterQuery, query]
   )
 
   React.useEffect(() => {

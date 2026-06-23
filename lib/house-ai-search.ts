@@ -23,6 +23,8 @@ export type HouseAiFilters = {
 export type HouseAiSearchResponse = {
   filters?: HouseAiFilters | null
   success?: boolean
+  error?: string
+  code?: string
 }
 
 export const houseAiFilterKeys = [
@@ -154,6 +156,15 @@ export function parseHouseAiFilterValue(value: string) {
 
   if (value === "false") {
     return false
+  }
+
+  // Essayer de parser les nombres
+  const trimmed = value.trim()
+  if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    const num = Number(trimmed)
+    if (!isNaN(num)) {
+      return num
+    }
   }
 
   return value

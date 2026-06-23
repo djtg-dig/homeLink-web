@@ -83,7 +83,12 @@ function HouseAiSearch({ initialQuery = "" }: { initialQuery?: string }) {
         }
       )
 
-      if (!extraction.success || !extraction.filters) {
+      if (!extraction.success) {
+        const errorMessage = extraction.error || "La recherche n’a pas pu être comprise."
+        throw new Error(errorMessage)
+      }
+      
+      if (!extraction.filters) {
         throw new Error("La recherche n’a pas pu être comprise.")
       }
 
