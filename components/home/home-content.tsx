@@ -59,7 +59,6 @@ const heroStats = [
 const defaultHeroCopy = {
   description:
     "Appartements, maisons, bureaux, hôtels, kiosques, terrains et salles événement sont regroupés dans une recherche simple à affiner selon vos critères.",
-  title: "Trouvez le bien qui cadre avec votre projet.",
 }
 
 const heroCopyByType: Partial<
@@ -68,7 +67,6 @@ const heroCopyByType: Partial<
   maison: {
     description:
       "Explorez les maisons disponibles à la vente ou à la location, puis affinez par commune, budget, chambres, salles de bain et équipements.",
-    title: "Trouvez une maison adaptée à votre façon de vivre.",
   },
 }
 
@@ -384,9 +382,6 @@ function HomeContent({ initialFilters }: HomeContentProps) {
             <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
               <div className="max-w-3xl min-w-0 space-y-6">
                 <div className="space-y-4">
-                  <h1 className="max-w-[22rem] text-[1.75rem] leading-tight font-semibold break-words sm:max-w-3xl sm:text-5xl lg:text-6xl">
-                    {currentHeroCopy.title}
-                  </h1>
                   <p className="max-w-full text-base leading-7 text-white/78 sm:max-w-2xl sm:text-lg">
                     {currentHeroCopy.description}
                   </p>
