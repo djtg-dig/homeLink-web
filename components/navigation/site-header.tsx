@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname, useSearchParams } from "next/navigation"
 import { ChevronDown } from "lucide-react"
 import * as React from "react"
 
@@ -10,10 +11,55 @@ import { propertyCategories } from "@/lib/property-categories"
 import { publicCategoryLinks } from "@/lib/public-navigation"
 import { cn } from "@/lib/utils"
 
-function SiteHeader() {
+type PublicCategorySlug = (typeof propertyCategories)[number]["slug"]
+
+const publicTypeToCategorySlug: Partial<Record<string, PublicCategorySlug>> = {
+  appartement: "appartements",
+  bureau: "bureaux",
+  hotel: "hotels",
+  immeuble: "immeubles",
+  kiosque: "kiosques",
+  maison: "maisons",
+  salle_evenement: "salles-evenement",
+  terrain: "terrains",
+}
+
+function activeCategoryFromType(type: string | null) {
+  return type ? publicTypeToCategorySlug[type] : undefined
+}
+
+function publicCategoryLinkClass(active: boolean) {
+  return cn(
+    "shrink-0 rounded-md px-3 py-2 text-sm font-medium transition",
+    "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-cyan/30",
+    active
+      ? "bg-brand-orange text-brand-navy shadow-sm"
+      : "text-white/76 hover:bg-white/8 hover:text-white"
+  )
+}
+
+function publicCategoryMenuItemClass(active: boolean) {
+  return cn(
+    "rounded-md px-3 py-2.5 text-sm font-medium transition",
+    active
+      ? "bg-primary text-primary-foreground"
+      : "hover:bg-muted"
+  )
+}
+
+function SiteHeader({
+  activeCategory,
+}: {
+  activeCategory?: PublicCategorySlug
+}) {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [hidden, setHidden] = React.useState(false)
   const [categoriesOpen, setCategoriesOpen] = React.useState(false)
   const categoriesMenuRef = React.useRef<HTMLDivElement>(null)
+  const currentCategory =
+    activeCategory ??
+    (pathname === "/" ? activeCategoryFromType(searchParams.get("type_bien")) : undefined)
 
   React.useEffect(() => {
     let previousScrollY = window.scrollY
@@ -120,7 +166,10 @@ function SiteHeader() {
                 role="menuitem"
                 href={publicCategoryLinks[item.slug] ?? "/#biens"}
                 onClick={() => setCategoriesOpen(false)}
-                className="rounded-md px-3 py-2.5 text-sm font-medium transition hover:bg-muted"
+                aria-current={currentCategory === item.slug ? "page" : undefined}
+                className={publicCategoryMenuItemClass(
+                  currentCategory === item.slug
+                )}
               >
                 {item.label}
               </Link>
@@ -137,7 +186,8 @@ function SiteHeader() {
             <Link
               key={item.slug}
               href={publicCategoryLinks[item.slug] ?? "/#biens"}
-              className="shrink-0 rounded-md px-3 py-2 text-sm font-medium text-white/76 transition hover:bg-white/8 hover:text-white"
+              aria-current={currentCategory === item.slug ? "page" : undefined}
+              className={publicCategoryLinkClass(currentCategory === item.slug)}
             >
               {item.label}
             </Link>

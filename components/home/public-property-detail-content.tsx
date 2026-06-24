@@ -1,9 +1,7 @@
 "use client"
 
-import Link from "next/link"
 import Image from "next/image"
 import {
-  ArrowLeft,
   Building2,
   CheckCircle2,
   Home,
@@ -40,6 +38,33 @@ import {
   type PublicImmovable,
 } from "@/lib/public-immovables"
 import { cn } from "@/lib/utils"
+
+type PublicHeaderCategory =
+  | "appartements"
+  | "bureaux"
+  | "hotels"
+  | "immeubles"
+  | "kiosques"
+  | "maisons"
+  | "salles-evenement"
+  | "terrains"
+
+const publicTypeToHeaderCategory: Partial<
+  Record<string, PublicHeaderCategory>
+> = {
+  appartement: "appartements",
+  bureau: "bureaux",
+  hotel: "hotels",
+  immeuble: "immeubles",
+  kiosque: "kiosques",
+  maison: "maisons",
+  salle_evenement: "salles-evenement",
+  terrain: "terrains",
+}
+
+function publicHeaderCategory(property: PublicImmovable) {
+  return publicTypeToHeaderCategory[publicImmovableType(property) ?? ""]
+}
 
 function safeErrorMessage(message: string, fallback: string) {
   const normalizedMessage = message.trim()
@@ -335,12 +360,6 @@ function PublicPropertyDetailContent({ id }: { id: string }) {
                 {error || "Le bien demandé est introuvable."}
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
-                <Button asChild variant="outline">
-                  <Link href="/#biens">
-                    <ArrowLeft />
-                    Retour aux biens
-                  </Link>
-                </Button>
                 <Button type="button" onClick={() => void loadProperty()}>
                   <RefreshCw />
                   Réessayer
@@ -364,17 +383,10 @@ function PublicPropertyDetailContent({ id }: { id: string }) {
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader activeCategory={publicHeaderCategory(property)} />
       <main className="min-h-svh overflow-x-hidden bg-background text-foreground">
         <section className="bg-muted/40 px-4 py-8 sm:px-8 sm:py-10 lg:px-10">
           <div className="mx-auto max-w-6xl space-y-6">
-            <Button asChild variant="outline" className="bg-background">
-              <Link href="/#biens">
-                <ArrowLeft />
-                Retour aux biens
-              </Link>
-            </Button>
-
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(20rem,0.92fr)] lg:items-start">
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
                 <div className="relative aspect-[4/3] bg-secondary text-primary">

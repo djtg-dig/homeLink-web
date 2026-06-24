@@ -10,7 +10,6 @@ import {
 } from "lucide-react"
 import * as React from "react"
 
-import { HomelinkLogo } from "@/components/homelink-logo"
 import { HouseAiSearch } from "@/components/home/house-ai-search"
 import {
   PublicPropertyCard,
@@ -56,6 +55,26 @@ const heroStats = [
   { label: "Recherche", value: "Avancée" },
   { label: "Accès", value: "Public" },
 ]
+
+const defaultHeroCopy = {
+  description:
+    "Appartements, maisons, bureaux, hôtels, kiosques, terrains et salles événement sont regroupés dans une recherche simple à affiner selon vos critères.",
+  title: "Trouvez le bien qui cadre avec votre projet.",
+}
+
+const heroCopyByType: Partial<
+  Record<PublicImmovableFilters["type_bien"], typeof defaultHeroCopy>
+> = {
+  maison: {
+    description:
+      "Explorez les maisons disponibles à la vente ou à la location, puis affinez par commune, budget, chambres, salles de bain et équipements.",
+    title: "Trouvez une maison adaptée à votre façon de vivre.",
+  },
+}
+
+function heroCopy(type: PublicImmovableFilters["type_bien"]) {
+  return heroCopyByType[type] ?? defaultHeroCopy
+}
 
 function mergeFilters(filters?: Partial<PublicImmovableFilters>) {
   const mergedFilters = {
@@ -354,6 +373,8 @@ function HomeContent({ initialFilters }: HomeContentProps) {
     void loadProperties(appliedFilters)
   }
 
+  const currentHeroCopy = heroCopy(draftFilters.type_bien)
+
   return (
     <>
       <SiteHeader />
@@ -362,19 +383,12 @@ function HomeContent({ initialFilters }: HomeContentProps) {
           <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-9 px-4 py-10 sm:px-8 sm:py-14 lg:px-10">
             <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
               <div className="max-w-3xl min-w-0 space-y-6">
-                <HomelinkLogo
-                  priority
-                  sizes="(min-width: 1024px) 360px, (min-width: 640px) 320px, 80vw"
-                  className="h-24 w-full max-w-[20rem] sm:h-28 sm:max-w-[24rem]"
-                />
                 <div className="space-y-4">
                   <h1 className="max-w-[22rem] text-[1.75rem] leading-tight font-semibold break-words sm:max-w-3xl sm:text-5xl lg:text-6xl">
-                    Trouvez le bien qui cadre avec votre projet.
+                    {currentHeroCopy.title}
                   </h1>
                   <p className="max-w-full text-base leading-7 text-white/78 sm:max-w-2xl sm:text-lg">
-                    Appartements, maisons, bureaux, hôtels, kiosques, terrains
-                    et salles événement sont regroupés dans une recherche simple
-                    à affiner selon vos critères.
+                    {currentHeroCopy.description}
                   </p>
                 </div>
               </div>

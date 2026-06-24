@@ -119,7 +119,7 @@ function HouseAiResultsContent({
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader activeCategory="maisons" />
       <main className="min-h-svh bg-muted/35 text-foreground">
         <section className="border-b border-white/10 bg-brand-navy text-white">
           <div className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-10 lg:px-10">

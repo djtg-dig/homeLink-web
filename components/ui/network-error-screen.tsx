@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { RefreshCw, WifiOff } from "lucide-react"
+import { RefreshCw, WifiOff, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -59,29 +59,48 @@ function NetworkErrorScreen() {
     <div
       role="alert"
       aria-live="assertive"
-      className="fixed inset-0 z-[120] flex min-h-svh items-center justify-center bg-background px-4 py-8 text-foreground"
+      className="fixed right-4 bottom-4 left-4 z-[120] text-foreground sm:right-6 sm:bottom-6 sm:left-auto sm:w-[420px]"
     >
-      <div className="mx-auto flex w-full max-w-lg flex-col items-center text-center">
-        <span className="flex size-16 items-center justify-center rounded-lg bg-secondary text-primary shadow-sm">
-          <WifiOff className="size-8" />
-        </span>
-        <p className="mt-6 text-sm font-medium text-muted-foreground">
-          Connexion indisponible
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-normal sm:text-3xl">
-          Oups, il y a un souci de réseau.
-        </h1>
-        <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-          {message}
-        </p>
-        <Button
-          type="button"
-          className="mt-6 h-10"
-          onClick={() => window.location.reload()}
-        >
-          <RefreshCw />
-          Réessayer
-        </Button>
+      <div className="rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-2xl">
+        <div className="flex items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+            <WifiOff className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Connexion indisponible
+                </p>
+                <h2 className="mt-1 text-base font-semibold">
+                  Oups, il y a un souci de réseau.
+                </h2>
+              </div>
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="ghost"
+                className="-mt-1 -mr-1"
+                onClick={() => setVisible(false)}
+              >
+                <X />
+                <span className="sr-only">Fermer l&apos;alerte réseau</span>
+              </Button>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {message}
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              className="mt-4 h-9"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw />
+              Réessayer
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )

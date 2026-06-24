@@ -120,8 +120,20 @@ const categoryPathPrefixes: Partial<
 }
 
 function isCategoryActive(item: PropertyCategory, pathname: string) {
-  return categoryPathPrefixes[item.slug]?.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  return Boolean(
+    categoryPathPrefixes[item.slug]?.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    )
+  )
+}
+
+function dashboardNavLinkClass(active: boolean) {
+  return cn(
+    "relative flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+    active
+      ? "bg-white text-brand-navy shadow-sm before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-r-full before:bg-primary"
+      : "text-white/72 hover:bg-white/10 hover:text-white"
   )
 }
 
@@ -149,12 +161,7 @@ function DashboardShellLoading({
           <Link
             href="/dashboard"
             aria-current={overviewIsActive ? "page" : undefined}
-            className={cn(
-              "flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
-              overviewIsActive
-                ? "bg-white/12 text-white"
-                : "text-white/72 hover:bg-white/8 hover:text-white"
-            )}
+            className={dashboardNavLinkClass(overviewIsActive)}
           >
             <LayoutDashboard className="size-4" />
             Vue d&apos;ensemble
@@ -168,12 +175,7 @@ function DashboardShellLoading({
                 key={item.slug}
                 href={categoryHref(item)}
                 aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
-                  active
-                    ? "bg-white/12 text-white"
-                    : "text-white/72 hover:bg-white/8 hover:text-white"
-                )}
+                className={dashboardNavLinkClass(active)}
               >
                 <Icon className="size-4" />
                 {item.label}
@@ -309,12 +311,7 @@ function SidebarContent({
           href="/dashboard"
           onClick={onNavigate}
           aria-current={overviewIsActive ? "page" : undefined}
-          className={cn(
-            "flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
-            overviewIsActive
-              ? "bg-white/12 text-white"
-              : "text-white/72 hover:bg-white/8 hover:text-white"
-          )}
+          className={dashboardNavLinkClass(overviewIsActive)}
         >
           <LayoutDashboard className="size-4" />
           Vue d&apos;ensemble
@@ -329,12 +326,7 @@ function SidebarContent({
               href={categoryHref(item)}
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
-                active
-                  ? "bg-white/12 text-white"
-                  : "text-white/72 hover:bg-white/8 hover:text-white"
-              )}
+              className={dashboardNavLinkClass(active)}
             >
               <Icon className="size-4" />
               {item.label}
