@@ -288,7 +288,20 @@ function AgencyEditForm({
     agencyToEditValues(agency)
   )
   const [error, setError] = React.useState("")
+  const [logoFile, setLogoFile] = React.useState<File | null>(null)
   const [pending, setPending] = React.useState(false)
+  const logoPreviewUrl = React.useMemo(
+    () => (logoFile ? URL.createObjectURL(logoFile) : ""),
+    [logoFile]
+  )
+
+  React.useEffect(() => {
+    return () => {
+      if (logoPreviewUrl) {
+        URL.revokeObjectURL(logoPreviewUrl)
+      }
+    }
+  }, [logoPreviewUrl])
 
   function updateValue(name: keyof EditValues, value: string) {
     setValues((current) => ({ ...current, [name]: value }))
@@ -318,6 +331,10 @@ function AgencyEditForm({
       appendEditValue(formData, "rccm_number", values.rccm_number)
       appendEditValue(formData, "tax_number", values.tax_number)
       formData.append("is_active", values.is_active ? "true" : "false")
+
+      if (logoFile) {
+        formData.append("logo", logoFile)
+      }
 
       const updatedAgency = await apiFetch<Agency>(
         `/api/agencies/${encodeURIComponent(slug)}/`,
@@ -451,6 +468,31 @@ function AgencyEditForm({
             value={values.description}
             onChange={(event) => updateValue("description", event.target.value)}
           />
+        </div>
+        <div className="space-y-2 md:col-span-2">
+          <label className={labelClassName} htmlFor="edit-logo">
+            Logo de l&apos;agence
+          </label>
+          <label className="flex cursor-pointer flex-col gap-3 rounded-lg border border-dashed border-border bg-background p-4 transition hover:border-primary/60 hover:bg-secondary/35 sm:flex-row sm:items-center">
+            <MediaBlock image={logoPreviewUrl || agency.logo} type="logo" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium">
+                {logoFile ? logoFile.name : "Remplacer le logo"}
+              </span>
+              <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                Choisissez une image depuis votre ordinateur. Sans nouveau
+                fichier, le logo actuel est conservé.
+              </span>
+            </span>
+            <input
+              id="edit-logo"
+              name="logo"
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)}
+            />
+          </label>
         </div>
         <label className="flex items-center justify-between gap-3 rounded-md border border-border p-3 md:col-span-2">
           <span>
