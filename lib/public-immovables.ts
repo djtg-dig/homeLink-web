@@ -9,9 +9,12 @@ export type PublicImmovableAddress = {
 
 export type PublicImmovableMedia = {
   file?: string | null
+  id?: number | string
   image?: string | null
   thumbnail?: string | null
+  title?: string | null
   url?: string | null
+  video?: string | null
 }
 
 export type PublicImmovableOwner = {
@@ -30,6 +33,8 @@ export type PublicImmovable = {
   hotel?: Record<string, unknown> | null
   id?: string | null
   kiosque?: Record<string, unknown> | null
+  images?: PublicImmovableMedia[] | null
+  main_image?: string | null
   maison?: Record<string, unknown> | null
   medias?: PublicImmovableMedia[] | null
   owner?: PublicImmovableOwner | null
@@ -45,6 +50,7 @@ export type PublicImmovable = {
   title?: string | null
   type_bien?: string | null
   type_transaction?: string | null
+  videos?: PublicImmovableMedia[] | null
 }
 
 export type PublicImmovablesResponse =
@@ -484,6 +490,8 @@ export function publicImmovableDetailPath(property: PublicImmovable) {
 export function publicImmovableImage(property: PublicImmovable) {
   const image =
     property.primary_image_thumbnail ||
+    property.main_image ||
+    property.images?.map(mediaCandidate).find(Boolean) ||
     property.medias?.map(mediaCandidate).find(Boolean) ||
     ""
 

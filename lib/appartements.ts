@@ -59,7 +59,10 @@ type AppartementMedia = {
   file?: string | null
   id?: number | string
   image?: string | null
+  thumbnail?: string | null
+  title?: string | null
   url?: string | null
+  video?: string | null
 }
 
 type Appartement = {
@@ -70,7 +73,9 @@ type Appartement = {
   description?: string | null
   est_proprietaire?: boolean | null
   id?: number | string
+  images?: AppartementMedia[]
   is_active?: boolean | null
+  main_image?: string | null
   medias?: AppartementMedia[]
   owner?: AppartementOwner | null
   prix_affiche?: string | null
@@ -83,6 +88,7 @@ type Appartement = {
   title?: string | null
   type_transaction?: string | null
   updated_at?: string | null
+  videos?: AppartementMedia[]
 }
 
 type AppartementsResponse =
@@ -261,7 +267,42 @@ function ownerName(appartement: Appartement) {
 }
 
 function mediaUrl(media: AppartementMedia) {
-  return media.url?.trim() || media.image?.trim() || media.file?.trim() || ""
+  return (
+    media.url?.trim() ||
+    media.thumbnail?.trim() ||
+    media.image?.trim() ||
+    media.file?.trim() ||
+    media.video?.trim() ||
+    ""
+  )
+}
+
+function appartementMediaGallery(appartement: Appartement) {
+  const gallery: AppartementMedia[] = []
+
+  if (appartement.main_image?.trim()) {
+    gallery.push({
+      id: "main-image",
+      image: appartement.main_image,
+      title: "Photo principale",
+    })
+  }
+
+  gallery.push(...(appartement.images ?? []))
+  gallery.push(...(appartement.medias ?? []))
+
+  const seen = new Set<string>()
+
+  return gallery.filter((media) => {
+    const url = mediaUrl(media)
+
+    if (!url || seen.has(url)) {
+      return false
+    }
+
+    seen.add(url)
+    return true
+  })
 }
 
 export {
@@ -270,6 +311,7 @@ export {
   appartementDetailPath,
   appartementDisplayName,
   appartementId,
+  appartementMediaGallery,
   appartementReferenceLabel,
   booleanLabel,
   createdDateLabel,

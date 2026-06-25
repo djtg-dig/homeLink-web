@@ -1,5 +1,5 @@
 export const publicCategoryLinks: Record<string, string> = {
-  agences: "/#biens",
+  agences: "/agences",
   appartements: "/?type_bien=appartement#biens",
   bureaux: "/?type_bien=bureau#biens",
   hotels: "/?type_bien=hotel#biens",

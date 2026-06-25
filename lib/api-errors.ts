@@ -28,13 +28,25 @@ function fieldLabel(field: string) {
   return field.replaceAll("_", " ")
 }
 
+function isTechnicalMessage(message: string) {
+  const normalizedMessage = message.trim()
+
+  return (
+    !normalizedMessage ||
+    normalizedMessage.startsWith("<") ||
+    /Traceback|ProgrammingError|OperationalError|IntegrityError|Exception Type|Request Method|Django Version|LINE \d+:|column .* does not exist/i.test(
+      normalizedMessage
+    )
+  )
+}
+
 export function formatApiMessage(body: unknown, fallback: string) {
   if (!body) {
     return fallback
   }
 
   if (typeof body === "string") {
-    return body
+    return isTechnicalMessage(body) ? fallback : body
   }
 
   if (!isRecord(body)) {
@@ -45,7 +57,7 @@ export function formatApiMessage(body: unknown, fallback: string) {
     const message = stringifyValue(body[key])
 
     if (message) {
-      return message
+      return isTechnicalMessage(message) ? fallback : message
     }
   }
 
@@ -57,7 +69,9 @@ export function formatApiMessage(body: unknown, fallback: string) {
     })
     .filter(Boolean)
 
-  return messages.length > 0 ? messages.join(" ") : fallback
+  const message = messages.join(" ")
+
+  return message && !isTechnicalMessage(message) ? message : fallback
 }
 
 export async function readResponseBody(response: Response) {

@@ -34,6 +34,7 @@ import {
   agencyName,
   appartementAddressLabel,
   appartementDisplayName,
+  appartementMediaGallery,
   appartementReferenceLabel,
   booleanLabel,
   formatDate,
@@ -180,7 +181,7 @@ function MediaPreview({ media }: { media: AppartementMedia }) {
         style={{ backgroundImage: `url(${url})` }}
       />
       <span className="block truncate px-3 py-2 text-sm font-medium">
-        Ouvrir le média
+        {media.title?.trim() || "Ouvrir le média"}
       </span>
     </a>
   )
@@ -294,8 +295,7 @@ function AppartementDetailContent({ id }: { id: string }) {
 
   const details = appartement?.appartement
   const agencySlug = appartement?.agency?.slug?.trim()
-  const medias = appartement?.medias ?? []
-  const visibleMedias = medias.filter((media) => mediaUrl(media))
+  const visibleMedias = appartement ? appartementMediaGallery(appartement) : []
 
   return (
     <DashboardShell
