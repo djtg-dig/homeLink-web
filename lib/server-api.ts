@@ -3,14 +3,10 @@ import "server-only"
 import { readResponseBody } from "@/lib/api-errors"
 
 export function getApiBaseUrl() {
-  console.log('Debug: API_BASE_URL env var:', process.env.API_BASE_URL)
-  console.log('Debug: VITE_API_BASE_URL env var:', process.env.VITE_API_BASE_URL)
-  console.log('Debug: All env vars:', Object.keys(process.env).filter(key => key.includes('API') || key.includes('BASE')))
-  
   const apiBaseUrl = process.env.API_BASE_URL ?? process.env.VITE_API_BASE_URL
 
   if (!apiBaseUrl) {
-    throw new Error("API_BASE_URL is not configured")
+    throw new Error("Backend API URL is not configured")
   }
 
   return apiBaseUrl

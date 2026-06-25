@@ -1,4 +1,4 @@
-import { readResponseBody } from "@/lib/api-errors"
+import { formatApiMessage, readResponseBody } from "@/lib/api-errors"
 import { getStoredAuthorizationHeader } from "@/lib/auth-storage"
 
 const API_PROXY_PREFIX = "/api/proxy"
@@ -99,7 +99,10 @@ export async function apiFetch<TResponse>(
 
     if (NETWORK_ERROR_STATUSES.has(response.status)) {
       dispatchNetworkError(
-        "Le service ne répond pas pour le moment. Réessayez dans un instant."
+        formatApiMessage(
+          body,
+          "Le serveur HomeLink est momentanément indisponible. Veuillez réessayer dans un instant."
+        )
       )
     }
 

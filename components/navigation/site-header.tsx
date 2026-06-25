@@ -47,7 +47,7 @@ function publicCategoryMenuItemClass(active: boolean) {
   )
 }
 
-function SiteHeader({
+function SiteHeaderContent({
   activeCategory,
 }: {
   activeCategory?: PublicCategorySlug
@@ -195,6 +195,18 @@ function SiteHeader({
         </div>
       </nav>
     </header>
+  )
+}
+
+function SiteHeader({
+  activeCategory,
+}: {
+  activeCategory?: PublicCategorySlug
+}) {
+  return (
+    <React.Suspense fallback={null}>
+      <SiteHeaderContent activeCategory={activeCategory} />
+    </React.Suspense>
   )
 }
 

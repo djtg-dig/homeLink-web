@@ -9,6 +9,10 @@ import { buildUpstreamUrl } from "@/lib/server-api"
 const BODYLESS_METHODS = new Set(["GET", "HEAD", "OPTIONS"])
 const DEFAULT_PROXY_TIMEOUT_MS = 30_000
 const PROXY_RETRY_DELAY_MS = 250
+const BACKEND_UNAVAILABLE_MESSAGE =
+  "Le serveur HomeLink est momentanément indisponible. Veuillez réessayer dans un instant."
+const BACKEND_TIMEOUT_MESSAGE =
+  "Le serveur HomeLink met trop de temps à répondre. Réessayez dans un instant."
 
 export const maxDuration = 60
 
@@ -179,8 +183,8 @@ async function proxyRequest(request: NextRequest, context: ProxyRouteContext) {
     targetUrl = buildTargetUrl(path, request)
   } catch {
     return Response.json(
-      { message: "La configuration du service est manquante." },
-      { status: 500 }
+      { message: BACKEND_UNAVAILABLE_MESSAGE },
+      { status: 502 }
     )
   }
 
@@ -199,13 +203,13 @@ async function proxyRequest(request: NextRequest, context: ProxyRouteContext) {
   } catch (caughtError) {
     if (isTimeoutError(caughtError)) {
       return Response.json(
-        { message: "Le délai d'attente du service est dépassé." },
+        { message: BACKEND_TIMEOUT_MESSAGE },
         { status: 504 }
       )
     }
 
     return Response.json(
-      { message: "Le service est momentanément indisponible." },
+      { message: BACKEND_UNAVAILABLE_MESSAGE },
       { status: 502 }
     )
   }

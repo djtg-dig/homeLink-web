@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
 
 import { PublicAgencyDetailContent } from "@/components/agencies/public-agency-detail-content"
 
@@ -17,5 +18,11 @@ export default async function PublicAgencyDetailPage({
 }: PublicAgencyDetailPageProps) {
   const { slug } = await params
 
-  return <PublicAgencyDetailContent slug={slug} />
+  return (
+    <Suspense
+      fallback={<div className="p-6 text-sm">Chargement de l&apos;agence...</div>}
+    >
+      <PublicAgencyDetailContent slug={slug} />
+    </Suspense>
+  )
 }

@@ -8,9 +8,14 @@ import {
   NETWORK_ERROR_EVENT_NAME,
   type NetworkErrorEventDetail,
 } from "@/lib/api-client"
+import { cn } from "@/lib/utils"
 
 const DEFAULT_MESSAGE =
   "Impossible de joindre le service pour le moment. Vérifiez votre connexion, puis réessayez."
+
+function isHomeLinkServiceMessage(message: string) {
+  return message.includes("serveur HomeLink")
+}
 
 function NetworkErrorScreen() {
   const [message, setMessage] = React.useState(DEFAULT_MESSAGE)
@@ -55,25 +60,45 @@ function NetworkErrorScreen() {
     return null
   }
 
+  const isHomeLinkUnavailable = isHomeLinkServiceMessage(message)
+
   return (
     <div
       role="alert"
       aria-live="assertive"
       className="fixed right-4 bottom-4 left-4 z-[120] text-foreground sm:right-6 sm:bottom-6 sm:left-auto sm:w-[420px]"
     >
-      <div className="rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-2xl">
+      <div
+        className={cn(
+          "rounded-lg border bg-popover p-4 text-popover-foreground shadow-2xl",
+          isHomeLinkUnavailable
+            ? "border-brand-orange/70 shadow-brand-orange/10"
+            : "border-border"
+        )}
+      >
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+          <span
+            className={cn(
+              "flex size-10 shrink-0 items-center justify-center rounded-md",
+              isHomeLinkUnavailable
+                ? "bg-brand-orange text-brand-navy"
+                : "bg-secondary text-primary"
+            )}
+          >
             <WifiOff className="size-5" />
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Connexion indisponible
+                  {isHomeLinkUnavailable
+                    ? "Service temporairement indisponible"
+                    : "Connexion indisponible"}
                 </p>
                 <h2 className="mt-1 text-base font-semibold">
-                  Oups, il y a un souci de réseau.
+                  {isHomeLinkUnavailable
+                    ? "Le serveur HomeLink ne répond pas."
+                    : "Oups, il y a un souci de réseau."}
                 </h2>
               </div>
               <Button
