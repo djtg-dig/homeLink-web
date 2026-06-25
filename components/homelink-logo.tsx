@@ -19,6 +19,7 @@ function HomelinkLogo({
         fill
         priority={priority}
         sizes={sizes}
+        unoptimized
         className="object-cover [object-position:center_45%]"
       />
     </div>
