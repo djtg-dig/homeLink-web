@@ -15,7 +15,7 @@ const fontMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Homelink",
+  title: "Loyer360",
   description: "Connecter. Simplifier. Vivre mieux.",
 }
 

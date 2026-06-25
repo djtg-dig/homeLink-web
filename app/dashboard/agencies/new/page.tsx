@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { AgencyCreateContent } from "@/components/agencies/agency-create-content"
 
 export const metadata: Metadata = {
-  title: "Nouvelle agence | Homelink",
+  title: "Nouvelle agence | Loyer360",
 }
 
 export default function NewAgencyPage() {

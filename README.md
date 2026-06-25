@@ -1,6 +1,6 @@
-# Homelink
+# Loyer360
 
-Base Next.js de Homelink avec shadcn/ui, theme de marque et proxy API serveur.
+Base Next.js de Loyer360 avec shadcn/ui, theme de marque et proxy API serveur.
 
 ## Demarrage
 
@@ -26,7 +26,7 @@ cote serveur. N'utilisez pas de variable `NEXT_PUBLIC_*` pour l'URL API.
 
 ## Authentification
 
-Les formulaires `/register` et `/login` appellent les routes serveur Homelink:
+Les formulaires `/register` et `/login` appellent les routes serveur Loyer360:
 
 - `POST /api/auth/register` transmet vers `/api/accounts/register/`
 - `POST /api/auth/login` transmet vers `/api/accounts/login/`

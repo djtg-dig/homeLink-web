@@ -10,7 +10,7 @@ type PublicAgencyDetailPageProps = {
 }
 
 export const metadata: Metadata = {
-  title: "Détail agence | Homelink",
+  title: "Détail agence | Loyer360",
 }
 
 export default async function PublicAgencyDetailPage({

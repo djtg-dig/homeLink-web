@@ -9,7 +9,7 @@ type MaisonEditPageProps = {
 }
 
 export const metadata: Metadata = {
-  title: "Modifier maison | Homelink",
+  title: "Modifier maison | Loyer360",
 }
 
 export default async function MaisonEditPage({ params }: MaisonEditPageProps) {

@@ -1118,7 +1118,7 @@ const AddressCreateSection = forwardRef<
           value={values.complement_adresse}
           disabled={disabled}
           onChange={updateValue}
-          placeholder="Immeuble Homelink, 2e étage"
+          placeholder="Immeuble Loyer360, 2e étage"
         />
         <AddressTextField
           description={addressFields.postal_code.description}

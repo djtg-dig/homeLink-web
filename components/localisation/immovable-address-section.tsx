@@ -997,7 +997,7 @@ const ImmovableAddressSection = forwardRef<
           name="complement_adresse"
           value={values.complement_adresse}
           disabled={disabled}
-          placeholder="Immeuble Homelink, 2e étage"
+          placeholder="Immeuble Loyer360, 2e étage"
           onChange={updateValue}
         />
         <TextField

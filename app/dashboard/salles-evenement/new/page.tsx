@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { SalleEvenementCreateContent } from "@/components/salles-evenement/salle-evenement-create-content"
 
 export const metadata: Metadata = {
-  title: "Nouvelle salle événement | Homelink",
+  title: "Nouvelle salle événement | Loyer360",
 }
 
 export default function NewSalleEvenementPage() {

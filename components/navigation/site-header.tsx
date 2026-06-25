@@ -124,7 +124,7 @@ function SiteHeaderContent({
       <div className="h-1 bg-brand-orange" />
       <div className="mx-auto max-w-6xl px-3 py-2 sm:px-8 md:flex md:h-20 md:items-center md:justify-between md:gap-3 md:py-0 lg:px-10">
         <div className="flex min-h-12 items-center justify-between gap-2 md:contents">
-          <Link href="/" aria-label="Accueil Homelink" className="shrink-0">
+          <Link href="/" aria-label="Accueil Loyer360" className="shrink-0">
             <HomelinkLogo
               priority
               sizes="(min-width: 768px) 176px, (min-width: 640px) 160px, 112px"

@@ -13,7 +13,7 @@ type HouseAiResultsPageProps = {
 }
 
 export const metadata: Metadata = {
-  title: "Recherche de maisons | Homelink",
+  title: "Recherche de maisons | Loyer360",
 }
 
 function searchParamValue(

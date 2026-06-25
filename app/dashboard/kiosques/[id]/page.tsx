@@ -9,7 +9,7 @@ type KiosqueDetailPageProps = {
 }
 
 export const metadata: Metadata = {
-  title: "Détails kiosque | Homelink",
+  title: "Détails kiosque | Loyer360",
 }
 
 export default async function KiosqueDetailPage({

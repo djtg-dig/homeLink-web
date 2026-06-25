@@ -10,9 +10,9 @@ const BODYLESS_METHODS = new Set(["GET", "HEAD", "OPTIONS"])
 const DEFAULT_PROXY_TIMEOUT_MS = 30_000
 const PROXY_RETRY_DELAY_MS = 250
 const BACKEND_UNAVAILABLE_MESSAGE =
-  "Le serveur HomeLink est momentanément indisponible. Veuillez réessayer dans un instant."
+  "Le serveur Loyer360 est momentanément indisponible. Veuillez réessayer dans un instant."
 const BACKEND_TIMEOUT_MESSAGE =
-  "Le serveur HomeLink met trop de temps à répondre. Réessayez dans un instant."
+  "Le serveur Loyer360 met trop de temps à répondre. Réessayez dans un instant."
 
 export const maxDuration = 60
 

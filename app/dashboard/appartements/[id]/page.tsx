@@ -9,7 +9,7 @@ type AppartementDetailPageProps = {
 }
 
 export const metadata: Metadata = {
-  title: "Détails appartement | Homelink",
+  title: "Détails appartement | Loyer360",
 }
 
 export default async function AppartementDetailPage({

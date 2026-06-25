@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { HotelsContent } from "@/components/hotels/hotels-content"
 
 export const metadata: Metadata = {
-  title: "Hôtels | Homelink",
+  title: "Hôtels | Loyer360",
 }
 
 export default function HotelsPage() {

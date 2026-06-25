@@ -38,7 +38,7 @@ function DashboardContent() {
             <p className="text-sm font-medium text-muted-foreground">
               Vue d&apos;ensemble
             </p>
-            <h2 className="mt-1 text-2xl font-semibold">Dashboard Homelink</h2>
+            <h2 className="mt-1 text-2xl font-semibold">Dashboard Loyer360</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
               Espace d&apos;administration pour organiser les catégories, suivre
               les publications et préparer les prochains modules de gestion.

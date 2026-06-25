@@ -72,13 +72,13 @@ function DjanaAuthComplete() {
       })
 
       if (!sessionResponse.ok) {
-        throw new Error("Session Homelink indisponible.")
+        throw new Error("Session Loyer360 indisponible.")
       }
 
       const profile = await fetchCurrentAccountProfile()
 
       if (!profile) {
-        throw new Error("Profil Homelink introuvable.")
+        throw new Error("Profil Loyer360 introuvable.")
       }
 
       if (!cancelled) {

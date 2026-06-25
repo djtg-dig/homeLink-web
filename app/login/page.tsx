@@ -4,7 +4,7 @@ import { AuthShell } from "@/components/auth/auth-shell"
 import { LoginForm } from "@/components/auth/login-form"
 
 export const metadata: Metadata = {
-  title: "Connexion | Homelink",
+  title: "Connexion | Loyer360",
 }
 
 type LoginPageProps = {
@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthShell
       title="Connexion"
-      description="Accédez à votre espace Homelink avec votre email et votre mot de passe."
+      description="Accédez à votre espace Loyer360 avec votre email et votre mot de passe."
       actionText="Pas encore de compte ?"
       actionLabel="Créer un compte"
       actionHref="/register"

@@ -4,7 +4,7 @@ import { Suspense } from "react"
 import { PublicAgenciesContent } from "@/components/agencies/public-agencies-content"
 
 export const metadata: Metadata = {
-  title: "Agences immobilières | Homelink",
+  title: "Agences immobilières | Loyer360",
 }
 
 export default function AgenciesPublicPage() {

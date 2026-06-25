@@ -9,7 +9,7 @@ type MaisonDetailPageProps = {
 }
 
 export const metadata: Metadata = {
-  title: "Détails maison | Homelink",
+  title: "Détails maison | Loyer360",
 }
 
 export default async function MaisonDetailPage({

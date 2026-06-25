@@ -14,7 +14,7 @@ const DEFAULT_MESSAGE =
   "Impossible de joindre le service pour le moment. Vérifiez votre connexion, puis réessayez."
 
 function isHomeLinkServiceMessage(message: string) {
-  return message.includes("serveur HomeLink")
+  return message.includes("serveur Loyer360")
 }
 
 function NetworkErrorScreen() {
@@ -97,7 +97,7 @@ function NetworkErrorScreen() {
                 </p>
                 <h2 className="mt-1 text-base font-semibold">
                   {isHomeLinkUnavailable
-                    ? "Le serveur HomeLink ne répond pas."
+                    ? "Le serveur Loyer360 ne répond pas."
                     : "Oups, il y a un souci de réseau."}
                 </h2>
               </div>

@@ -101,7 +101,7 @@ export async function apiFetch<TResponse>(
       dispatchNetworkError(
         formatApiMessage(
           body,
-          "Le serveur HomeLink est momentanément indisponible. Veuillez réessayer dans un instant."
+          "Le serveur Loyer360 est momentanément indisponible. Veuillez réessayer dans un instant."
         )
       )
     }

@@ -9,7 +9,7 @@ type PublicPropertyPageProps = {
 }
 
 export const metadata: Metadata = {
-  title: "Bien immobilier | Homelink",
+  title: "Bien immobilier | Loyer360",
 }
 
 export default async function PublicPropertyPage({
