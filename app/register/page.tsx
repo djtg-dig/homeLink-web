@@ -5,6 +5,10 @@ import { RegisterForm } from "@/components/auth/register-form"
 
 export const metadata: Metadata = {
   title: "Inscription | Loyer360",
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 export default function RegisterPage() {

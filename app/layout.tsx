@@ -15,8 +15,46 @@ const fontMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Loyer360",
-  description: "Connecter. Simplifier. Vivre mieux.",
+  metadataBase: new URL("https://loyer360.com"),
+  title: {
+    default: "Loyer360 | Biens immobiliers à vendre et à louer",
+    template: "%s | Loyer360",
+  },
+  description:
+    "Trouvez des maisons, appartements, terrains, bureaux, hôtels, kiosques et salles événement à vendre ou à louer avec Loyer360.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://loyer360.com",
+    siteName: "Loyer360",
+    title: "Loyer360 | Biens immobiliers à vendre et à louer",
+    description:
+      "Explorez les biens immobiliers disponibles et trouvez rapidement le bien adapté à vos besoins.",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1536,
+        height: 1024,
+        alt: "Loyer360 - plateforme immobilière",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Loyer360 | Biens immobiliers à vendre et à louer",
+    description:
+      "Maisons, appartements, terrains, bureaux et autres biens immobiliers disponibles sur Loyer360.",
+    images: ["/logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
 }
 
 export default function RootLayout({

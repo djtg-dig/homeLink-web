@@ -382,6 +382,9 @@ function HomeContent({ initialFilters }: HomeContentProps) {
             <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
               <div className="max-w-3xl min-w-0 space-y-6">
                 <div className="space-y-4">
+                  <h1 className="max-w-3xl text-3xl leading-tight font-semibold text-white sm:text-4xl lg:text-5xl">
+                    Trouvez un bien immobilier avec Loyer360
+                  </h1>
                   <p className="max-w-full text-base leading-7 text-white/78 sm:max-w-2xl sm:text-lg">
                     {currentHeroCopy.description}
                   </p>

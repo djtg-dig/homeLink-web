@@ -153,7 +153,7 @@ function DashboardShellLoading({
   return (
     <main className="flex min-h-svh bg-muted text-foreground">
       <aside className="sticky top-0 hidden h-svh w-72 shrink-0 border-r border-white/10 bg-brand-navy p-4 text-brand-white lg:block">
-        <Link href="/" aria-label="Accueil Homelink" className="block shrink-0">
+        <Link href="/" aria-label="Accueil Loyer360" className="block shrink-0">
           <HomelinkLogo sizes="176px" className="h-14 w-44" />
         </Link>
 
@@ -185,7 +185,7 @@ function DashboardShellLoading({
         </nav>
 
         <div className="mt-8 rounded-lg border border-white/10 bg-white/8 p-3 text-sm text-white/72">
-          <p className="font-medium text-white">Homelink Admin</p>
+          <p className="font-medium text-white">Loyer360 Admin</p>
           <p className="mt-1 leading-5">Gestion des biens et des catégories.</p>
         </div>
       </aside>
@@ -299,7 +299,7 @@ function SidebarContent({
     <div className="flex h-full flex-col">
       <Link
         href="/"
-        aria-label="Accueil Homelink"
+        aria-label="Accueil Loyer360"
         className="shrink-0"
         onClick={onNavigate}
       >
@@ -336,7 +336,7 @@ function SidebarContent({
       </nav>
 
       <div className="mt-auto rounded-lg border border-white/10 bg-white/8 p-3 text-sm text-white/72">
-        <p className="font-medium text-white">Homelink Admin</p>
+        <p className="font-medium text-white">Loyer360 Admin</p>
         <p className="mt-1 leading-5">Gestion des biens et des catégories.</p>
       </div>
     </div>

@@ -1,14 +1,22 @@
-import type { MetadataRoute } from "next";
+import type { MetadataRoute } from "next"
+
+const baseUrl = "https://loyer360.com"
+
+const publicStaticRoutes = [
+  {
+    path: "/",
+    changeFrequency: "daily" as const,
+    priority: 1,
+  },
+]
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://loyer360.com";
+  const now = new Date()
 
-  return [
-    {
-      url: `${baseUrl}/`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1,
-    },
-  ];
+  return publicStaticRoutes.map((route) => ({
+    url: new URL(route.path, baseUrl).toString(),
+    lastModified: now,
+    changeFrequency: route.changeFrequency,
+    priority: route.priority,
+  }))
 }

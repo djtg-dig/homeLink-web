@@ -5,6 +5,10 @@ import { LoginForm } from "@/components/auth/login-form"
 
 export const metadata: Metadata = {
   title: "Connexion | Loyer360",
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 type LoginPageProps = {
