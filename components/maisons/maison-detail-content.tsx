@@ -8,6 +8,7 @@ import {
   Building2,
   CheckCircle2,
   Euro,
+  FileImage,
   Flame,
   Home,
   Mail,
@@ -42,7 +43,9 @@ import {
   maisonDisplayName,
   maisonEditPath,
   maisonId,
+  maisonMediaGallery,
   maisonReferenceLabel,
+  mediaUrl,
   priceLabel,
   standingLabel,
   statusLabel,
@@ -51,6 +54,7 @@ import {
   transactionLabel,
   type Maison,
   type MaisonDetails,
+  type MaisonMedia,
 } from "@/lib/maisons"
 import { cn } from "@/lib/utils"
 
@@ -155,6 +159,31 @@ function StatusPill({
     >
       {children}
     </span>
+  )
+}
+
+function MediaPreview({ media }: { media: MaisonMedia }) {
+  const url = mediaUrl(media)
+
+  if (!url) {
+    return null
+  }
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="group block overflow-hidden rounded-md border border-border bg-muted"
+    >
+      <span
+        className="block aspect-video bg-cover bg-center transition group-hover:scale-[1.02]"
+        style={{ backgroundImage: `url(${url})` }}
+      />
+      <span className="block truncate px-3 py-2 text-sm font-medium">
+        {media.title?.trim() || "Ouvrir l'image"}
+      </span>
+    </a>
   )
 }
 
@@ -287,6 +316,7 @@ function MaisonDetailContent({ id }: { id: string }) {
   const details = maison?.maison
   const agencySlug = maison?.agency?.slug?.trim()
   const editPath = maison ? maisonEditPath(maisonId(maison) || id) : ""
+  const medias = maison ? maisonMediaGallery(maison) : []
 
   return (
     <DashboardShell
@@ -522,6 +552,20 @@ function MaisonDetailContent({ id }: { id: string }) {
               </InfoCard>
             </div>
           </div>
+
+          <InfoCard icon={FileImage} title="Images">
+            {medias.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {medias.map((media, index) => (
+                  <MediaPreview key={String(media.id ?? index)} media={media} />
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-md border border-dashed border-border bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">
+                Aucune image n&apos;est liée à cette maison.
+              </p>
+            )}
+          </InfoCard>
 
           <InfoCard icon={Trees} title="Espaces et options">
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">

@@ -38,20 +38,20 @@ function AgencyCard({ agency }: { agency: PublicAgency }) {
   const phone = agency.phone?.trim()
 
   return (
-    <article className="flex h-full flex-col rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
-      <div className="flex items-start gap-3">
-        <div className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-secondary text-primary">
+    <article className="flex h-full flex-col rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
+      <div className="flex items-start gap-4">
+        <div className="relative flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-md bg-secondary text-primary sm:size-28">
           {logo ? (
             <Image
               src={logo}
               alt={publicAgencyName(agency)}
               fill
               unoptimized
-              sizes="56px"
-              className="object-cover"
+              sizes="(min-width: 640px) 112px, 96px"
+              className="object-contain p-2"
             />
           ) : (
-            <Building2 className="size-7" />
+            <Building2 className="size-10" />
           )}
         </div>
 
@@ -77,7 +77,7 @@ function AgencyCard({ agency }: { agency: PublicAgency }) {
         </div>
       </div>
 
-      <p className="mt-4 flex gap-2 text-sm leading-6 text-muted-foreground">
+      <p className="mt-5 flex gap-2 text-sm leading-6 text-muted-foreground">
         <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
         <span className="line-clamp-2">{publicAgencyAddressLabel(agency)}</span>
       </p>
@@ -116,9 +116,9 @@ function AgenciesSkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: 6 }).map((_, index) => (
-        <div key={index} className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <div className="flex gap-3">
-            <Skeleton className="size-14 shrink-0" />
+        <div key={index} className="rounded-lg border border-border bg-card p-5 shadow-sm">
+          <div className="flex gap-4">
+            <Skeleton className="size-24 shrink-0 sm:size-28" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-5 w-28" />
               <Skeleton className="h-6 w-4/5" />

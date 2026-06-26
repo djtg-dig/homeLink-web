@@ -1,3 +1,5 @@
+import { mediaAssetUrl } from "@/lib/media-assets"
+
 export type PublicImmovableAddress = {
   city?: string | null
   country?: string | null
@@ -499,17 +501,7 @@ export function publicImmovableImage(property: PublicImmovable) {
     return ""
   }
 
-  if (/^https?:\/\//i.test(image)) {
-    try {
-      const url = new URL(image)
-
-      return `/api/proxy/${url.pathname.replace(/^\/+/, "")}${url.search}`
-    } catch {
-      return ""
-    }
-  }
-
-  return `/api/proxy/${image.replace(/^\/+/, "")}`
+  return mediaAssetUrl(image)
 }
 
 export function publicImmovablePriceLabel(property: PublicImmovable) {

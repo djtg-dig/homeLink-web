@@ -1,3 +1,5 @@
+import { mediaAssetUrl } from "@/lib/media-assets"
+
 type AppartementAddress = {
   administrative_area?: number | string | null
   city?: string | null
@@ -267,14 +269,15 @@ function ownerName(appartement: Appartement) {
 }
 
 function mediaUrl(media: AppartementMedia) {
-  return (
+  const url =
     media.url?.trim() ||
     media.thumbnail?.trim() ||
     media.image?.trim() ||
     media.file?.trim() ||
     media.video?.trim() ||
     ""
-  )
+
+  return mediaAssetUrl(url)
 }
 
 function appartementMediaGallery(appartement: Appartement) {

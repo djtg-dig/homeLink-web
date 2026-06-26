@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   CheckCircle2,
+  FileImage,
   Flame,
   Home,
+  ImagePlus,
   KeyRound,
   Loader2,
   MapPin,
@@ -15,6 +17,7 @@ import {
   Save,
   ShieldCheck,
   Trees,
+  X,
   type LucideIcon,
 } from "lucide-react"
 
@@ -41,8 +44,11 @@ import {
   maisonAddressLabel,
   maisonDisplayName,
   maisonId,
+  maisonMediaGallery,
+  mediaUrl,
   textValue,
   type Maison,
+  type MaisonMedia,
 } from "@/lib/maisons"
 
 const NO_AGENCY_VALUE = "__none__"
@@ -104,6 +110,11 @@ type MaisonEditValues = {
   veranda_area: string
   view_sea: boolean
   watch_camera: boolean
+}
+
+type SelectedImage = {
+  file: File
+  previewUrl: string
 }
 
 const statutOptions = [
@@ -545,6 +556,31 @@ function Section({
   )
 }
 
+function ImagePreview({ media }: { media: MaisonMedia }) {
+  const url = mediaUrl(media)
+
+  if (!url) {
+    return null
+  }
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="group block overflow-hidden rounded-md border border-border bg-muted"
+    >
+      <span
+        className="block aspect-video bg-cover bg-center transition group-hover:scale-[1.02]"
+        style={{ backgroundImage: `url(${url})` }}
+      />
+      <span className="block truncate px-3 py-2 text-sm font-medium">
+        {media.title?.trim() || "Image existante"}
+      </span>
+    </a>
+  )
+}
+
 function MaisonEditSkeleton() {
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -565,6 +601,13 @@ function MaisonEditContent({ id }: { id: string }) {
   const [agencies, setAgencies] = React.useState<Agency[]>([])
   const [agenciesError, setAgenciesError] = React.useState("")
   const [error, setError] = React.useState("")
+  const [selectedMainImage, setSelectedMainImage] =
+    React.useState<SelectedImage | null>(null)
+  const [selectedImages, setSelectedImages] = React.useState<SelectedImage[]>(
+    []
+  )
+  const selectedMainImageRef = React.useRef<SelectedImage | null>(null)
+  const selectedImagesRef = React.useRef<SelectedImage[]>([])
   const [loading, setLoading] = React.useState(true)
   const [pending, setPending] = React.useState(false)
 
@@ -628,6 +671,17 @@ function MaisonEditContent({ id }: { id: string }) {
     }
   }, [loadEditData])
 
+  React.useEffect(() => {
+    return () => {
+      if (selectedMainImageRef.current) {
+        URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+      }
+      selectedImagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl)
+      })
+    }
+  }, [])
+
   function updateValue(name: keyof MaisonEditValues, value: string) {
     setValues((current) => (current ? { ...current, [name]: value } : current))
   }
@@ -635,6 +689,96 @@ function MaisonEditContent({ id }: { id: string }) {
   function updateBoolean(name: keyof MaisonEditValues, checked: boolean) {
     setValues((current) =>
       current ? { ...current, [name]: checked } : current
+    )
+  }
+
+  function updateMainImage(file: File | null) {
+    if (selectedMainImageRef.current) {
+      URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+    }
+
+    const nextImage = file
+      ? {
+          file,
+          previewUrl: URL.createObjectURL(file),
+        }
+      : null
+
+    selectedMainImageRef.current = nextImage
+    setSelectedMainImage(nextImage)
+  }
+
+  function updateImages(files: FileList | null) {
+    if (!files) {
+      return
+    }
+
+    const nextImages = Array.from(files).map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }))
+
+    setSelectedImages((current) => {
+      const nextSelectedImages = [...current, ...nextImages]
+
+      selectedImagesRef.current = nextSelectedImages
+
+      return nextSelectedImages
+    })
+  }
+
+  function removeImageFile(index: number) {
+    setSelectedImages((current) => {
+      const removedImage = current[index]
+
+      if (removedImage) {
+        URL.revokeObjectURL(removedImage.previewUrl)
+      }
+
+      const nextSelectedImages = current.filter(
+        (_, fileIndex) => fileIndex !== index
+      )
+
+      selectedImagesRef.current = nextSelectedImages
+
+      return nextSelectedImages
+    })
+  }
+
+  function clearSelectedImages() {
+    if (selectedMainImageRef.current) {
+      URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+    }
+    selectedMainImageRef.current = null
+    setSelectedMainImage(null)
+    selectedImagesRef.current.forEach((image) => {
+      URL.revokeObjectURL(image.previewUrl)
+    })
+    selectedImagesRef.current = []
+    setSelectedImages([])
+  }
+
+  async function uploadImages(mainImage: File | null, files: File[]) {
+    if (!mainImage && files.length === 0) {
+      return undefined
+    }
+
+    const formData = new FormData()
+
+    if (mainImage) {
+      formData.append("main_image", mainImage)
+    }
+
+    files.forEach((file) => {
+      formData.append("images", file)
+    })
+
+    return apiFetch<Partial<Maison> | undefined>(
+      `/api/immovables/maisons/${encodeURIComponent(id)}/`,
+      {
+        body: formData,
+        method: "PATCH",
+      }
     )
   }
 
@@ -658,18 +802,58 @@ function MaisonEditContent({ id }: { id: string }) {
           method: "PATCH",
         }
       )
+      let mediaUpdate: Partial<Maison> | undefined
+      let mediaError = ""
+
+      try {
+        mediaUpdate = await uploadImages(
+          selectedMainImage?.file ?? null,
+          selectedImages.map((image) => image.file)
+        )
+      } catch (caughtError) {
+        if (caughtError instanceof ApiError) {
+          mediaError = formatApiMessage(
+            caughtError.body,
+            "Les informations ont été sauvegardées, mais l'envoi des images a échoué."
+          )
+        } else {
+          mediaError =
+            caughtError instanceof Error
+              ? caughtError.message
+              : "Les informations ont été sauvegardées, mais l'envoi des images a échoué."
+        }
+      }
 
       const nextMaison = {
         ...(maison ?? {}),
         ...payload,
         ...(updatedMaison ?? {}),
+        ...(mediaUpdate ?? {}),
       } as Maison
 
+      setMaison(nextMaison)
+      setValues(formValuesFromMaison(nextMaison))
+
+      if (mediaError) {
+        setError(mediaError)
+        toast({
+          description: mediaError,
+          title: "Images non envoyées",
+          variant: "destructive",
+        })
+        router.refresh()
+        return
+      }
+
       toast({
-        description: "Les informations de la maison ont été mises à jour.",
+        description:
+          selectedMainImage || selectedImages.length > 0
+            ? "Les informations et les images de la maison ont été mises à jour."
+            : "Les informations de la maison ont été mises à jour.",
         title: "Maison modifiée",
         variant: "success",
       })
+      clearSelectedImages()
       router.push(
         `/dashboard/maisons/${encodeURIComponent(maisonId(nextMaison) || id)}`
       )
@@ -690,6 +874,7 @@ function MaisonEditContent({ id }: { id: string }) {
   }
 
   const selectedOptions = values ? selectedBooleanLabels(values) : []
+  const existingImages = maison ? maisonMediaGallery(maison) : []
   const title = maison ? `Modifier ${maisonDisplayName(maison)}` : "Modifier"
 
   return (
@@ -908,6 +1093,135 @@ function MaisonEditContent({ id }: { id: string }) {
                 <p className="text-sm leading-6 text-muted-foreground">
                   {maison ? maisonAddressLabel(maison) : "-"}
                 </p>
+              </Section>
+
+              <Section
+                icon={FileImage}
+                title="Images"
+                description="Ajoutez des photos pour illustrer la fiche de la maison."
+              >
+                <div className="space-y-5">
+                  {existingImages.length > 0 ? (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {existingImages.map((media, index) => (
+                        <ImagePreview
+                          key={String(media.id ?? index)}
+                          media={media}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-md border border-dashed border-border bg-background px-4 py-6 text-center text-sm text-muted-foreground">
+                      Aucune image n&apos;est encore liée à cette maison.
+                    </p>
+                  )}
+
+                  <label className="flex cursor-pointer flex-col gap-3 rounded-md border border-dashed border-border bg-background p-4 transition hover:border-primary/60 hover:bg-secondary/35 sm:flex-row sm:items-center">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                      <ImagePlus className="size-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-medium">
+                        Définir l&apos;image principale
+                      </span>
+                      <span className="mt-1 block text-sm text-muted-foreground">
+                        Cette image sera prioritaire sur la fiche publique.
+                      </span>
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={(event) => {
+                        updateMainImage(event.target.files?.[0] ?? null)
+                        event.target.value = ""
+                      }}
+                    />
+                  </label>
+
+                  {selectedMainImage ? (
+                    <div className="max-w-md overflow-hidden rounded-md border border-border bg-muted">
+                      <span
+                        className="block aspect-video bg-cover bg-center"
+                        style={{
+                          backgroundImage: `url(${selectedMainImage.previewUrl})`,
+                        }}
+                      />
+                      <div className="flex items-center justify-between gap-2 px-3 py-2">
+                        <span className="min-w-0 truncate text-sm font-medium">
+                          Image principale : {selectedMainImage.file.name}
+                        </span>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="size-8 shrink-0"
+                          onClick={() => updateMainImage(null)}
+                          aria-label={`Retirer ${selectedMainImage.file.name}`}
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <label className="flex cursor-pointer flex-col gap-3 rounded-md border border-dashed border-border bg-background p-4 transition hover:border-primary/60 hover:bg-secondary/35 sm:flex-row sm:items-center">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                      <ImagePlus className="size-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-medium">
+                        Ajouter des images à la galerie
+                      </span>
+                      <span className="mt-1 block text-sm text-muted-foreground">
+                        Vous pouvez sélectionner plusieurs photos.
+                      </span>
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="sr-only"
+                      onChange={(event) => {
+                        updateImages(event.target.files)
+                        event.target.value = ""
+                      }}
+                    />
+                  </label>
+
+                  {selectedImages.length > 0 ? (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {selectedImages.map((image, index) => (
+                        <div
+                          key={`${image.file.name}-${image.file.lastModified}-${index}`}
+                          className="overflow-hidden rounded-md border border-border bg-muted"
+                        >
+                          <span
+                            className="block aspect-video bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${image.previewUrl})`,
+                            }}
+                          />
+                          <div className="flex items-center justify-between gap-2 px-3 py-2">
+                            <span className="min-w-0 truncate text-sm font-medium">
+                              {image.file.name}
+                            </span>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="size-8 shrink-0"
+                              onClick={() => removeImageFile(index)}
+                              aria-label={`Retirer ${image.file.name}`}
+                            >
+                              <X className="size-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </Section>
 
               <Section

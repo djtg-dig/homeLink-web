@@ -41,6 +41,7 @@ import {
 } from "@/lib/agencies"
 import { ApiError, apiFetch } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
+import { mediaAssetUrl } from "@/lib/media-assets"
 import { cn } from "@/lib/utils"
 
 type EditValues = {
@@ -201,9 +202,10 @@ function MediaBlock({
   image?: string | null
   type: "cover" | "logo"
 }) {
-  const imageStyle = image
+  const url = mediaAssetUrl(image)
+  const imageStyle = url
     ? {
-        backgroundImage: `url(${image})`,
+        backgroundImage: `url(${url})`,
       }
     : undefined
 
@@ -217,7 +219,7 @@ function MediaBlock({
       )}
       style={imageStyle}
     >
-      {image ? null : (
+      {url ? null : (
         <Building2 className={type === "cover" ? "size-12" : "size-9"} />
       )}
     </div>

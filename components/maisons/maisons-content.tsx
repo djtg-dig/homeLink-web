@@ -28,7 +28,9 @@ import {
   maisonDisplayName,
   maisonEditPath,
   maisonId,
+  maisonMediaGallery,
   maisonReferenceLabel,
+  mediaUrl,
   parseMaisons,
   priceLabel,
   standingLabel,
@@ -115,6 +117,12 @@ function numericValue(value: unknown) {
   }
 
   return 0
+}
+
+function maisonThumbnail(maison: Maison) {
+  const media = maisonMediaGallery(maison)[0]
+
+  return media ? mediaUrl(media) : ""
 }
 
 function MaisonsContent() {
@@ -395,6 +403,7 @@ function MaisonsContent() {
                   ? maisons.map((maison, index) => {
                       const id = maisonId(maison)
                       const key = id || `${maison.title}-${index}`
+                      const thumbnail = maisonThumbnail(maison)
 
                       return (
                         <tr
@@ -403,8 +412,15 @@ function MaisonsContent() {
                         >
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3">
-                              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
-                                <Home className="size-5" />
+                              <span
+                                className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-secondary bg-cover bg-center text-primary"
+                                style={
+                                  thumbnail
+                                    ? { backgroundImage: `url(${thumbnail})` }
+                                    : undefined
+                                }
+                              >
+                                {thumbnail ? null : <Home className="size-5" />}
                               </span>
                               <div className="min-w-0">
                                 <p className="truncate font-semibold">

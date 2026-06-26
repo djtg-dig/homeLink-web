@@ -1,3 +1,5 @@
+import { mediaAssetUrl } from "@/lib/media-assets"
+
 export type PublicAgencyLocation = {
   city?: string | null
   country?: string | null
@@ -75,17 +77,7 @@ function compact(values: Array<string | null | undefined>) {
 }
 
 function normalizeAssetPath(asset?: string | null) {
-  const value = asset?.trim()
-
-  if (!value) {
-    return ""
-  }
-
-  if (/^https?:\/\//i.test(value)) {
-    return value
-  }
-
-  return `/api/proxy/${value.replace(/^\/+/, "")}`
+  return mediaAssetUrl(asset)
 }
 
 export function parsePublicAgencies(response: PublicAgenciesResponse) {

@@ -1,3 +1,5 @@
+import { mediaAssetUrl } from "@/lib/media-assets"
+
 type MaisonAddress = {
   administrative_area?: number | string | null
   city?: string | null
@@ -29,6 +31,16 @@ type MaisonOwner = {
   email?: string | null
   full_name?: string | null
   phone_number?: string | null
+}
+
+type MaisonMedia = {
+  file?: string | null
+  id?: number | string
+  image?: string | null
+  thumbnail?: string | null
+  title?: string | null
+  url?: string | null
+  video?: string | null
 }
 
 type MaisonDetails = {
@@ -85,8 +97,11 @@ type Maison = {
   description?: string | null
   est_proprietaire?: boolean | null
   id?: number | string
+  images?: MaisonMedia[]
   is_active?: boolean | null
+  main_image?: string | null
   maison?: MaisonDetails | null
+  medias?: MaisonMedia[]
   owner?: MaisonOwner | null
   prix_affiche?: string | null
   prix_location_mensuel?: number | string | null
@@ -334,6 +349,50 @@ function agencyName(maison: Maison) {
   return maison.agency?.name?.trim() || "Sans agence"
 }
 
+function mediaUrl(media: MaisonMedia) {
+  const url =
+    media.url?.trim() ||
+    media.thumbnail?.trim() ||
+    media.image?.trim() ||
+    media.file?.trim() ||
+    media.video?.trim() ||
+    ""
+
+  if (!url) {
+    return ""
+  }
+
+  return mediaAssetUrl(url)
+}
+
+function maisonMediaGallery(maison: Maison) {
+  const gallery: MaisonMedia[] = []
+
+  if (maison.main_image?.trim()) {
+    gallery.push({
+      id: "main-image",
+      image: maison.main_image,
+      title: "Photo principale",
+    })
+  }
+
+  gallery.push(...(maison.images ?? []))
+  gallery.push(...(maison.medias ?? []))
+
+  const seen = new Set<string>()
+
+  return gallery.filter((media) => {
+    const url = mediaUrl(media)
+
+    if (!url || seen.has(url)) {
+      return false
+    }
+
+    seen.add(url)
+    return true
+  })
+}
+
 export {
   agencyName,
   booleanLabel,
@@ -347,7 +406,9 @@ export {
   maisonDisplayName,
   maisonEditPath,
   maisonId,
+  maisonMediaGallery,
   maisonReferenceLabel,
+  mediaUrl,
   parseMaisons,
   priceLabel,
   standingLabel,
@@ -359,6 +420,7 @@ export {
   type MaisonAddress,
   type MaisonAgency,
   type MaisonDetails,
+  type MaisonMedia,
   type MaisonOwner,
   type MaisonsResponse,
 }
