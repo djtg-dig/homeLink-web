@@ -1,10 +1,12 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import Link from "next/link"
 import {
   BriefcaseBusiness,
   CheckCircle2,
+  ImagePlus,
   Loader2,
   MapPin,
   Pencil,
@@ -38,9 +40,11 @@ import {
   bureauAddressLabel,
   bureauDisplayName,
   bureauId,
+  bureauMediaGallery,
   bureauReferenceLabel,
   conditionLabel,
   createdDateLabel,
+  mediaUrl,
   officeTypeLabel,
   parseBureaux,
   priceLabel,
@@ -86,6 +90,11 @@ type BureauEditValues = {
   title: string
   type_transaction: string
   watch_camera: boolean
+}
+
+type SelectedImage = {
+  file: File
+  previewUrl: string
 }
 
 const statutOptions = [
@@ -283,6 +292,12 @@ function buildPatchPayload(values: BureauEditValues) {
   }
 }
 
+function bureauThumbnail(bureau: Bureau) {
+  const [firstMedia] = bureauMediaGallery(bureau)
+
+  return firstMedia ? mediaUrl(firstMedia) : ""
+}
+
 function BureauxTableSkeleton() {
   return (
     <>
@@ -450,6 +465,26 @@ function BureauEditDialog({
   )
   const [error, setError] = React.useState("")
   const [pending, setPending] = React.useState(false)
+  const [selectedImages, setSelectedImages] = React.useState<SelectedImage[]>(
+    []
+  )
+  const [selectedMainImage, setSelectedMainImage] =
+    React.useState<SelectedImage | null>(null)
+  const selectedImagesRef = React.useRef<SelectedImage[]>([])
+  const selectedMainImageRef = React.useRef<SelectedImage | null>(null)
+  const currentGallery = bureauMediaGallery(bureau)
+
+  React.useEffect(() => {
+    return () => {
+      if (selectedMainImageRef.current) {
+        URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+      }
+
+      selectedImagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl)
+      })
+    }
+  }, [])
 
   function updateValue(name: keyof BureauEditValues, value: string) {
     setValues((current) => ({ ...current, [name]: value }))
@@ -457,6 +492,89 @@ function BureauEditDialog({
 
   function updateBoolean(name: keyof BureauEditValues, checked: boolean) {
     setValues((current) => ({ ...current, [name]: checked }))
+  }
+
+  function updateMainImage(file: File | null) {
+    if (selectedMainImageRef.current) {
+      URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+    }
+
+    const nextImage = file
+      ? {
+          file,
+          previewUrl: URL.createObjectURL(file),
+        }
+      : null
+
+    selectedMainImageRef.current = nextImage
+    setSelectedMainImage(nextImage)
+  }
+
+  function updateImages(files: FileList | null) {
+    if (!files) {
+      return
+    }
+
+    const nextImages = Array.from(files).map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }))
+
+    setSelectedImages((current) => {
+      const nextSelectedImages = [...current, ...nextImages]
+
+      selectedImagesRef.current = nextSelectedImages
+
+      return nextSelectedImages
+    })
+  }
+
+  function removeImageFile(index: number) {
+    setSelectedImages((current) => {
+      const removedImage = current[index]
+
+      if (removedImage) {
+        URL.revokeObjectURL(removedImage.previewUrl)
+      }
+
+      const nextSelectedImages = current.filter(
+        (_, fileIndex) => fileIndex !== index
+      )
+
+      selectedImagesRef.current = nextSelectedImages
+
+      return nextSelectedImages
+    })
+  }
+
+  async function uploadImages(id: string) {
+    if (selectedMainImage) {
+      const formData = new FormData()
+
+      formData.append("main_image", selectedMainImage.file)
+
+      await apiFetch<Partial<Bureau> | undefined>(
+        `/api/immovables/bureaux/${encodeURIComponent(id)}/`,
+        {
+          body: formData,
+          method: "PATCH",
+        }
+      )
+    }
+
+    for (const image of selectedImages) {
+      const formData = new FormData()
+
+      formData.append("image", image.file)
+
+      await apiFetch<unknown>(
+        `/api/immovables/${encodeURIComponent(id)}/images/`,
+        {
+          body: formData,
+          method: "POST",
+        }
+      )
+    }
   }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -482,12 +600,56 @@ function BureauEditDialog({
           method: "PATCH",
         }
       )
+      let mediaError = ""
+
+      try {
+        await uploadImages(id)
+      } catch (caughtError) {
+        if (caughtError instanceof ApiError) {
+          mediaError = formatApiMessage(
+            caughtError.body,
+            "Les informations ont été sauvegardées, mais l'envoi des images a échoué."
+          )
+        } else {
+          mediaError =
+            caughtError instanceof Error
+              ? caughtError.message
+              : "Les informations ont été sauvegardées, mais l'envoi des images a échoué."
+        }
+      }
+
+      const refreshedBureau = await apiFetch<Bureau>(
+        `/api/immovables/bureaux/${encodeURIComponent(id)}/`
+      )
 
       onUpdated({
         ...bureau,
         ...payload,
         ...(updatedBureau ?? {}),
+        ...refreshedBureau,
       })
+
+      if (selectedMainImageRef.current) {
+        URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+      }
+      selectedMainImageRef.current = null
+      setSelectedMainImage(null)
+      selectedImagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl)
+      })
+      selectedImagesRef.current = []
+      setSelectedImages([])
+
+      if (mediaError) {
+        setError(mediaError)
+        toast({
+          description: mediaError,
+          title: "Images non envoyées",
+          variant: "destructive",
+        })
+        return
+      }
+
       toast({
         description: "Les informations du bureau ont été mises à jour.",
         title: "Bureau modifié",
@@ -547,6 +709,169 @@ function BureauEditDialog({
               {error}
             </p>
           ) : null}
+
+          <section className="rounded-lg border border-border bg-background p-4">
+            <div className="mb-4 flex items-start gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                <ImagePlus className="size-5" />
+              </span>
+              <div>
+                <h3 className="text-base font-semibold">Images</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Ajoutez ou remplacez les photos affichées sur la fiche du
+                  bureau.
+                </p>
+              </div>
+            </div>
+
+            {currentGallery.length > 0 ? (
+              <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {currentGallery.slice(0, 8).map((media, index) => {
+                  const image = mediaUrl(media)
+
+                  return (
+                    <div
+                      key={`${image}-${index}`}
+                      className="relative overflow-hidden rounded-md border border-border bg-muted"
+                    >
+                      <Image
+                        alt={media.title || `Photo bureau ${index + 1}`}
+                        src={image}
+                        width={240}
+                        height={180}
+                        unoptimized
+                        className="aspect-[4/3] w-full object-cover"
+                      />
+                      {index === 0 ? (
+                        <span className="absolute left-2 top-2 rounded-md bg-brand-navy/90 px-2 py-1 text-[11px] font-semibold text-white">
+                          Principale
+                        </span>
+                      ) : null}
+                    </div>
+                  )
+                })}
+              </div>
+            ) : null}
+
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <div className="space-y-3">
+                <label className={labelClassName} htmlFor="edit-main_image">
+                  Photo principale
+                </label>
+                <label
+                  htmlFor="edit-main_image"
+                  className="flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 px-4 py-5 text-center transition hover:border-primary/60 hover:bg-primary/5"
+                >
+                  {selectedMainImage ? (
+                    <Image
+                      alt="Aperçu de la nouvelle photo principale"
+                      src={selectedMainImage.previewUrl}
+                      width={640}
+                      height={320}
+                      unoptimized
+                      className="h-40 w-full rounded-md object-cover"
+                    />
+                  ) : (
+                    <>
+                      <ImagePlus className="size-8 text-muted-foreground" />
+                      <span className="mt-3 text-sm font-medium">
+                        Remplacer la photo principale
+                      </span>
+                      <span className="mt-1 text-xs text-muted-foreground">
+                        JPG, PNG ou WebP
+                      </span>
+                    </>
+                  )}
+                  <input
+                    id="edit-main_image"
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    disabled={pending}
+                    onChange={(event) => {
+                      updateMainImage(event.target.files?.[0] ?? null)
+                      event.target.value = ""
+                    }}
+                  />
+                </label>
+                {selectedMainImage ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-9 w-full"
+                    disabled={pending}
+                    onClick={() => updateMainImage(null)}
+                  >
+                    <X />
+                    Retirer la nouvelle photo principale
+                  </Button>
+                ) : null}
+              </div>
+
+              <div className="space-y-3">
+                <label
+                  className={labelClassName}
+                  htmlFor="edit-gallery_images"
+                >
+                  Galerie
+                </label>
+                <label
+                  htmlFor="edit-gallery_images"
+                  className="flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 px-4 py-5 text-center transition hover:border-primary/60 hover:bg-primary/5"
+                >
+                  <ImagePlus className="size-7 text-muted-foreground" />
+                  <span className="mt-2 text-sm font-medium">
+                    Ajouter des photos
+                  </span>
+                  <span className="mt-1 text-xs text-muted-foreground">
+                    Sélection multiple possible
+                  </span>
+                  <input
+                    id="edit-gallery_images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="sr-only"
+                    disabled={pending}
+                    onChange={(event) => {
+                      updateImages(event.target.files)
+                      event.target.value = ""
+                    }}
+                  />
+                </label>
+                {selectedImages.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {selectedImages.map((image, index) => (
+                      <div
+                        key={`${image.previewUrl}-${index}`}
+                        className="relative overflow-hidden rounded-md border border-border bg-muted"
+                      >
+                        <Image
+                          alt={`Aperçu nouvelle photo ${index + 1}`}
+                          src={image.previewUrl}
+                          width={240}
+                          height={180}
+                          unoptimized
+                          className="aspect-[4/3] w-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="icon"
+                          className="absolute right-2 top-2 size-8 opacity-95"
+                          disabled={pending}
+                          onClick={() => removeImageFile(index)}
+                          aria-label="Retirer la photo"
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </section>
 
           <div className="grid gap-4 md:grid-cols-2">
             <TextField
@@ -1029,6 +1354,7 @@ function BureauxContent() {
                   ? bureaux.map((bureau, index) => {
                       const id = bureauId(bureau)
                       const key = id || `${bureau.title}-${index}`
+                      const thumbnail = bureauThumbnail(bureau)
 
                       return (
                         <tr
@@ -1037,9 +1363,20 @@ function BureauxContent() {
                         >
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3">
-                              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
-                                <BriefcaseBusiness className="size-5" />
-                              </span>
+                              {thumbnail ? (
+                                <Image
+                                  alt=""
+                                  src={thumbnail}
+                                  width={40}
+                                  height={40}
+                                  unoptimized
+                                  className="size-10 shrink-0 rounded-md object-cover"
+                                />
+                              ) : (
+                                <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                                  <BriefcaseBusiness className="size-5" />
+                                </span>
+                              )}
                               <div className="min-w-0">
                                 <p className="truncate font-semibold">
                                   {bureauDisplayName(bureau)}

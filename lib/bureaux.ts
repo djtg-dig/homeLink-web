@@ -1,3 +1,5 @@
+import { mediaAssetUrl } from "@/lib/media-assets"
+
 type BureauAddress = {
   administrative_area?: number | string | null
   city?: string | null
@@ -25,6 +27,16 @@ type BureauOwner = {
   email?: string | null
   full_name?: string | null
   phone_number?: string | null
+}
+
+type BureauMedia = {
+  file?: string | null
+  id?: number | string
+  image?: string | null
+  thumbnail?: string | null
+  title?: string | null
+  url?: string | null
+  video?: string | null
 }
 
 type BureauDetails = {
@@ -74,7 +86,10 @@ type Bureau = {
   description?: string | null
   est_proprietaire?: boolean | null
   id?: number | string
+  images?: BureauMedia[]
   is_active?: boolean | null
+  main_image?: string | null
+  medias?: BureauMedia[]
   owner?: BureauOwner | null
   prix_affiche?: string | null
   prix_location_mensuel?: number | string | null
@@ -289,16 +304,58 @@ function agencyName(bureau: Bureau) {
   return bureau.agency?.name?.trim() || "Sans agence"
 }
 
+function mediaUrl(media: BureauMedia) {
+  const url =
+    media.url?.trim() ||
+    media.thumbnail?.trim() ||
+    media.image?.trim() ||
+    media.file?.trim() ||
+    media.video?.trim() ||
+    ""
+
+  return mediaAssetUrl(url)
+}
+
+function bureauMediaGallery(bureau: Bureau) {
+  const gallery: BureauMedia[] = []
+
+  if (bureau.main_image?.trim()) {
+    gallery.push({
+      id: "main-image",
+      image: bureau.main_image,
+      title: "Photo principale",
+    })
+  }
+
+  gallery.push(...(bureau.images ?? []))
+  gallery.push(...(bureau.medias ?? []))
+
+  const seen = new Set<string>()
+
+  return gallery.filter((media) => {
+    const url = mediaUrl(media)
+
+    if (!url || seen.has(url)) {
+      return false
+    }
+
+    seen.add(url)
+    return true
+  })
+}
+
 export {
   agencyName,
   bureauAddressLabel,
   bureauDisplayName,
   bureauId,
+  bureauMediaGallery,
   bureauReferenceLabel,
   conditionLabel,
   createdDateLabel,
   formatDate,
   leaseTypeLabel,
+  mediaUrl,
   officeTypeLabel,
   parseBureaux,
   priceLabel,
@@ -310,6 +367,7 @@ export {
   type BureauAddress,
   type BureauAgency,
   type BureauDetails,
+  type BureauMedia,
   type BureauOwner,
   type BureauxResponse,
 }

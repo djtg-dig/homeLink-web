@@ -1,16 +1,19 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
   BriefcaseBusiness,
   CheckCircle2,
   Home,
+  ImagePlus,
   KeyRound,
   Loader2,
   PanelsTopLeft,
   Save,
   ShieldCheck,
+  X,
 } from "lucide-react"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
@@ -37,6 +40,7 @@ import {
 } from "@/lib/agencies"
 import { ApiError, apiFetch, apiPostJson } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
+import { bureauId, type Bureau } from "@/lib/bureaux"
 
 const NO_AGENCY_VALUE = "__none__"
 
@@ -87,6 +91,11 @@ type BureauFormValues = {
   virtual_tour_url: string
   watch_camera: boolean
   wing: string
+}
+
+type SelectedImage = {
+  file: File
+  previewUrl: string
 }
 
 const initialValues: BureauFormValues = {
@@ -395,6 +404,13 @@ function BureauCreateContent() {
   const [loadingAgencies, setLoadingAgencies] = React.useState(true)
   const [error, setError] = React.useState("")
   const [pending, setPending] = React.useState(false)
+  const [selectedImages, setSelectedImages] = React.useState<SelectedImage[]>(
+    []
+  )
+  const [selectedMainImage, setSelectedMainImage] =
+    React.useState<SelectedImage | null>(null)
+  const selectedImagesRef = React.useRef<SelectedImage[]>([])
+  const selectedMainImageRef = React.useRef<SelectedImage | null>(null)
 
   const loadAgencies = React.useCallback(async (signal?: AbortSignal) => {
     try {
@@ -447,12 +463,107 @@ function BureauCreateContent() {
     }
   }, [loadAgencies])
 
+  React.useEffect(() => {
+    return () => {
+      if (selectedMainImageRef.current) {
+        URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+      }
+
+      selectedImagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl)
+      })
+    }
+  }, [])
+
   function updateValue(name: keyof BureauFormValues, value: string) {
     setValues((current) => ({ ...current, [name]: value }))
   }
 
   function updateBoolean(name: keyof BureauFormValues, checked: boolean) {
     setValues((current) => ({ ...current, [name]: checked }))
+  }
+
+  function updateMainImage(file: File | null) {
+    if (selectedMainImageRef.current) {
+      URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+    }
+
+    const nextImage = file
+      ? {
+          file,
+          previewUrl: URL.createObjectURL(file),
+        }
+      : null
+
+    selectedMainImageRef.current = nextImage
+    setSelectedMainImage(nextImage)
+  }
+
+  function updateImages(files: FileList | null) {
+    if (!files) {
+      return
+    }
+
+    const nextImages = Array.from(files).map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }))
+
+    setSelectedImages((current) => {
+      const nextSelectedImages = [...current, ...nextImages]
+
+      selectedImagesRef.current = nextSelectedImages
+
+      return nextSelectedImages
+    })
+  }
+
+  function removeImageFile(index: number) {
+    setSelectedImages((current) => {
+      const removedImage = current[index]
+
+      if (removedImage) {
+        URL.revokeObjectURL(removedImage.previewUrl)
+      }
+
+      const nextSelectedImages = current.filter(
+        (_, fileIndex) => fileIndex !== index
+      )
+
+      selectedImagesRef.current = nextSelectedImages
+
+      return nextSelectedImages
+    })
+  }
+
+  async function uploadImages(id: string) {
+    if (selectedMainImage) {
+      const formData = new FormData()
+
+      formData.append("main_image", selectedMainImage.file)
+
+      await apiFetch<Partial<Bureau> | undefined>(
+        `/api/immovables/bureaux/${encodeURIComponent(id)}/`,
+        {
+          body: formData,
+          method: "PATCH",
+        }
+      )
+    }
+
+    for (const image of selectedImages) {
+      const formData = new FormData()
+
+      formData.append("image", image.file)
+
+      await apiFetch<unknown>(
+        `/api/immovables/${encodeURIComponent(id)}/images/`,
+        {
+          body: formData,
+          method: "POST",
+        }
+      )
+    }
   }
 
   function buildPayload() {
@@ -571,7 +682,45 @@ function BureauCreateContent() {
     try {
       const payload = buildPayload()
 
-      await apiPostJson<unknown>("/api/immovables/bureaux/", payload)
+      const createdBureau = await apiPostJson<Bureau>(
+        "/api/immovables/bureaux/",
+        payload
+      )
+      const createdId = bureauId(createdBureau)
+      const hasSelectedMedia = Boolean(selectedMainImage) || selectedImages.length > 0
+      let mediaError = ""
+
+      if (!createdId && hasSelectedMedia) {
+        mediaError =
+          "Le bureau a été créé, mais l'envoi des images est impossible sans identifiant."
+      } else if (createdId) {
+        try {
+          await uploadImages(createdId)
+        } catch (caughtError) {
+          if (caughtError instanceof ApiError) {
+            mediaError = formatApiMessage(
+              caughtError.body,
+              "Le bureau a été créé, mais l'envoi des images a échoué."
+            )
+          } else {
+            mediaError =
+              caughtError instanceof Error
+                ? caughtError.message
+                : "Le bureau a été créé, mais l'envoi des images a échoué."
+          }
+        }
+      }
+
+      if (mediaError) {
+        setError(mediaError)
+        toast({
+          description: mediaError,
+          title: "Images non envoyées",
+          variant: "destructive",
+        })
+        return
+      }
+
       toast({
         description: "Le bureau est maintenant disponible dans la gestion.",
         title: "Bureau créé",
@@ -758,6 +907,128 @@ function BureauCreateContent() {
                 checked={values.is_active}
                 onChange={(checked) => updateBoolean("is_active", checked)}
               />
+            </div>
+          </Section>
+
+          <Section
+            icon={ImagePlus}
+            title="Images"
+            description="Photo principale et galerie visibles sur la fiche publique."
+          >
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <div className="space-y-3">
+                <label className={labelClassName} htmlFor="main_image">
+                  Photo principale
+                </label>
+                <label
+                  htmlFor="main_image"
+                  className="flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 px-4 py-6 text-center transition hover:border-primary/60 hover:bg-primary/5"
+                >
+                  {selectedMainImage ? (
+                    <Image
+                      alt="Aperçu de la photo principale"
+                      src={selectedMainImage.previewUrl}
+                      width={720}
+                      height={360}
+                      unoptimized
+                      className="h-44 w-full rounded-md object-cover"
+                    />
+                  ) : (
+                    <>
+                      <ImagePlus className="size-8 text-muted-foreground" />
+                      <span className="mt-3 text-sm font-medium">
+                        Ajouter une photo principale
+                      </span>
+                      <span className="mt-1 text-xs text-muted-foreground">
+                        JPG, PNG ou WebP
+                      </span>
+                    </>
+                  )}
+                  <input
+                    id="main_image"
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    disabled={pending}
+                    onChange={(event) => {
+                      updateMainImage(event.target.files?.[0] ?? null)
+                      event.target.value = ""
+                    }}
+                  />
+                </label>
+                {selectedMainImage ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-9 w-full"
+                    disabled={pending}
+                    onClick={() => updateMainImage(null)}
+                  >
+                    <X />
+                    Retirer la photo principale
+                  </Button>
+                ) : null}
+              </div>
+
+              <div className="space-y-3">
+                <label className={labelClassName} htmlFor="gallery_images">
+                  Galerie
+                </label>
+                <label
+                  htmlFor="gallery_images"
+                  className="flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 px-4 py-5 text-center transition hover:border-primary/60 hover:bg-primary/5"
+                >
+                  <ImagePlus className="size-7 text-muted-foreground" />
+                  <span className="mt-2 text-sm font-medium">
+                    Ajouter des photos
+                  </span>
+                  <span className="mt-1 text-xs text-muted-foreground">
+                    Sélection multiple possible
+                  </span>
+                  <input
+                    id="gallery_images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="sr-only"
+                    disabled={pending}
+                    onChange={(event) => {
+                      updateImages(event.target.files)
+                      event.target.value = ""
+                    }}
+                  />
+                </label>
+                {selectedImages.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {selectedImages.map((image, index) => (
+                      <div
+                        key={`${image.previewUrl}-${index}`}
+                        className="group relative overflow-hidden rounded-md border border-border bg-muted"
+                      >
+                        <Image
+                          alt={`Aperçu photo ${index + 1}`}
+                          src={image.previewUrl}
+                          width={320}
+                          height={240}
+                          unoptimized
+                          className="aspect-[4/3] w-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="icon"
+                          className="absolute right-2 top-2 size-8 opacity-95"
+                          disabled={pending}
+                          onClick={() => removeImageFile(index)}
+                          aria-label="Retirer la photo"
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             </div>
           </Section>
 
