@@ -397,6 +397,20 @@ function AppartementDetailContent({ id }: { id: string }) {
             </div>
           </section>
 
+          <InfoCard icon={FileImage} title="Images">
+            {visibleMedias.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {visibleMedias.map((media, index) => (
+                  <MediaPreview key={String(media.id ?? index)} media={media} />
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-md border border-dashed border-border bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">
+                Aucune image n&apos;est associée à cet appartement.
+              </p>
+            )}
+          </InfoCard>
+
           <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-4">
               <InfoCard icon={Home} title="Publication">
@@ -620,20 +634,6 @@ function AppartementDetailContent({ id }: { id: string }) {
               />
             </InfoCard>
           </div>
-
-          <InfoCard icon={FileImage} title="Médias">
-            {visibleMedias.length > 0 ? (
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {visibleMedias.map((media, index) => (
-                  <MediaPreview key={String(media.id ?? index)} media={media} />
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Aucun média n’est associé à cet appartement.
-              </p>
-            )}
-          </InfoCard>
 
           {deleteDialogOpen ? (
             <DeleteConfirmDialog

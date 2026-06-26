@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Loader2, Save, X } from "lucide-react"
+import { ImagePlus, Loader2, Save, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -24,7 +24,10 @@ import { formatApiMessage } from "@/lib/api-errors"
 import {
   appartementDisplayName,
   appartementId,
+  appartementMediaGallery,
+  mediaUrl,
   type Appartement,
+  type AppartementMedia,
 } from "@/lib/appartements"
 import {
   immeubleDisplayName,
@@ -69,6 +72,11 @@ type AppartementEditValues = {
   terrasse: boolean
   title: string
   type_transaction: string
+}
+
+type SelectedImage = {
+  file: File
+  previewUrl: string
 }
 
 const statutOptions = [
@@ -361,6 +369,31 @@ function SwitchField({
   )
 }
 
+function ImagePreview({ media }: { media: AppartementMedia }) {
+  const url = mediaUrl(media)
+
+  if (!url) {
+    return null
+  }
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="block overflow-hidden rounded-md border border-border bg-muted"
+    >
+      <span
+        className="block aspect-video bg-cover bg-center"
+        style={{ backgroundImage: `url(${url})` }}
+      />
+      <span className="block truncate px-3 py-2 text-sm font-medium">
+        {media.title?.trim() || "Ouvrir l'image"}
+      </span>
+    </a>
+  )
+}
+
 function AppartementEditDialog({
   appartement,
   onClose,
@@ -381,6 +414,17 @@ function AppartementEditDialog({
   const [loadingImmeubles, setLoadingImmeubles] = React.useState(true)
   const [error, setError] = React.useState("")
   const [pending, setPending] = React.useState(false)
+  const [selectedImages, setSelectedImages] = React.useState<SelectedImage[]>(
+    []
+  )
+  const [selectedMainImage, setSelectedMainImage] =
+    React.useState<SelectedImage | null>(null)
+  const selectedImagesRef = React.useRef<SelectedImage[]>([])
+  const selectedMainImageRef = React.useRef<SelectedImage | null>(null)
+  const existingImages = React.useMemo(
+    () => appartementMediaGallery(appartement),
+    [appartement]
+  )
 
   const loadAgencies = React.useCallback(async (signal?: AbortSignal) => {
     try {
@@ -474,12 +518,109 @@ function AppartementEditDialog({
     }
   }, [loadAgencies, loadImmeubles])
 
+  React.useEffect(() => {
+    return () => {
+      if (selectedMainImageRef.current) {
+        URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+      }
+
+      selectedImagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl)
+      })
+    }
+  }, [])
+
   function updateValue(name: keyof AppartementEditValues, value: string) {
     setValues((current) => ({ ...current, [name]: value }))
   }
 
   function updateBoolean(name: keyof AppartementEditValues, checked: boolean) {
     setValues((current) => ({ ...current, [name]: checked }))
+  }
+
+  function updateMainImage(file: File | null) {
+    if (selectedMainImageRef.current) {
+      URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+    }
+
+    const nextImage = file
+      ? {
+          file,
+          previewUrl: URL.createObjectURL(file),
+        }
+      : null
+
+    selectedMainImageRef.current = nextImage
+    setSelectedMainImage(nextImage)
+  }
+
+  function updateImages(files: FileList | null) {
+    if (!files) {
+      return
+    }
+
+    const nextImages = Array.from(files).map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }))
+
+    setSelectedImages((current) => {
+      const nextSelectedImages = [...current, ...nextImages]
+
+      selectedImagesRef.current = nextSelectedImages
+
+      return nextSelectedImages
+    })
+  }
+
+  function removeImageFile(index: number) {
+    setSelectedImages((current) => {
+      const removedImage = current[index]
+
+      if (removedImage) {
+        URL.revokeObjectURL(removedImage.previewUrl)
+      }
+
+      const nextSelectedImages = current.filter(
+        (_, fileIndex) => fileIndex !== index
+      )
+
+      selectedImagesRef.current = nextSelectedImages
+
+      return nextSelectedImages
+    })
+  }
+
+  async function uploadImages(id: string) {
+    if (selectedMainImage) {
+      const formData = new FormData()
+
+      formData.append("main_image", selectedMainImage.file)
+
+      await apiFetch<Partial<Appartement> | undefined>(
+        `/api/immovables/appartements/${encodeURIComponent(id)}/`,
+        {
+          body: formData,
+          method: "PATCH",
+        }
+      )
+    }
+
+    await Promise.all(
+      selectedImages.map((image) => {
+        const formData = new FormData()
+
+        formData.append("image", image.file)
+
+        return apiFetch<unknown>(
+          `/api/immovables/${encodeURIComponent(id)}/images/`,
+          {
+            body: formData,
+            method: "POST",
+          }
+        )
+      })
+    )
   }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -504,12 +645,55 @@ function AppartementEditDialog({
         headers: jsonHeaders(),
         method: "PATCH",
       })
+      let mediaError = ""
+
+      try {
+        await uploadImages(id)
+      } catch (caughtError) {
+        if (caughtError instanceof ApiError) {
+          mediaError = formatApiMessage(
+            caughtError.body,
+            "Les informations ont été sauvegardées, mais l'envoi des images a échoué."
+          )
+        } else {
+          mediaError =
+            caughtError instanceof Error
+              ? caughtError.message
+              : "Les informations ont été sauvegardées, mais l'envoi des images a échoué."
+        }
+      }
+
+      const refreshedAppartement = await apiFetch<Appartement>(
+        `/api/immovables/appartements/${encodeURIComponent(id)}/`
+      )
 
       onUpdated({
         ...appartement,
         ...payload,
         ...(updatedAppartement ?? {}),
+        ...refreshedAppartement,
       })
+      if (selectedMainImageRef.current) {
+        URL.revokeObjectURL(selectedMainImageRef.current.previewUrl)
+      }
+      selectedMainImageRef.current = null
+      setSelectedMainImage(null)
+      selectedImagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl)
+      })
+      selectedImagesRef.current = []
+      setSelectedImages([])
+
+      if (mediaError) {
+        setError(mediaError)
+        toast({
+          description: mediaError,
+          title: "Images non envoyées",
+          variant: "destructive",
+        })
+        return
+      }
+
       toast({
         description: "Les informations de l'appartement ont été mises à jour.",
         title: "Appartement modifié",
@@ -694,6 +878,133 @@ function AppartementEditDialog({
                 }
               />
             </div>
+          </section>
+
+          <section className="space-y-4">
+            <div>
+              <h3 className="text-base font-semibold">Images</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Photos affichées sur la fiche publique de l&apos;appartement.
+              </p>
+            </div>
+
+            {existingImages.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {existingImages.map((media, index) => (
+                  <ImagePreview key={String(media.id ?? index)} media={media} />
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-md border border-dashed border-border bg-background px-4 py-6 text-center text-sm text-muted-foreground">
+                Aucune image n&apos;est encore liée à cet appartement.
+              </p>
+            )}
+
+            <label className="flex cursor-pointer flex-col gap-3 rounded-md border border-dashed border-border bg-background p-4 transition hover:border-primary/60 hover:bg-secondary/35 sm:flex-row sm:items-center">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                <ImagePlus className="size-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium">
+                  Définir l&apos;image principale
+                </span>
+                <span className="mt-1 block text-sm text-muted-foreground">
+                  Cette image sera prioritaire dans les cartes et la fiche.
+                </span>
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(event) => {
+                  updateMainImage(event.target.files?.[0] ?? null)
+                  event.target.value = ""
+                }}
+              />
+            </label>
+
+            {selectedMainImage ? (
+              <div className="max-w-md overflow-hidden rounded-md border border-border bg-muted">
+                <span
+                  className="block aspect-video bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${selectedMainImage.previewUrl})`,
+                  }}
+                />
+                <div className="flex items-center justify-between gap-2 px-3 py-2">
+                  <span className="min-w-0 truncate text-sm font-medium">
+                    Image principale : {selectedMainImage.file.name}
+                  </span>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="size-8 shrink-0"
+                    onClick={() => updateMainImage(null)}
+                    aria-label={`Retirer ${selectedMainImage.file.name}`}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            <label className="flex cursor-pointer flex-col gap-3 rounded-md border border-dashed border-border bg-background p-4 transition hover:border-primary/60 hover:bg-secondary/35 sm:flex-row sm:items-center">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                <ImagePlus className="size-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium">
+                  Ajouter des images à la galerie
+                </span>
+                <span className="mt-1 block text-sm text-muted-foreground">
+                  Vous pouvez sélectionner plusieurs photos.
+                </span>
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="sr-only"
+                onChange={(event) => {
+                  updateImages(event.target.files)
+                  event.target.value = ""
+                }}
+              />
+            </label>
+
+            {selectedImages.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {selectedImages.map((image, index) => (
+                  <div
+                    key={`${image.file.name}-${image.file.lastModified}-${index}`}
+                    className="overflow-hidden rounded-md border border-border bg-muted"
+                  >
+                    <span
+                      className="block aspect-video bg-cover bg-center"
+                      style={{
+                        backgroundImage: `url(${image.previewUrl})`,
+                      }}
+                    />
+                    <div className="flex items-center justify-between gap-2 px-3 py-2">
+                      <span className="min-w-0 truncate text-sm font-medium">
+                        {image.file.name}
+                      </span>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="size-8 shrink-0"
+                        onClick={() => removeImageFile(index)}
+                        aria-label={`Retirer ${image.file.name}`}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </section>
 
           <section className="space-y-4">
