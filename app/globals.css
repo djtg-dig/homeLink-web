@@ -159,4 +159,8 @@
   .dashboard-sidebar-footer {
     flex-shrink: 0;
   }
+
+  .dashboard-mobile-sidebar-open .theme-switcher {
+    display: none;
+  }
 }

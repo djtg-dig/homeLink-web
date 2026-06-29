@@ -48,7 +48,7 @@ function ThemeSwitcher({ className }: { className?: string }) {
           type="button"
           aria-label={`Changer le thème. Thème actuel: ${selectedOption.label}`}
           className={cn(
-            "fixed bottom-4 left-4 z-[90] flex size-11 items-center justify-center rounded-lg border border-border bg-background text-foreground shadow-lg transition hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none",
+            "theme-switcher fixed bottom-4 left-4 z-[90] flex size-11 items-center justify-center rounded-lg border border-border bg-background text-foreground shadow-lg transition hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none",
             className
           )}
         >

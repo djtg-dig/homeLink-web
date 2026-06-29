@@ -129,7 +129,7 @@ function isCategoryActive(item: PropertyCategory, pathname: string) {
 
 function dashboardNavLinkClass(active: boolean) {
   return cn(
-    "relative flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
+    "relative flex h-10 min-w-0 items-center gap-2 rounded-md px-3 text-sm font-medium transition",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
     active
       ? "bg-white text-brand-navy shadow-sm before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-r-full before:bg-primary"
@@ -277,8 +277,8 @@ function SidebarContent({
           aria-current={overviewIsActive ? "page" : undefined}
           className={dashboardNavLinkClass(overviewIsActive)}
         >
-          <LayoutDashboard className="size-4" />
-          Vue d&apos;ensemble
+          <LayoutDashboard className="size-4 shrink-0" />
+          <span className="min-w-0 truncate">Vue d&apos;ensemble</span>
         </Link>
         {propertyCategories.map((item) => {
           const Icon = categoryIcons[item.slug]
@@ -292,8 +292,8 @@ function SidebarContent({
               aria-current={active ? "page" : undefined}
               className={dashboardNavLinkClass(active)}
             >
-              <Icon className="size-4" />
-              {item.label}
+              <Icon className="size-4 shrink-0" />
+              <span className="min-w-0 truncate">{item.label}</span>
             </Link>
           )
         })}
@@ -323,6 +323,14 @@ function DashboardShell({
   const [checking, setChecking] = React.useState(true)
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    document.body.classList.toggle("dashboard-mobile-sidebar-open", sidebarOpen)
+
+    return () => {
+      document.body.classList.remove("dashboard-mobile-sidebar-open")
+    }
+  }, [sidebarOpen])
 
   React.useEffect(() => {
     function onResize() {
@@ -447,7 +455,7 @@ function DashboardShell({
         id="dashboard-mobile-sidebar"
         aria-hidden={!sidebarOpen}
         className={cn(
-          "dashboard-mobile-sidebar fixed inset-y-0 left-0 z-50 flex w-72 max-w-[calc(100vw-1rem)] flex-col overflow-y-auto border-r border-white/10 bg-brand-navy p-4 text-brand-white transition-transform lg:hidden",
+          "dashboard-mobile-sidebar fixed inset-y-0 left-0 z-50 flex w-full flex-col overflow-y-auto bg-brand-navy p-4 text-brand-white transition-transform sm:w-80 sm:border-r sm:border-white/10 lg:hidden",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
