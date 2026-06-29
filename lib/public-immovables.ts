@@ -397,7 +397,7 @@ function countValue(value: unknown, singular: string, plural: string) {
 }
 
 function mediaCandidate(media: PublicImmovableMedia) {
-  return media.thumbnail ?? media.image ?? media.file ?? media.url ?? ""
+  return media.image ?? media.file ?? media.url ?? media.thumbnail ?? "" // Priorise l'image complète avant la miniature pour éviter l'affichage flou.
 }
 
 export function publicImmovableType(property: PublicImmovable) {
@@ -491,10 +491,10 @@ export function publicImmovableDetailPath(property: PublicImmovable) {
 
 export function publicImmovableImage(property: PublicImmovable) {
   const image =
-    property.primary_image_thumbnail ||
     property.main_image ||
     property.images?.map(mediaCandidate).find(Boolean) ||
     property.medias?.map(mediaCandidate).find(Boolean) ||
+    property.primary_image_thumbnail || // Utilise la miniature seulement si aucune image plus grande n'est disponible.
     ""
 
   if (!image) {

@@ -18,9 +18,11 @@ type LoginPageProps = {
   }>
 }
 
+const DEFAULT_LOGIN_REDIRECT = "/dashboard" // Destination par défaut après une connexion réussie.
+
 function safeRedirectPath(path?: string) {
   if (!path || !path.startsWith("/") || path.startsWith("//")) {
-    return "/"
+    return DEFAULT_LOGIN_REDIRECT // Utilise le dashboard quand aucun chemin sûr n'est fourni.
   }
 
   return path

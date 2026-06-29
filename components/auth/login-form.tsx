@@ -12,6 +12,7 @@ import { storeAuthTokens } from "@/lib/auth-storage"
 const inputClassName =
   "h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-60"
 const labelClassName = "text-sm font-medium text-foreground"
+const DEFAULT_LOGIN_REDIRECT = "/dashboard" // Destination par défaut après une connexion classique réussie.
 
 function getDjanaLoginUrl(redirectTo: string) {
   const configuredLoginUrl =
@@ -30,7 +31,7 @@ function getDjanaLoginUrl(redirectTo: string) {
 }
 
 function LoginForm({
-  redirectTo = "/",
+  redirectTo = DEFAULT_LOGIN_REDIRECT, // Envoie l'utilisateur au dashboard si aucune destination n'est fournie.
   registered = false,
 }: {
   redirectTo?: string
@@ -75,7 +76,7 @@ function LoginForm({
       }
 
       storeAuthTokens(tokens)
-      router.replace(redirectTo)
+      router.replace(redirectTo || DEFAULT_LOGIN_REDIRECT) // Redirige vers le dashboard après stockage des tokens.
       router.refresh()
     } catch {
       setError("Connexion impossible pour le moment.")
