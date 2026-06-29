@@ -54,39 +54,11 @@ function SiteHeaderContent({
 }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const [hidden, setHidden] = React.useState(false)
   const [categoriesOpen, setCategoriesOpen] = React.useState(false)
   const categoriesMenuRef = React.useRef<HTMLDivElement>(null)
   const currentCategory =
     activeCategory ??
     (pathname === "/" ? activeCategoryFromType(searchParams.get("type_bien")) : undefined)
-
-  React.useEffect(() => {
-    let previousScrollY = window.scrollY
-    let ticking = false
-
-    function updateHeader() {
-      const currentScrollY = window.scrollY
-      const isScrollingDown = currentScrollY > previousScrollY
-
-      setHidden(isScrollingDown && currentScrollY > 96)
-      previousScrollY = Math.max(currentScrollY, 0)
-      ticking = false
-    }
-
-    function onScroll() {
-      if (!ticking) {
-        window.requestAnimationFrame(updateHeader)
-        ticking = true
-      }
-    }
-
-    window.addEventListener("scroll", onScroll, { passive: true })
-
-    return () => {
-      window.removeEventListener("scroll", onScroll)
-    }
-  }, [])
 
   React.useEffect(() => {
     function onPointerDown(event: PointerEvent) {
@@ -115,12 +87,7 @@ function SiteHeaderContent({
   }, [])
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-20 border-b border-white/10 bg-brand-navy/95 text-white shadow-sm backdrop-blur transition-transform duration-300 ease-out",
-        hidden && "-translate-y-full"
-      )}
-    >
+    <header className="sticky top-0 z-20 border-b border-white/10 bg-brand-navy/95 text-white shadow-sm backdrop-blur">
       <div className="h-1 bg-brand-orange" />
       <div className="mx-auto max-w-6xl px-3 py-2 sm:px-8 md:flex md:h-20 md:items-center md:justify-between md:gap-3 md:py-0 lg:px-10">
         <div className="flex min-h-12 items-center justify-between gap-2 md:contents">
