@@ -3,6 +3,7 @@ import { Geist_Mono, Inter } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeSwitcher } from "@/components/theme-switcher"
 import { NetworkErrorScreen } from "@/components/ui/network-error-screen"
 import { Toaster } from "@/components/ui/toaster"
 import { cn } from "@/lib/utils"
@@ -76,6 +77,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           {children}
+          <ThemeSwitcher />
           <NetworkErrorScreen />
           <Toaster />
         </ThemeProvider>

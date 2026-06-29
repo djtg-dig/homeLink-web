@@ -26,7 +26,6 @@ import * as React from "react"
 import { HomelinkLogo } from "@/components/homelink-logo"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ThemeSwitcher } from "@/components/theme-switcher"
 import { fetchCurrentAccountProfile } from "@/lib/account-client"
 import type { AccountProfile } from "@/lib/account-profile"
 import { AUTH_STORAGE_EVENT, clearStoredAuthTokens } from "@/lib/auth-storage"
@@ -211,7 +210,6 @@ function DashboardShellLoading({
                   className="h-9 w-64 rounded-md border border-input bg-background pr-3 pl-9 text-sm transition outline-none placeholder:text-muted-foreground disabled:opacity-70"
                 />
               </div>
-              <ThemeSwitcher className="hidden sm:inline-flex" />
               <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-card px-2 text-card-foreground">
                 <Skeleton className="size-7 rounded" />
                 <span className="hidden text-sm font-medium text-muted-foreground sm:block">
@@ -528,7 +526,6 @@ function DashboardShell({
                   className="h-9 w-64 rounded-md border border-input bg-background pr-3 pl-9 text-sm transition outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30"
                 />
               </div>
-              <ThemeSwitcher className="hidden sm:inline-flex" />
               <div className="relative" ref={userMenuRef}>
                 <button
                   type="button"

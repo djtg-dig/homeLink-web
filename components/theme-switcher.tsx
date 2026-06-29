@@ -1,8 +1,9 @@
 "use client"
 
-import { Laptop, Moon, Sun, type LucideIcon } from "lucide-react"
+import { Check, Laptop, Moon, Sun, type LucideIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import * as React from "react"
+import { DropdownMenu } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
@@ -13,9 +14,9 @@ type ThemeOption = {
 }
 
 const themeOptions: ThemeOption[] = [
+  { icon: Laptop, label: "System", value: "system" },
   { icon: Sun, label: "Light", value: "light" },
   { icon: Moon, label: "Dark", value: "dark" },
-  { icon: Laptop, label: "System", value: "system" },
 ]
 
 const subscribeToClientSnapshot = () => () => undefined // Aucun abonnement externe: sert seulement à différencier serveur et client.
@@ -31,70 +32,64 @@ function ThemeSwitcher({ className }: { className?: string }) {
   )
 
   const selectedTheme = mounted ? theme ?? "system" : "system" // Affiche System par défaut tant que le thème stocké n'est pas lu.
+  const selectedOption =
+    themeOptions.find((option) => option.value === selectedTheme) ??
+    themeOptions[0]
+  const SelectedIcon = selectedOption.icon
 
-  function onOptionKeyDown(
-    event: React.KeyboardEvent<HTMLButtonElement>,
-    currentIndex: number
-  ) {
-    const direction =
-      event.key === "ArrowRight" || event.key === "ArrowDown"
-        ? 1
-        : event.key === "ArrowLeft" || event.key === "ArrowUp"
-          ? -1
-          : 0
-
-    if (!direction) {
-      return
-    }
-
-    event.preventDefault()
-
-    const nextIndex =
-      (currentIndex + direction + themeOptions.length) % themeOptions.length
-    const nextTheme = themeOptions[nextIndex]
-
-    setTheme(nextTheme.value) // Les flèches clavier changent immédiatement le thème sélectionné.
-    document.getElementById(`theme-switcher-${nextTheme.value}`)?.focus()
+  function chooseTheme(nextTheme: ThemeOption["value"]) {
+    setTheme(nextTheme) // next-themes enregistre ce choix et applique le thème immédiatement.
   }
 
   return (
-    <div
-      role="radiogroup"
-      aria-label="Sélecteur de thème"
-      className={cn(
-        "inline-flex h-9 shrink-0 items-center rounded-lg border border-border bg-background p-0.5 text-foreground shadow-sm",
-        className
-      )}
-    >
-      {themeOptions.map((option, index) => {
-        const Icon = option.icon
-        const selected = selectedTheme === option.value
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          type="button"
+          aria-label={`Changer le thème. Thème actuel: ${selectedOption.label}`}
+          className={cn(
+            "fixed bottom-4 left-4 z-[90] flex size-11 items-center justify-center rounded-lg border border-border bg-background text-foreground shadow-lg transition hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none",
+            className
+          )}
+        >
+          <SelectedIcon className="size-5" aria-hidden="true" />
+        </button>
+      </DropdownMenu.Trigger>
 
-        return (
-          <button
-            key={option.value}
-            id={`theme-switcher-${option.value}`}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            aria-label={`Thème ${option.label}`}
-            title={`Thème ${option.label}`}
-            onClick={() => setTheme(option.value)}
-            onKeyDown={(event) => onOptionKeyDown(event, index)}
-            className={cn(
-              "flex h-8 min-w-8 items-center justify-center gap-1.5 rounded-md px-2 text-xs font-medium transition outline-none",
-              "focus-visible:ring-3 focus-visible:ring-ring/40",
-              selected
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="start"
+          side="top"
+          sideOffset={8}
+          className="z-[95] w-40 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg outline-none"
+        >
+          <DropdownMenu.RadioGroup
+            value={selectedTheme}
+            onValueChange={(value) =>
+              chooseTheme(value as ThemeOption["value"])
+            }
           >
-            <Icon className="size-4" aria-hidden="true" />
-            <span className="hidden sm:inline">{option.label}</span>
-          </button>
-        )
-      })}
-    </div>
+            {themeOptions.map((option) => {
+              const Icon = option.icon
+
+              return (
+                <DropdownMenu.RadioItem
+                  key={option.value}
+                  value={option.value}
+                  className="relative flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 pr-7 text-sm outline-none transition select-none focus:bg-muted data-[state=checked]:bg-primary/10 data-[state=checked]:text-primary"
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                  <span>{option.label}</span>
+                  <DropdownMenu.ItemIndicator className="absolute right-2">
+                    <Check className="size-4" aria-hidden="true" />
+                  </DropdownMenu.ItemIndicator>
+                </DropdownMenu.RadioItem>
+              )
+            })}
+          </DropdownMenu.RadioGroup>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   )
 }
 

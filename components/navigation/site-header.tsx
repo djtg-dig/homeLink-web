@@ -7,7 +7,6 @@ import * as React from "react"
 
 import { AccountStatus } from "@/components/account/account-status"
 import { HomelinkLogo } from "@/components/homelink-logo"
-import { ThemeSwitcher } from "@/components/theme-switcher"
 import { propertyCategories } from "@/lib/property-categories"
 import { publicCategoryLinks } from "@/lib/public-navigation"
 import { cn } from "@/lib/utils"
@@ -132,10 +131,7 @@ function SiteHeaderContent({
               className="h-10 w-28 sm:h-12 sm:w-40 md:h-14 md:w-44"
             />
           </Link>
-          <div className="flex shrink-0 items-center gap-2">
-            <ThemeSwitcher className="border-white/15 bg-white/8 text-white" />
-            <AccountStatus />
-          </div>
+          <AccountStatus />
         </div>
 
         <div className="relative mt-2 md:hidden" ref={categoriesMenuRef}>
