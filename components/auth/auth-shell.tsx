@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { HomelinkLogo } from "@/components/homelink-logo"
 import { SiteFooter } from "@/components/navigation/site-footer"
+import { ThemeSwitcher } from "@/components/theme-switcher"
 
 function AuthShell({
   actionHref,
@@ -33,17 +34,20 @@ function AuthShell({
                   className="h-11 w-36 sm:h-14 sm:w-44"
                 />
               </Link>
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="border-white/20 bg-white/8 text-white hover:bg-white/14 hover:text-white"
-              >
-                <Link href="/">
-                  <ArrowLeft />
-                  Accueil
-                </Link>
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <ThemeSwitcher className="hidden border-white/20 bg-white/8 text-white sm:inline-flex" />
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="border-white/20 bg-white/8 text-white hover:bg-white/14 hover:text-white"
+                >
+                  <Link href="/">
+                    <ArrowLeft />
+                    Accueil
+                  </Link>
+                </Button>
+              </div>
             </div>
 
             <div className="hidden max-w-md pb-10 lg:block">
