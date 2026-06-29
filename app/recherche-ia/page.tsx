@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { HouseAiResultsContent } from "@/components/home/house-ai-results-content"
 import {
   houseAiFilterKeys,
+  normalizeHouseAiFilters,
   parseHouseAiFilterValue,
   type HouseAiFilters,
 } from "@/lib/house-ai-search"
@@ -49,7 +50,7 @@ export default async function HouseAiResultsPage({
     <HouseAiResultsContent
       key={`${query}-${JSON.stringify(filters)}`}
       query={query}
-      filters={filters}
+      filters={normalizeHouseAiFilters(query, filters)}
     />
   )
 }

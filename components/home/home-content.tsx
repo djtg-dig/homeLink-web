@@ -372,6 +372,10 @@ function HomeContent({ initialFilters }: HomeContentProps) {
   }
 
   const currentHeroCopy = heroCopy(draftFilters.type_bien)
+  const aiSearchIsAvailable = appliedFilters.type_bien === "maison"
+  const selectedTypeLabel =
+    publicTypeOptions.find((type) => type.value === appliedFilters.type_bien)
+      ?.label ?? "la page générale"
 
   return (
     <>
@@ -635,7 +639,10 @@ function HomeContent({ initialFilters }: HomeContentProps) {
           </div>
         </section>
       </main>
-      <HouseAiSearch />
+      <HouseAiSearch
+        available={aiSearchIsAvailable}
+        unavailableLabel={selectedTypeLabel}
+      />
       <SiteFooter />
     </>
   )

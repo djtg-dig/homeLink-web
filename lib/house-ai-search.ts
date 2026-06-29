@@ -55,7 +55,56 @@ const booleanLabels: Partial<
 }
 
 function hasValue(value: HouseAiFilterValue | undefined) {
-  return value !== null && value !== undefined && value !== ""
+  if (value === null || value === undefined) {
+    return false
+  }
+
+  if (typeof value === "string") {
+    const normalizedValue = value.trim().toLowerCase()
+
+    return (
+      normalizedValue !== "" &&
+      normalizedValue !== "null" &&
+      normalizedValue !== "undefined" &&
+      normalizedValue !== "none"
+    )
+  }
+
+  return true
+}
+
+function queryMentionsPrice(userQuery: string) {
+  const normalizedQuery = userQuery.toLowerCase()
+
+  return (
+    /\d/.test(normalizedQuery) ||
+    /\b(prix|budget|loyer|dollar|dollars|usd|cdf|franc|fc)\b/.test(
+      normalizedQuery
+    )
+  )
+}
+
+export function normalizeHouseAiFilters(
+  userQuery: string,
+  filters: HouseAiFilters
+) {
+  const nextFilters: HouseAiFilters = {}
+
+  houseAiFilterKeys.forEach((key) => {
+    const value = filters[key]
+
+    if (hasValue(value)) {
+      nextFilters[key] = value
+    }
+  })
+
+  if (!queryMentionsPrice(userQuery)) {
+    delete nextFilters.min_price
+    delete nextFilters.max_price
+    delete nextFilters.devise
+  }
+
+  return nextFilters
 }
 
 export function buildHouseAiQuery(filters: HouseAiFilters) {
@@ -76,7 +125,8 @@ export function buildHouseAiResultsPath(
   userQuery: string,
   filters: HouseAiFilters
 ) {
-  const params = new URLSearchParams(buildHouseAiQuery(filters))
+  const normalizedFilters = normalizeHouseAiFilters(userQuery, filters)
+  const params = new URLSearchParams(buildHouseAiQuery(normalizedFilters))
 
   params.set("q", userQuery)
 
@@ -150,16 +200,26 @@ export function houseAiFilterLabels(filters: HouseAiFilters) {
 }
 
 export function parseHouseAiFilterValue(value: string) {
-  if (value === "true") {
+  const trimmed = value.trim()
+  const normalizedValue = trimmed.toLowerCase()
+
+  if (
+    normalizedValue === "" ||
+    normalizedValue === "null" ||
+    normalizedValue === "undefined" ||
+    normalizedValue === "none"
+  ) {
+    return null
+  }
+
+  if (normalizedValue === "true") {
     return true
   }
 
-  if (value === "false") {
+  if (normalizedValue === "false") {
     return false
   }
 
-  // Essayer de parser les nombres
-  const trimmed = value.trim()
   if (/^\d+(\.\d+)?$/.test(trimmed)) {
     const num = Number(trimmed)
     if (!isNaN(num)) {
