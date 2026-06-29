@@ -134,6 +134,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: clip;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -141,5 +142,21 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  .dashboard-mobile-sidebar {
+    height: 100svh;
+    max-height: 100svh;
+    will-change: transform;
+  }
+
+  .dashboard-sidebar-content {
+    min-height: 0;
+  }
+
+  .dashboard-sidebar-footer {
+    flex-shrink: 0;
   }
 }

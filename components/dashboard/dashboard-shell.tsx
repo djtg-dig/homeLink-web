@@ -148,46 +148,10 @@ function DashboardShellLoading({
   pathname: string
   title: string
 }) {
-  const overviewIsActive = pathname === "/dashboard"
-
   return (
     <main className="flex min-h-svh bg-muted text-foreground">
-      <aside className="sticky top-0 hidden h-svh w-72 shrink-0 border-r border-white/10 bg-brand-navy p-4 text-brand-white lg:block">
-        <Link href="/" aria-label="Accueil Loyer360" className="block shrink-0">
-          <HomelinkLogo sizes="176px" className="h-14 w-44" />
-        </Link>
-
-        <nav aria-label="Navigation dashboard" className="mt-8 space-y-1">
-          <Link
-            href="/dashboard"
-            aria-current={overviewIsActive ? "page" : undefined}
-            className={dashboardNavLinkClass(overviewIsActive)}
-          >
-            <LayoutDashboard className="size-4" />
-            Vue d&apos;ensemble
-          </Link>
-          {propertyCategories.map((item) => {
-            const Icon = categoryIcons[item.slug]
-            const active = isCategoryActive(item, pathname)
-
-            return (
-              <Link
-                key={item.slug}
-                href={categoryHref(item)}
-                aria-current={active ? "page" : undefined}
-                className={dashboardNavLinkClass(active)}
-              >
-                <Icon className="size-4" />
-                {item.label}
-              </Link>
-            )
-          })}
-        </nav>
-
-        <div className="mt-8 rounded-lg border border-white/10 bg-white/8 p-3 text-sm text-white/72">
-          <p className="font-medium text-white">Loyer360 Admin</p>
-          <p className="mt-1 leading-5">Gestion des biens et des catégories.</p>
-        </div>
+      <aside className="sticky top-0 hidden h-svh w-72 shrink-0 flex-col border-r border-white/10 bg-brand-navy p-4 text-brand-white lg:flex">
+        <SidebarContent pathname={pathname} />
       </aside>
       <section className="min-w-0 flex-1">
         <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
@@ -296,7 +260,7 @@ function SidebarContent({
   const overviewIsActive = pathname === "/dashboard"
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="dashboard-sidebar-content flex min-h-0 flex-1 flex-col">
       <Link
         href="/"
         aria-label="Accueil Loyer360"
@@ -335,7 +299,7 @@ function SidebarContent({
         })}
       </nav>
 
-      <div className="mt-auto rounded-lg border border-white/10 bg-white/8 p-3 text-sm text-white/72">
+      <div className="dashboard-sidebar-footer mt-auto rounded-lg border border-white/10 bg-white/8 p-3 text-sm text-white/72">
         <p className="font-medium text-white">Loyer360 Admin</p>
         <p className="mt-1 leading-5">Gestion des biens et des catégories.</p>
       </div>
@@ -359,6 +323,21 @@ function DashboardShell({
   const [checking, setChecking] = React.useState(true)
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    function onResize() {
+      if (window.matchMedia("(min-width: 1024px)").matches) {
+        setSidebarOpen(false)
+      }
+    }
+
+    onResize()
+    window.addEventListener("resize", onResize)
+
+    return () => {
+      window.removeEventListener("resize", onResize)
+    }
+  }, [])
 
   const loadProfile = React.useCallback(async () => {
     setChecking(true)
@@ -450,25 +429,29 @@ function DashboardShell({
 
   return (
     <main className="flex min-h-svh bg-muted text-foreground">
-      <aside className="sticky top-0 hidden h-svh w-72 shrink-0 border-r border-white/10 bg-brand-navy p-4 text-brand-white lg:block">
+      <aside className="sticky top-0 hidden h-svh w-72 shrink-0 flex-col border-r border-white/10 bg-brand-navy p-4 text-brand-white lg:flex">
         <SidebarContent pathname={pathname} />
       </aside>
 
       <div
         className={cn(
           "fixed inset-0 z-40 bg-brand-navy/60 transition lg:hidden",
-          sidebarOpen ? "visible opacity-100" : "invisible opacity-0"
+          sidebarOpen
+            ? "visible opacity-100"
+            : "pointer-events-none invisible opacity-0"
         )}
         aria-hidden="true"
         onClick={() => setSidebarOpen(false)}
       />
       <aside
+        id="dashboard-mobile-sidebar"
+        aria-hidden={!sidebarOpen}
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto border-r border-white/10 bg-brand-navy p-4 text-brand-white transition-transform lg:hidden",
+          "dashboard-mobile-sidebar fixed inset-y-0 left-0 z-50 flex w-72 max-w-[calc(100vw-1rem)] flex-col overflow-y-auto border-r border-white/10 bg-brand-navy p-4 text-brand-white transition-transform lg:hidden",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex shrink-0 justify-end">
           <Button
             type="button"
             size="icon-sm"
@@ -493,6 +476,9 @@ function DashboardShell({
                 type="button"
                 size="icon-sm"
                 variant="outline"
+                aria-controls="dashboard-mobile-sidebar"
+                aria-expanded={sidebarOpen}
+                aria-label="Ouvrir la navigation"
                 className="lg:hidden"
                 onClick={() => setSidebarOpen(true)}
               >
