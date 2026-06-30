@@ -40,21 +40,21 @@ function TerrainsTableSkeleton() {
           </div>
         </div>
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 md:table-cell">
         <Skeleton className="h-4 w-28" />
         <Skeleton className="mt-2 h-3 w-24" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 sm:table-cell">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="mt-2 h-3 w-16" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 xl:table-cell">
         <Skeleton className="h-4 w-56" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 lg:table-cell">
         <Skeleton className="h-7 w-28 rounded-md" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 lg:table-cell">
         <Skeleton className="h-4 w-24" />
       </td>
     </tr>
@@ -269,15 +269,25 @@ function TerrainsContent() {
         ) : null}
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1120px] text-sm">
+          <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Terrain</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Prix</th>
-                <th className="px-4 py-3 font-medium">Adresse</th>
-                <th className="px-4 py-3 font-medium">Statut</th>
-                <th className="px-4 py-3 font-medium">Surface</th>
+                <th className="hidden px-4 py-3 font-medium md:table-cell">
+                  Type
+                </th>
+                <th className="hidden px-4 py-3 font-medium sm:table-cell">
+                  Prix
+                </th>
+                <th className="hidden px-4 py-3 font-medium xl:table-cell">
+                  Adresse
+                </th>
+                <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                  Statut
+                </th>
+                <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                  Surface
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -317,7 +327,7 @@ function TerrainsContent() {
                         key={key}
                         className="border-b border-border last:border-b-0"
                       >
-                        <td className="px-4 py-4">
+                        <td className="min-w-0 px-4 py-4">
                           <div className="flex items-center gap-3">
                             <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
                               <Map className="size-5" />
@@ -330,17 +340,20 @@ function TerrainsContent() {
                                 {terrainReferenceLabel(terrain)} ·{" "}
                                 {createdDateLabel(terrain.created_at)}
                               </p>
+                              <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                                {priceLabel(terrain)}
+                              </p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="hidden px-4 py-4 md:table-cell">
                           {terrainTypeLabel(terrain.terrain?.terrain_type)}
                           <p className="mt-1 text-xs text-muted-foreground">
                             {topographyLabel(terrain.terrain?.topography)} ·{" "}
                             {agencyName(terrain)}
                           </p>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="hidden px-4 py-4 sm:table-cell">
                           <span className="font-medium">
                             {priceLabel(terrain)}
                           </span>
@@ -348,7 +361,7 @@ function TerrainsContent() {
                             {transactionLabel(terrain.type_transaction)}
                           </p>
                         </td>
-                        <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                        <td className="hidden max-w-80 px-4 py-4 text-muted-foreground xl:table-cell">
                           <span className="flex items-start gap-1.5">
                             <MapPin className="mt-0.5 size-3.5 shrink-0" />
                             <span className="line-clamp-2">
@@ -356,7 +369,7 @@ function TerrainsContent() {
                             </span>
                           </span>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="hidden px-4 py-4 lg:table-cell">
                           <div className="flex flex-wrap gap-2">
                             <StatusPill
                               active={terrain.statut === "disponible"}
@@ -371,7 +384,7 @@ function TerrainsContent() {
                             </StatusPill>
                           </div>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="hidden px-4 py-4 lg:table-cell">
                           {surfaceLabel(terrain.terrain?.surface_terrain)}
                           <p className="mt-1 text-xs text-muted-foreground">
                             Total {surfaceLabel(terrain.surface_totale)}

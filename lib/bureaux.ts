@@ -84,12 +84,15 @@ type Bureau = {
   bureau?: BureauDetails | null
   created_at?: string | null
   description?: string | null
+  detail_url?: string | null
   est_proprietaire?: boolean | null
   id?: number | string
   images?: BureauMedia[]
   is_active?: boolean | null
   main_image?: string | null
   medias?: BureauMedia[]
+  videos?: BureauMedia[]
+  documents?: BureauMedia[]
   owner?: BureauOwner | null
   prix_affiche?: string | null
   prix_location_mensuel?: number | string | null
@@ -180,6 +183,10 @@ function bureauId(bureau: Bureau) {
   return bureau.id === undefined || bureau.id === null ? "" : String(bureau.id)
 }
 
+function bureauDetailPath(id: string) {
+  return `/dashboard/bureaux/${encodeURIComponent(id)}`
+}
+
 function bureauDisplayName(bureau: Bureau) {
   return bureau.title?.trim() || bureau.reference?.trim() || "Bureau sans titre"
 }
@@ -254,6 +261,18 @@ function leaseTypeLabel(value?: string | null) {
   return leaseTypeLabels[value] ?? value
 }
 
+function booleanLabel(value?: boolean | null) {
+  if (value === true) {
+    return "Oui"
+  }
+
+  if (value === false) {
+    return "Non"
+  }
+
+  return "-"
+}
+
 function formatDate(value?: string | null) {
   if (!value) {
     return "-"
@@ -304,6 +323,10 @@ function agencyName(bureau: Bureau) {
   return bureau.agency?.name?.trim() || "Sans agence"
 }
 
+function ownerName(bureau: Bureau) {
+  return textOrDash(bureau.owner?.full_name)
+}
+
 function mediaUrl(media: BureauMedia) {
   const url =
     media.url?.trim() ||
@@ -329,6 +352,7 @@ function bureauMediaGallery(bureau: Bureau) {
 
   gallery.push(...(bureau.images ?? []))
   gallery.push(...(bureau.medias ?? []))
+  gallery.push(...(bureau.videos ?? []))
 
   const seen = new Set<string>()
 
@@ -346,6 +370,8 @@ function bureauMediaGallery(bureau: Bureau) {
 
 export {
   agencyName,
+  booleanLabel,
+  bureauDetailPath,
   bureauAddressLabel,
   bureauDisplayName,
   bureauId,
@@ -357,6 +383,7 @@ export {
   leaseTypeLabel,
   mediaUrl,
   officeTypeLabel,
+  ownerName,
   parseBureaux,
   priceLabel,
   statusLabel,

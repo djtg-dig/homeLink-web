@@ -7,11 +7,13 @@ import {
   Eye,
   Home,
   MapPin,
+  MoreHorizontal,
   Pencil,
   Plus,
   RefreshCw,
   Trash2,
 } from "lucide-react"
+import { DropdownMenu } from "radix-ui"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
@@ -56,29 +58,25 @@ function MaisonsTableSkeleton() {
           </div>
         </div>
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 md:table-cell">
         <Skeleton className="h-4 w-28" />
         <Skeleton className="mt-2 h-3 w-24" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 sm:table-cell">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="mt-2 h-3 w-16" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 xl:table-cell">
         <Skeleton className="h-4 w-56" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 lg:table-cell">
         <Skeleton className="h-7 w-28 rounded-md" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 xl:table-cell">
         <Skeleton className="h-4 w-24" />
       </td>
-      <td className="px-4 py-4">
-        <div className="flex justify-end gap-2">
-          <Skeleton className="h-7 w-32" />
-          <Skeleton className="h-7 w-24" />
-          <Skeleton className="h-7 w-24" />
-        </div>
+      <td className="px-4 py-4 text-right">
+        <Skeleton className="ml-auto h-8 w-24" />
       </td>
     </tr>
   ))
@@ -360,15 +358,25 @@ function MaisonsContent() {
           ) : null}
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1280px] text-sm">
+            <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Maison</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Prix</th>
-                  <th className="px-4 py-3 font-medium">Adresse</th>
-                  <th className="px-4 py-3 font-medium">Statut</th>
-                  <th className="px-4 py-3 font-medium">Détails</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">
+                    Type
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium sm:table-cell">
+                    Prix
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium xl:table-cell">
+                    Adresse
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                    Statut
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium xl:table-cell">
+                    Détails
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
@@ -410,7 +418,7 @@ function MaisonsContent() {
                           key={key}
                           className="border-b border-border last:border-b-0"
                         >
-                          <td className="px-4 py-4">
+                          <td className="min-w-0 px-4 py-4">
                             <div className="flex items-center gap-3">
                               <span
                                 className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-secondary bg-cover bg-center text-primary"
@@ -430,10 +438,13 @@ function MaisonsContent() {
                                   {maisonReferenceLabel(maison)} ·{" "}
                                   {createdDateLabel(maison.created_at)}
                                 </p>
+                                <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                                  {priceLabel(maison)}
+                                </p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 md:table-cell">
                             {homeTypeLabel(maison.maison?.home_type)}
                             <p className="mt-1 text-xs text-muted-foreground">
                               {standingLabel(maison.maison?.standing)} ·{" "}
@@ -443,7 +454,7 @@ function MaisonsContent() {
                               {agencyName(maison)}
                             </p>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 sm:table-cell">
                             <span className="font-medium">
                               {priceLabel(maison)}
                             </span>
@@ -451,7 +462,7 @@ function MaisonsContent() {
                               {transactionLabel(maison.type_transaction)}
                             </p>
                           </td>
-                          <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                          <td className="hidden max-w-80 px-4 py-4 text-muted-foreground xl:table-cell">
                             <span className="flex items-start gap-1.5">
                               <MapPin className="mt-0.5 size-3.5 shrink-0" />
                               <span className="line-clamp-2">
@@ -459,7 +470,7 @@ function MaisonsContent() {
                               </span>
                             </span>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 lg:table-cell">
                             <div className="flex flex-wrap gap-2">
                               <StatusPill
                                 active={maison.statut === "disponible"}
@@ -474,7 +485,7 @@ function MaisonsContent() {
                               </StatusPill>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 xl:table-cell">
                             <span className="font-medium">
                               {maison.maison?.chamber_number ?? "-"} chambres
                             </span>
@@ -482,45 +493,57 @@ function MaisonsContent() {
                               {heatingLabel(maison.maison?.heating)}
                             </p>
                           </td>
-                          <td className="px-4 py-4">
-                            <div className="flex justify-end gap-2">
-                              {id ? (
-                                <Button asChild variant="outline" size="sm">
-                                  <Link href={maisonDetailPath(id)}>
-                                    <Eye />
-                                    Voir les détails
-                                  </Link>
+                          <td className="px-4 py-4 text-right">
+                            <DropdownMenu.Root>
+                              <DropdownMenu.Trigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="ml-auto"
+                                >
+                                  <MoreHorizontal />
+                                  Actions
                                 </Button>
-                              ) : (
-                                <Button variant="outline" size="sm" disabled>
-                                  <Eye />
-                                  Voir les détails
-                                </Button>
-                              )}
-                              {id ? (
-                                <Button asChild variant="outline" size="sm">
-                                  <Link href={maisonEditPath(id)}>
-                                    <Pencil />
-                                    Modifier
-                                  </Link>
-                                </Button>
-                              ) : (
-                                <Button variant="outline" size="sm" disabled>
-                                  <Pencil />
-                                  Modifier
-                                </Button>
-                              )}
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                disabled={!id}
-                                onClick={() => openDeleteDialog(maison)}
-                              >
-                                <Trash2 />
-                                Supprimer
-                              </Button>
-                            </div>
+                              </DropdownMenu.Trigger>
+                              <DropdownMenu.Portal>
+                                <DropdownMenu.Content
+                                  align="end"
+                                  sideOffset={6}
+                                  className="z-50 w-48 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg outline-none"
+                                >
+                                  <DropdownMenu.Item
+                                    asChild
+                                    disabled={!id}
+                                    className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm outline-none transition focus:bg-muted data-disabled:pointer-events-none data-disabled:opacity-50"
+                                  >
+                                    <Link href={id ? maisonDetailPath(id) : "#"}>
+                                      <Eye className="size-4" />
+                                      Voir les détails
+                                    </Link>
+                                  </DropdownMenu.Item>
+                                  <DropdownMenu.Item
+                                    asChild
+                                    disabled={!id}
+                                    className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm outline-none transition focus:bg-muted data-disabled:pointer-events-none data-disabled:opacity-50"
+                                  >
+                                    <Link href={id ? maisonEditPath(id) : "#"}>
+                                      <Pencil className="size-4" />
+                                      Modifier
+                                    </Link>
+                                  </DropdownMenu.Item>
+                                  <DropdownMenu.Separator className="my-1 h-px bg-border" />
+                                  <DropdownMenu.Item
+                                    disabled={!id}
+                                    onSelect={() => openDeleteDialog(maison)}
+                                    className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive outline-none transition focus:bg-destructive/10 data-disabled:pointer-events-none data-disabled:opacity-50"
+                                  >
+                                    <Trash2 className="size-4" />
+                                    Supprimer
+                                  </DropdownMenu.Item>
+                                </DropdownMenu.Content>
+                              </DropdownMenu.Portal>
+                            </DropdownMenu.Root>
                           </td>
                         </tr>
                       )

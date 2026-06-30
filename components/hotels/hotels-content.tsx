@@ -5,15 +5,13 @@ import Link from "next/link"
 import {
   BedDouble,
   CheckCircle2,
-  Eye,
   Hotel,
   MapPin,
-  Pencil,
   Plus,
   RefreshCw,
-  Trash2,
 } from "lucide-react"
 
+import { DashboardActionsMenu } from "@/components/dashboard/dashboard-actions-menu"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { HotelEditDialog } from "@/components/hotels/hotel-edit-dialog"
 import { Button } from "@/components/ui/button"
@@ -54,29 +52,25 @@ function HotelsTableSkeleton() {
           </div>
         </div>
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 md:table-cell">
         <Skeleton className="h-4 w-28" />
         <Skeleton className="mt-2 h-3 w-24" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 sm:table-cell">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="mt-2 h-3 w-16" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 xl:table-cell">
         <Skeleton className="h-4 w-56" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 lg:table-cell">
         <Skeleton className="h-7 w-28 rounded-md" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 lg:table-cell">
         <Skeleton className="h-4 w-24" />
       </td>
       <td className="px-4 py-4">
-        <div className="flex justify-end gap-2">
-          <Skeleton className="h-7 w-32" />
-          <Skeleton className="h-7 w-24" />
-          <Skeleton className="h-7 w-24" />
-        </div>
+        <Skeleton className="ml-auto h-8 w-24" />
       </td>
     </tr>
   ))
@@ -361,15 +355,25 @@ function HotelsContent() {
           ) : null}
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1220px] text-sm">
+            <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Hôtel</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Prix</th>
-                  <th className="px-4 py-3 font-medium">Adresse</th>
-                  <th className="px-4 py-3 font-medium">Statut</th>
-                  <th className="px-4 py-3 font-medium">Capacité</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">
+                    Type
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium sm:table-cell">
+                    Prix
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium xl:table-cell">
+                    Adresse
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                    Statut
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                    Capacité
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
@@ -410,7 +414,7 @@ function HotelsContent() {
                           key={key}
                           className="border-b border-border last:border-b-0"
                         >
-                          <td className="px-4 py-4">
+                          <td className="min-w-0 px-4 py-4">
                             <div className="flex items-center gap-3">
                               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
                                 <Hotel className="size-5" />
@@ -423,17 +427,20 @@ function HotelsContent() {
                                   {hotelReferenceLabel(hotel)} ·{" "}
                                   {createdDateLabel(hotel.created_at)}
                                 </p>
+                                <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                                  {priceLabel(hotel)}
+                                </p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 md:table-cell">
                             {hotelTypeLabel(hotel.hotel?.hotel_type)}
                             <p className="mt-1 text-xs text-muted-foreground">
                               {standingLabel(hotel.hotel?.standing)} ·{" "}
                               {surfaceLabel(hotel.surface_totale)}
                             </p>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 sm:table-cell">
                             <span className="font-medium">
                               {priceLabel(hotel)}
                             </span>
@@ -441,7 +448,7 @@ function HotelsContent() {
                               {transactionLabel(hotel.type_transaction)}
                             </p>
                           </td>
-                          <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                          <td className="hidden max-w-80 px-4 py-4 text-muted-foreground xl:table-cell">
                             <span className="flex items-start gap-1.5">
                               <MapPin className="mt-0.5 size-3.5 shrink-0" />
                               <span className="line-clamp-2">
@@ -449,7 +456,7 @@ function HotelsContent() {
                               </span>
                             </span>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 lg:table-cell">
                             <div className="flex flex-wrap gap-2">
                               <StatusPill
                                 active={hotel.statut === "disponible"}
@@ -466,7 +473,7 @@ function HotelsContent() {
                               </StatusPill>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 lg:table-cell">
                             <span className="inline-flex items-center gap-1.5">
                               <BedDouble className="size-4 text-muted-foreground" />
                               {roomLabel(hotel.hotel?.nombre_chambres)}
@@ -475,42 +482,16 @@ function HotelsContent() {
                               {hotel.hotel?.nombre_lits_total ?? "-"} lits
                             </p>
                           </td>
-                          <td className="px-4 py-4">
-                            <div className="flex justify-end gap-2">
-                              {id ? (
-                                <Button asChild variant="outline" size="sm">
-                                  <Link href={hotelDetailPath(id)}>
-                                    <Eye />
-                                    Voir les détails
-                                  </Link>
-                                </Button>
-                              ) : (
-                                <Button variant="outline" size="sm" disabled>
-                                  <Eye />
-                                  Voir les détails
-                                </Button>
-                              )}
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={!id}
-                                onClick={() => setEditingHotel(hotel)}
-                              >
-                                <Pencil />
-                                Modifier
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                disabled={!id}
-                                onClick={() => openDeleteDialog(hotel)}
-                              >
-                                <Trash2 />
-                                Supprimer
-                              </Button>
-                            </div>
+                          <td className="px-4 py-4 text-right">
+                            <DashboardActionsMenu
+                              detailHref={id ? hotelDetailPath(id) : undefined}
+                              onEdit={
+                                id ? () => setEditingHotel(hotel) : undefined
+                              }
+                              onDelete={
+                                id ? () => openDeleteDialog(hotel) : undefined
+                              }
+                            />
                           </td>
                         </tr>
                       )

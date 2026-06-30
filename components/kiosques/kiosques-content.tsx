@@ -4,15 +4,13 @@ import * as React from "react"
 import Link from "next/link"
 import {
   CheckCircle2,
-  Eye,
   MapPin,
-  Pencil,
   Plus,
   RefreshCw,
   Store,
-  Trash2,
 } from "lucide-react"
 
+import { DashboardActionsMenu } from "@/components/dashboard/dashboard-actions-menu"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { KiosqueEditDialog } from "@/components/kiosques/kiosque-edit-dialog"
 import { Button } from "@/components/ui/button"
@@ -51,29 +49,25 @@ function KiosquesTableSkeleton() {
           </div>
         </div>
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 md:table-cell">
         <Skeleton className="h-4 w-28" />
         <Skeleton className="mt-2 h-3 w-20" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 sm:table-cell">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="mt-2 h-3 w-16" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 xl:table-cell">
         <Skeleton className="h-4 w-56" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 lg:table-cell">
         <Skeleton className="h-7 w-28 rounded-md" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 lg:table-cell">
         <Skeleton className="h-4 w-20" />
       </td>
       <td className="px-4 py-4">
-        <div className="flex justify-end gap-2">
-          <Skeleton className="h-7 w-32" />
-          <Skeleton className="h-7 w-24" />
-          <Skeleton className="h-7 w-24" />
-        </div>
+        <Skeleton className="ml-auto h-8 w-24" />
       </td>
     </tr>
   ))
@@ -367,15 +361,25 @@ function KiosquesContent() {
           ) : null}
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1220px] text-sm">
+            <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Kiosque</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Prix</th>
-                  <th className="px-4 py-3 font-medium">Adresse</th>
-                  <th className="px-4 py-3 font-medium">Statut</th>
-                  <th className="px-4 py-3 font-medium">Surface</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">
+                    Type
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium sm:table-cell">
+                    Prix
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium xl:table-cell">
+                    Adresse
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                    Statut
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                    Surface
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
@@ -416,7 +420,7 @@ function KiosquesContent() {
                           key={key}
                           className="border-b border-border last:border-b-0"
                         >
-                          <td className="px-4 py-4">
+                          <td className="min-w-0 px-4 py-4">
                             <div className="flex items-center gap-3">
                               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
                                 <Store className="size-5" />
@@ -429,17 +433,20 @@ function KiosquesContent() {
                                   {kiosqueReferenceLabel(kiosque)} ·{" "}
                                   {createdDateLabel(kiosque.created_at)}
                                 </p>
+                                <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                                  {priceLabel(kiosque)}
+                                </p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 md:table-cell">
                             {kiosqueTypeLabel(kiosque.kiosque?.kiosque_type)}
                             <p className="mt-1 text-xs text-muted-foreground">
                               {kiosque.kiosque?.opening_side_count ?? "-"}{" "}
                               ouvertures
                             </p>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 sm:table-cell">
                             <span className="font-medium">
                               {priceLabel(kiosque)}
                             </span>
@@ -447,7 +454,7 @@ function KiosquesContent() {
                               {transactionLabel(kiosque.type_transaction)}
                             </p>
                           </td>
-                          <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                          <td className="hidden max-w-80 px-4 py-4 text-muted-foreground xl:table-cell">
                             <span className="flex items-start gap-1.5">
                               <MapPin className="mt-0.5 size-3.5 shrink-0" />
                               <span className="line-clamp-2">
@@ -455,7 +462,7 @@ function KiosquesContent() {
                               </span>
                             </span>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 lg:table-cell">
                             <div className="flex flex-wrap gap-2">
                               <StatusPill
                                 active={kiosque.statut === "disponible"}
@@ -474,48 +481,28 @@ function KiosquesContent() {
                               </StatusPill>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 lg:table-cell">
                             {surfaceLabel(kiosque.kiosque?.surface)}
                             <p className="mt-1 text-xs text-muted-foreground">
                               Total {surfaceLabel(kiosque.surface_totale)}
                             </p>
                           </td>
-                          <td className="px-4 py-4">
-                            <div className="flex justify-end gap-2">
-                              {id ? (
-                                <Button asChild variant="outline" size="sm">
-                                  <Link href={kiosqueDetailPath(id)}>
-                                    <Eye />
-                                    Voir les détails
-                                  </Link>
-                                </Button>
-                              ) : (
-                                <Button variant="outline" size="sm" disabled>
-                                  <Eye />
-                                  Voir les détails
-                                </Button>
-                              )}
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={!id}
-                                onClick={() => setEditingKiosque(kiosque)}
-                              >
-                                <Pencil />
-                                Modifier
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                disabled={!id}
-                                onClick={() => openDeleteDialog(kiosque)}
-                              >
-                                <Trash2 />
-                                Supprimer
-                              </Button>
-                            </div>
+                          <td className="px-4 py-4 text-right">
+                            <DashboardActionsMenu
+                              detailHref={
+                                id ? kiosqueDetailPath(id) : undefined
+                              }
+                              onEdit={
+                                id
+                                  ? () => setEditingKiosque(kiosque)
+                                  : undefined
+                              }
+                              onDelete={
+                                id
+                                  ? () => openDeleteDialog(kiosque)
+                                  : undefined
+                              }
+                            />
                           </td>
                         </tr>
                       )

@@ -9,14 +9,13 @@ import {
   ImagePlus,
   Loader2,
   MapPin,
-  Pencil,
   Plus,
   RefreshCw,
   Save,
-  Trash2,
   X,
 } from "lucide-react"
 
+import { DashboardActionsMenu } from "@/components/dashboard/dashboard-actions-menu"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
@@ -38,6 +37,7 @@ import {
 import {
   agencyName,
   bureauAddressLabel,
+  bureauDetailPath,
   bureauDisplayName,
   bureauId,
   bureauMediaGallery,
@@ -312,20 +312,20 @@ function BureauxTableSkeleton() {
               </div>
             </div>
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 md:table-cell">
             <Skeleton className="h-4 w-28" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 sm:table-cell">
             <Skeleton className="h-4 w-28" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 xl:table-cell">
             <Skeleton className="h-4 w-52" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 lg:table-cell">
             <Skeleton className="h-6 w-24" />
           </td>
           <td className="px-4 py-4 text-right">
-            <Skeleton className="ml-auto h-7 w-48" />
+            <Skeleton className="ml-auto h-8 w-24" />
           </td>
         </tr>
       ))}
@@ -1312,14 +1312,22 @@ function BureauxContent() {
           ) : null}
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1120px] text-sm">
+            <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Bureau</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Prix</th>
-                  <th className="px-4 py-3 font-medium">Adresse</th>
-                  <th className="px-4 py-3 font-medium">Statut</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">
+                    Type
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium sm:table-cell">
+                    Prix
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium xl:table-cell">
+                    Adresse
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                    Statut
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
@@ -1361,7 +1369,7 @@ function BureauxContent() {
                           key={key}
                           className="border-b border-border last:border-b-0"
                         >
-                          <td className="px-4 py-4">
+                          <td className="min-w-0 px-4 py-4">
                             <div className="flex items-center gap-3">
                               {thumbnail ? (
                                 <Image
@@ -1385,10 +1393,13 @@ function BureauxContent() {
                                   {bureauReferenceLabel(bureau)} ·{" "}
                                   {createdDateLabel(bureau.created_at)}
                                 </p>
+                                <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                                  {priceLabel(bureau)}
+                                </p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 md:table-cell">
                             {officeTypeLabel(bureau.bureau?.office_type)}
                             <p className="mt-1 text-xs text-muted-foreground">
                               {conditionLabel(bureau.bureau?.condition)} ·{" "}
@@ -1398,7 +1409,7 @@ function BureauxContent() {
                               {agencyName(bureau)}
                             </p>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 sm:table-cell">
                             <span className="font-medium">
                               {priceLabel(bureau)}
                             </span>
@@ -1406,7 +1417,7 @@ function BureauxContent() {
                               {transactionLabel(bureau.type_transaction)}
                             </p>
                           </td>
-                          <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                          <td className="hidden max-w-80 px-4 py-4 text-muted-foreground xl:table-cell">
                             <span className="flex items-start gap-1.5">
                               <MapPin className="mt-0.5 size-3.5 shrink-0" />
                               <span className="line-clamp-2">
@@ -1414,7 +1425,7 @@ function BureauxContent() {
                               </span>
                             </span>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 lg:table-cell">
                             <div className="flex flex-wrap gap-2">
                               <StatusPill
                                 active={bureau.statut === "disponible"}
@@ -1431,29 +1442,16 @@ function BureauxContent() {
                               </StatusPill>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={!id}
-                                onClick={() => setEditingBureau(bureau)}
-                              >
-                                <Pencil />
-                                Modifier
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                disabled={!id}
-                                onClick={() => openDeleteDialog(bureau)}
-                              >
-                                <Trash2 />
-                                Supprimer
-                              </Button>
-                            </div>
+                          <td className="px-4 py-4 text-right">
+                            <DashboardActionsMenu
+                              detailHref={id ? bureauDetailPath(id) : undefined}
+                              onEdit={
+                                id ? () => setEditingBureau(bureau) : undefined
+                              }
+                              onDelete={
+                                id ? () => openDeleteDialog(bureau) : undefined
+                              }
+                            />
                           </td>
                         </tr>
                       )

@@ -45,21 +45,21 @@ function SallesEvenementTableSkeleton() {
           </div>
         </div>
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 md:table-cell">
         <Skeleton className="h-4 w-28" />
         <Skeleton className="mt-2 h-3 w-24" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 sm:table-cell">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="mt-2 h-3 w-16" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 xl:table-cell">
         <Skeleton className="h-4 w-56" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 lg:table-cell">
         <Skeleton className="h-7 w-28 rounded-md" />
       </td>
-      <td className="px-4 py-4">
+      <td className="hidden px-4 py-4 lg:table-cell">
         <Skeleton className="h-4 w-24" />
       </td>
     </tr>
@@ -277,15 +277,25 @@ function SallesEvenementContent() {
         ) : null}
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1120px] text-sm">
+          <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Salle</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Prix</th>
-                <th className="px-4 py-3 font-medium">Adresse</th>
-                <th className="px-4 py-3 font-medium">Statut</th>
-                <th className="px-4 py-3 font-medium">Capacité</th>
+                <th className="hidden px-4 py-3 font-medium md:table-cell">
+                  Type
+                </th>
+                <th className="hidden px-4 py-3 font-medium sm:table-cell">
+                  Prix
+                </th>
+                <th className="hidden px-4 py-3 font-medium xl:table-cell">
+                  Adresse
+                </th>
+                <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                  Statut
+                </th>
+                <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                  Capacité
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -325,7 +335,7 @@ function SallesEvenementContent() {
                         key={key}
                         className="border-b border-border last:border-b-0"
                       >
-                        <td className="px-4 py-4">
+                        <td className="min-w-0 px-4 py-4">
                           <div className="flex items-center gap-3">
                             <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
                               <CalendarDays className="size-5" />
@@ -338,10 +348,13 @@ function SallesEvenementContent() {
                                 {salleEvenementReferenceLabel(salle)} ·{" "}
                                 {createdDateLabel(salle.created_at)}
                               </p>
+                              <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                                {priceLabel(salle)}
+                              </p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="hidden px-4 py-4 md:table-cell">
                           {salleTypeLabel(salle.salle_evenement?.salle_type)}
                           <p className="mt-1 text-xs text-muted-foreground">
                             {surfaceLabel(salle.salle_evenement?.surface_salle)}{" "}
@@ -349,7 +362,7 @@ function SallesEvenementContent() {
                             salles
                           </p>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="hidden px-4 py-4 sm:table-cell">
                           <span className="font-medium">
                             {priceLabel(salle)}
                           </span>
@@ -357,7 +370,7 @@ function SallesEvenementContent() {
                             {transactionLabel(salle.type_transaction)}
                           </p>
                         </td>
-                        <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                        <td className="hidden max-w-80 px-4 py-4 text-muted-foreground xl:table-cell">
                           <span className="flex items-start gap-1.5">
                             <MapPin className="mt-0.5 size-3.5 shrink-0" />
                             <span className="line-clamp-2">
@@ -365,7 +378,7 @@ function SallesEvenementContent() {
                             </span>
                           </span>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="hidden px-4 py-4 lg:table-cell">
                           <div className="flex flex-wrap gap-2">
                             <StatusPill active={salle.statut === "disponible"}>
                               {statusLabel(salle.statut)}
@@ -378,7 +391,7 @@ function SallesEvenementContent() {
                             </StatusPill>
                           </div>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="hidden px-4 py-4 lg:table-cell">
                           {capacityLabel(salle.salle_evenement?.capacite_max)}
                           <p className="mt-1 text-xs text-muted-foreground">
                             Total {surfaceLabel(salle.surface_totale)}

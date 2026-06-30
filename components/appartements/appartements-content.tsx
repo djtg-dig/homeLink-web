@@ -5,17 +5,15 @@ import Link from "next/link"
 import {
   Building2,
   CheckCircle2,
-  Eye,
   Home,
   Landmark,
   MapPin,
-  Pencil,
   Plus,
   RefreshCw,
-  Trash2,
 } from "lucide-react"
 
 import { AppartementEditDialog } from "@/components/appartements/appartement-edit-dialog"
+import { DashboardActionsMenu } from "@/components/dashboard/dashboard-actions-menu"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
@@ -56,16 +54,16 @@ function AppartementsTableSkeleton() {
               </div>
             </div>
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 md:table-cell">
             <Skeleton className="h-4 w-28" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 sm:table-cell">
             <Skeleton className="h-4 w-28" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 xl:table-cell">
             <Skeleton className="h-4 w-56" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 lg:table-cell">
             <Skeleton className="h-6 w-24" />
           </td>
           <td className="px-4 py-4 text-right">
@@ -344,14 +342,22 @@ function AppartementsContent() {
           ) : null}
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1120px] text-sm">
+            <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Appartement</th>
-                  <th className="px-4 py-3 font-medium">Transaction</th>
-                  <th className="px-4 py-3 font-medium">Prix</th>
-                  <th className="px-4 py-3 font-medium">Adresse</th>
-                  <th className="px-4 py-3 font-medium">Statut</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">
+                    Transaction
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium sm:table-cell">
+                    Prix
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium xl:table-cell">
+                    Adresse
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                    Statut
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
@@ -393,7 +399,7 @@ function AppartementsContent() {
                           key={key}
                           className="border-b border-border last:border-b-0"
                         >
-                          <td className="px-4 py-4">
+                          <td className="min-w-0 px-4 py-4">
                             <div className="flex items-center gap-3">
                               <span
                                 className="flex size-12 shrink-0 items-center justify-center rounded-md bg-secondary bg-cover bg-center text-primary"
@@ -415,19 +421,22 @@ function AppartementsContent() {
                                   {appartementReferenceLabel(appartement)} ·{" "}
                                   {createdDateLabel(appartement.created_at)}
                                 </p>
+                                <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                                  {priceLabel(appartement)}
+                                </p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 md:table-cell">
                             {transactionLabel(appartement.type_transaction)}
                             <p className="mt-1 text-xs text-muted-foreground">
                               {surfaceLabel(appartement.surface_habitable)}
                             </p>
                           </td>
-                          <td className="px-4 py-4 font-medium">
+                          <td className="hidden px-4 py-4 font-medium sm:table-cell">
                             {priceLabel(appartement)}
                           </td>
-                          <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                          <td className="hidden max-w-80 px-4 py-4 text-muted-foreground xl:table-cell">
                             <span className="flex items-start gap-1.5">
                               <MapPin className="mt-0.5 size-3.5 shrink-0" />
                               <span className="line-clamp-2">
@@ -435,7 +444,7 @@ function AppartementsContent() {
                               </span>
                             </span>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 lg:table-cell">
                             <div className="flex flex-wrap gap-2">
                               <StatusPill
                                 active={appartement.statut === "disponible"}
@@ -452,44 +461,22 @@ function AppartementsContent() {
                               </StatusPill>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
-                            <div className="flex justify-end gap-2">
-                              {id ? (
-                                <Button asChild variant="outline" size="sm">
-                                  <Link href={appartementDetailPath(id)}>
-                                    <Eye />
-                                    Voir les détails
-                                  </Link>
-                                </Button>
-                              ) : (
-                                <Button variant="outline" size="sm" disabled>
-                                  <Eye />
-                                  Voir les détails
-                                </Button>
-                              )}
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={!id}
-                                onClick={() =>
-                                  setEditingAppartement(appartement)
-                                }
-                              >
-                                <Pencil />
-                                Modifier
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                disabled={!id}
-                                onClick={() => openDeleteDialog(appartement)}
-                              >
-                                <Trash2 />
-                                Supprimer
-                              </Button>
-                            </div>
+                          <td className="px-4 py-4 text-right">
+                            <DashboardActionsMenu
+                              detailHref={
+                                id ? appartementDetailPath(id) : undefined
+                              }
+                              onEdit={
+                                id
+                                  ? () => setEditingAppartement(appartement)
+                                  : undefined
+                              }
+                              onDelete={
+                                id
+                                  ? () => openDeleteDialog(appartement)
+                                  : undefined
+                              }
+                            />
                           </td>
                         </tr>
                       )

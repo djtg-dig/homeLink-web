@@ -6,14 +6,13 @@ import {
   Building2,
   CheckCircle2,
   Loader2,
-  Pencil,
   Plus,
   RefreshCw,
   Save,
-  Trash2,
   X,
 } from "lucide-react"
 
+import { DashboardActionsMenu } from "@/components/dashboard/dashboard-actions-menu"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
@@ -117,13 +116,13 @@ function ImmeublesTableSkeleton() {
               <Skeleton className="h-4 w-44" />
             </div>
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 sm:table-cell">
             <Skeleton className="h-4 w-28" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 md:table-cell">
             <Skeleton className="h-4 w-20" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 lg:table-cell">
             <Skeleton className="h-4 w-52" />
           </td>
           <td className="px-4 py-4 text-right">
@@ -609,13 +608,19 @@ function ImmeublesContent() {
           ) : null}
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] text-sm">
+            <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Immeuble</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Étages</th>
-                  <th className="px-4 py-3 font-medium">Équipements</th>
+                  <th className="hidden px-4 py-3 font-medium sm:table-cell">
+                    Type
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">
+                    Étages
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                    Équipements
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
@@ -658,23 +663,28 @@ function ImmeublesContent() {
                           key={key}
                           className="border-b border-border last:border-b-0"
                         >
-                          <td className="px-4 py-4">
+                          <td className="min-w-0 px-4 py-4">
                             <div className="flex items-center gap-3">
                               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
                                 <Building2 className="size-5" />
                               </span>
-                              <span className="font-semibold">
-                                {immeubleDisplayName(immeuble)}
-                              </span>
+                              <div className="min-w-0">
+                                <p className="truncate font-semibold">
+                                  {immeubleDisplayName(immeuble)}
+                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                                  {immeubleTypeLabel(immeuble.type_immeuble)}
+                                </p>
+                              </div>
                             </div>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 sm:table-cell">
                             {immeubleTypeLabel(immeuble.type_immeuble)}
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 md:table-cell">
                             {immeuble.nombre_etages ?? "-"}
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 lg:table-cell">
                             <div className="flex flex-wrap gap-2">
                               <FeaturePill
                                 label="Ascenseur"
@@ -690,29 +700,19 @@ function ImmeublesContent() {
                               />
                             </div>
                           </td>
-                          <td className="px-4 py-4">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={!canEdit}
-                                onClick={() => setEditingImmeuble(immeuble)}
-                              >
-                                <Pencil />
-                                Modifier
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                disabled={!canEdit}
-                                onClick={() => openDeleteDialog(immeuble)}
-                              >
-                                <Trash2 />
-                                Supprimer
-                              </Button>
-                            </div>
+                          <td className="px-4 py-4 text-right">
+                            <DashboardActionsMenu
+                              onEdit={
+                                canEdit
+                                  ? () => setEditingImmeuble(immeuble)
+                                  : undefined
+                              }
+                              onDelete={
+                                canEdit
+                                  ? () => openDeleteDialog(immeuble)
+                                  : undefined
+                              }
+                            />
                           </td>
                         </tr>
                       )

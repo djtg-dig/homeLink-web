@@ -4,14 +4,13 @@ import * as React from "react"
 import Link from "next/link"
 import {
   Building2,
-  Eye,
   Mail,
   Phone,
   Plus,
   RefreshCw,
-  Trash2,
 } from "lucide-react"
 
+import { DashboardActionsMenu } from "@/components/dashboard/dashboard-actions-menu"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
@@ -79,16 +78,16 @@ function AgenciesTableSkeleton() {
               </div>
             </div>
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 md:table-cell">
             <Skeleton className="h-4 w-44" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 sm:table-cell">
             <Skeleton className="h-4 w-28" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 xl:table-cell">
             <Skeleton className="h-4 w-56" />
           </td>
-          <td className="px-4 py-4">
+          <td className="hidden px-4 py-4 lg:table-cell">
             <Skeleton className="h-6 w-20" />
           </td>
           <td className="px-4 py-4 text-right">
@@ -296,14 +295,22 @@ function AgenciesListContent() {
           ) : null}
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1060px] text-sm">
+            <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Agence</th>
-                  <th className="px-4 py-3 font-medium">Contact</th>
-                  <th className="px-4 py-3 font-medium">Statut légal</th>
-                  <th className="px-4 py-3 font-medium">Adresse</th>
-                  <th className="px-4 py-3 font-medium">État</th>
+                  <th className="hidden px-4 py-3 font-medium md:table-cell">
+                    Contact
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium sm:table-cell">
+                    Statut légal
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium xl:table-cell">
+                    Adresse
+                  </th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                    État
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
@@ -345,7 +352,7 @@ function AgenciesListContent() {
                           key={key}
                           className="border-b border-border last:border-b-0"
                         >
-                          <td className="px-4 py-4">
+                          <td className="min-w-0 px-4 py-4">
                             <div className="flex items-center gap-3">
                               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
                                 <Building2 className="size-5" />
@@ -357,21 +364,24 @@ function AgenciesListContent() {
                                 <p className="mt-1 text-xs text-muted-foreground">
                                   {createdDateLabel(agency.created_at)}
                                 </p>
+                                <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                                  {legalStatusLabel(agency.legal_status)}
+                                </p>
                               </div>
                             </div>
                           </td>
-                          <td className="max-w-64 px-4 py-4">
+                          <td className="hidden max-w-64 px-4 py-4 md:table-cell">
                             <ContactCell agency={agency} />
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 sm:table-cell">
                             {legalStatusLabel(agency.legal_status)}
                           </td>
-                          <td className="max-w-80 px-4 py-4 text-muted-foreground">
+                          <td className="hidden max-w-80 px-4 py-4 text-muted-foreground xl:table-cell">
                             <span className="line-clamp-2">
                               {agencyAddressLabel(agency)}
                             </span>
                           </td>
-                          <td className="px-4 py-4">
+                          <td className="hidden px-4 py-4 lg:table-cell">
                             <span
                               className={cn(
                                 "rounded-md px-2 py-1 text-xs font-medium",
@@ -383,34 +393,19 @@ function AgenciesListContent() {
                               {statusLabel(agency.is_active)}
                             </span>
                           </td>
-                          <td className="px-4 py-4">
-                            <div className="flex justify-end gap-2">
-                              {agencySlug(agency) ? (
-                                <Button asChild variant="outline" size="sm">
-                                  <Link
-                                    href={agencyDetailPath(agencySlug(agency))}
-                                  >
-                                    <Eye />
-                                    Voir les détails
-                                  </Link>
-                                </Button>
-                              ) : (
-                                <Button variant="outline" size="sm" disabled>
-                                  <Eye />
-                                  Voir les détails
-                                </Button>
-                              )}
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                disabled={!agencySlug(agency)}
-                                onClick={() => openDeleteDialog(agency)}
-                              >
-                                <Trash2 />
-                                Supprimer
-                              </Button>
-                            </div>
+                          <td className="px-4 py-4 text-right">
+                            <DashboardActionsMenu
+                              detailHref={
+                                agencySlug(agency)
+                                  ? agencyDetailPath(agencySlug(agency))
+                                  : undefined
+                              }
+                              onDelete={
+                                agencySlug(agency)
+                                  ? () => openDeleteDialog(agency)
+                                  : undefined
+                              }
+                            />
                           </td>
                         </tr>
                       )
