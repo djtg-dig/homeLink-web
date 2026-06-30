@@ -12,7 +12,6 @@ import {
 
 import { DashboardActionsMenu } from "@/components/dashboard/dashboard-actions-menu"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { KiosqueEditDialog } from "@/components/kiosques/kiosque-edit-dialog"
 import { Button } from "@/components/ui/button"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -21,6 +20,7 @@ import {
   createdDateLabel,
   kiosqueAddressLabel,
   kiosqueDetailPath,
+  kiosqueEditPath,
   kiosqueDisplayName,
   kiosqueId,
   kiosqueReferenceLabel,
@@ -116,9 +116,6 @@ function KiosquesContent() {
   const [deletingKiosque, setDeletingKiosque] = React.useState<Kiosque | null>(
     null
   )
-  const [editingKiosque, setEditingKiosque] = React.useState<Kiosque | null>(
-    null
-  )
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
 
@@ -200,17 +197,6 @@ function KiosquesContent() {
     setLoading(true)
     setError("")
     void loadKiosques()
-  }
-
-  function updateKiosque(updatedKiosque: Kiosque) {
-    const updatedId = kiosqueId(updatedKiosque)
-
-    setKiosques((current) =>
-      current.map((kiosque) =>
-        kiosqueId(kiosque) === updatedId ? updatedKiosque : kiosque
-      )
-    )
-    setEditingKiosque(null)
   }
 
   function openDeleteDialog(kiosque: Kiosque) {
@@ -494,11 +480,7 @@ function KiosquesContent() {
                               detailHref={
                                 id ? kiosqueDetailPath(id) : undefined
                               }
-                              onEdit={
-                                id
-                                  ? () => setEditingKiosque(kiosque)
-                                  : undefined
-                              }
+                              editHref={id ? kiosqueEditPath(id) : undefined}
                               onDelete={
                                 id
                                   ? () => openDeleteDialog(kiosque)
@@ -515,14 +497,6 @@ function KiosquesContent() {
           </div>
         </section>
       </DashboardShell>
-
-      {editingKiosque ? (
-        <KiosqueEditDialog
-          kiosque={editingKiosque}
-          onClose={() => setEditingKiosque(null)}
-          onUpdated={updateKiosque}
-        />
-      ) : null}
 
       {deletingKiosque ? (
         <DeleteConfirmDialog

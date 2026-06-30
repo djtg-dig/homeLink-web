@@ -131,6 +131,10 @@ function hotelDetailPath(id: string) {
   return `/dashboard/hotels/${encodeURIComponent(id)}`
 }
 
+function hotelEditPath(id: string) {
+  return `${hotelDetailPath(id)}?mode=edit`
+}
+
 function hotelDisplayName(hotel: Hotel) {
   return hotel.title?.trim() || hotel.reference?.trim() || "Hôtel sans titre"
 }
@@ -261,6 +265,7 @@ export {
   formatDate,
   hotelAddressLabel,
   hotelDetailPath,
+  hotelEditPath,
   hotelDisplayName,
   hotelId,
   hotelReferenceLabel,

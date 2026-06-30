@@ -123,6 +123,10 @@ function kiosqueDetailPath(id: string) {
   return `/dashboard/kiosques/${encodeURIComponent(id)}`
 }
 
+function kiosqueEditPath(id: string) {
+  return `${kiosqueDetailPath(id)}?mode=edit`
+}
+
 function kiosqueDisplayName(kiosque: Kiosque) {
   return (
     kiosque.title?.trim() || kiosque.reference?.trim() || "Kiosque sans titre"
@@ -241,6 +245,7 @@ export {
   formatDate,
   kiosqueAddressLabel,
   kiosqueDetailPath,
+  kiosqueEditPath,
   kiosqueDisplayName,
   kiosqueId,
   kiosqueReferenceLabel,

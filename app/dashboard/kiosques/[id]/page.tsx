@@ -6,6 +6,9 @@ type KiosqueDetailPageProps = {
   params: Promise<{
     id: string
   }>
+  searchParams: Promise<{
+    mode?: string
+  }>
 }
 
 export const metadata: Metadata = {
@@ -14,8 +17,10 @@ export const metadata: Metadata = {
 
 export default async function KiosqueDetailPage({
   params,
+  searchParams,
 }: KiosqueDetailPageProps) {
   const { id } = await params
+  const { mode } = await searchParams
 
-  return <KiosqueDetailContent id={id} />
+  return <KiosqueDetailContent id={id} startInEditMode={mode === "edit"} />
 }

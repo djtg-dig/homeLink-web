@@ -154,13 +154,20 @@ function KiosqueDetailSkeleton() {
   )
 }
 
-function KiosqueDetailContent({ id }: { id: string }) {
+function KiosqueDetailContent({
+  id,
+  startInEditMode = false,
+}: {
+  id: string
+  startInEditMode?: boolean
+}) {
   const router = useRouter()
   const [kiosque, setKiosque] = React.useState<Kiosque | null>(null)
   const [deleteError, setDeleteError] = React.useState("")
   const [deletePending, setDeletePending] = React.useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
-  const [editDialogOpen, setEditDialogOpen] = React.useState(false)
+  // Cette option ouvre directement le formulaire depuis l'action "Modifier".
+  const [editDialogOpen, setEditDialogOpen] = React.useState(startInEditMode)
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
 
@@ -341,14 +348,16 @@ function KiosqueDetailContent({ id }: { id: string }) {
                   <RefreshCw className={cn(loading && "animate-spin")} />
                   Actualiser
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setEditDialogOpen(true)}
-                >
-                  <Pencil />
-                  Modifier
-                </Button>
+                {!editDialogOpen ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditDialogOpen(true)}
+                  >
+                    <Pencil />
+                    Modifier
+                  </Button>
+                ) : null}
                 <Button
                   type="button"
                   variant="destructive"

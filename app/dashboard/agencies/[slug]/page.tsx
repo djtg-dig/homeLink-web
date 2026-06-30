@@ -6,6 +6,9 @@ type AgencyDetailPageProps = {
   params: Promise<{
     slug: string
   }>
+  searchParams: Promise<{
+    mode?: string
+  }>
 }
 
 export const metadata: Metadata = {
@@ -14,8 +17,12 @@ export const metadata: Metadata = {
 
 export default async function AgencyDetailPage({
   params,
+  searchParams,
 }: AgencyDetailPageProps) {
   const { slug } = await params
+  const { mode } = await searchParams
 
-  return <AgencyDetailContent slug={slug} />
+  return (
+    <AgencyDetailContent slug={slug} startInEditMode={mode === "edit"} />
+  )
 }

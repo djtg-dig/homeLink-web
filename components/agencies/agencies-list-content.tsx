@@ -19,6 +19,7 @@ import { toast } from "@/components/ui/toaster"
 import {
   agencyAddressLabel,
   agencyDetailPath,
+  agencyEditPath,
   agencyDisplayName,
   agencySlug,
   createdDateLabel,
@@ -398,6 +399,11 @@ function AgenciesListContent() {
                               detailHref={
                                 agencySlug(agency)
                                   ? agencyDetailPath(agencySlug(agency))
+                                  : undefined
+                              }
+                              editHref={
+                                agencySlug(agency)
+                                  ? agencyEditPath(agencySlug(agency))
                                   : undefined
                               }
                               onDelete={

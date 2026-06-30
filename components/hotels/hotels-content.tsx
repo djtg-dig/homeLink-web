@@ -13,7 +13,6 @@ import {
 
 import { DashboardActionsMenu } from "@/components/dashboard/dashboard-actions-menu"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { HotelEditDialog } from "@/components/hotels/hotel-edit-dialog"
 import { Button } from "@/components/ui/button"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -22,6 +21,7 @@ import {
   createdDateLabel,
   hotelAddressLabel,
   hotelDetailPath,
+  hotelEditPath,
   hotelDisplayName,
   hotelId,
   hotelReferenceLabel,
@@ -119,7 +119,6 @@ function HotelsContent() {
   const [deletingHotel, setDeletingHotel] = React.useState<HotelItem | null>(
     null
   )
-  const [editingHotel, setEditingHotel] = React.useState<HotelItem | null>(null)
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
 
@@ -200,17 +199,6 @@ function HotelsContent() {
     setLoading(true)
     setError("")
     void loadHotels()
-  }
-
-  function updateHotel(updatedHotel: HotelItem) {
-    const updatedId = hotelId(updatedHotel)
-
-    setHotels((current) =>
-      current.map((hotel) =>
-        hotelId(hotel) === updatedId ? updatedHotel : hotel
-      )
-    )
-    setEditingHotel(null)
   }
 
   function openDeleteDialog(hotel: HotelItem) {
@@ -487,9 +475,7 @@ function HotelsContent() {
                           <td className="px-4 py-4 text-right">
                             <DashboardActionsMenu
                               detailHref={id ? hotelDetailPath(id) : undefined}
-                              onEdit={
-                                id ? () => setEditingHotel(hotel) : undefined
-                              }
+                              editHref={id ? hotelEditPath(id) : undefined}
                               onDelete={
                                 id ? () => openDeleteDialog(hotel) : undefined
                               }
@@ -504,14 +490,6 @@ function HotelsContent() {
           </div>
         </section>
       </DashboardShell>
-
-      {editingHotel ? (
-        <HotelEditDialog
-          hotel={editingHotel}
-          onClose={() => setEditingHotel(null)}
-          onUpdated={updateHotel}
-        />
-      ) : null}
 
       {deletingHotel ? (
         <DeleteConfirmDialog

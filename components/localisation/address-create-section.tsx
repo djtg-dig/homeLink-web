@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useAddressFieldMetadata } from "@/components/localisation/use-address-field-metadata"
 import { ApiError, apiFetch, apiPostJson } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
+import { geocodeAddress } from "@/lib/geocoding"
 import { cn } from "@/lib/utils"
 
 type AddressFormValues = {
@@ -273,6 +274,24 @@ function createdAddressId(response: AddressCreateResponse): string {
   }
 
   throw new Error("L'adresse créée ne contient pas d'identifiant.")
+}
+
+function geocodingAddress(values: AddressFormValues, summary: AddressSummary) {
+  const formattedAddress = values.formatted_address.trim()
+
+  if (formattedAddress) {
+    return formattedAddress
+  }
+
+  return [
+    values.street.trim(),
+    values.neighborhood.trim() || summary.subLocality.trim(),
+    values.city.trim() || summary.locality.trim(),
+    values.state.trim() || summary.administrativeArea.trim(),
+    summary.country.trim(),
+  ]
+    .filter(Boolean)
+    .join(", ")
 }
 
 function FieldHelpText({
@@ -712,6 +731,11 @@ const AddressCreateSection = forwardRef<
     ]
   )
 
+  const geocodingQuery = useMemo(
+    () => geocodingAddress(values, summary),
+    [summary, values]
+  )
+
   useEffect(() => {
     onSummaryChange?.(summary)
   }, [onSummaryChange, summary])
@@ -895,6 +919,18 @@ const AddressCreateSection = forwardRef<
         throw new Error("La rue ou avenue est obligatoire.")
       }
 
+      let latitude = values.latitude.trim()
+      let longitude = values.longitude.trim()
+
+      if (!latitude || !longitude) {
+        const geocoded = await geocodeAddress(geocodingQuery)
+
+        if (geocoded.latitude !== null && geocoded.longitude !== null) {
+          latitude = String(geocoded.latitude)
+          longitude = String(geocoded.longitude)
+        }
+      }
+
       const response = await apiPostJson<AddressCreateResponse>(
         "/api/localisation/addresses/",
         {
@@ -906,9 +942,9 @@ const AddressCreateSection = forwardRef<
           complement_adresse: values.complement_adresse.trim(),
           country: requiredNumericValue(values.country, "Le pays"),
           formatted_address: values.formatted_address.trim(),
-          latitude: values.latitude.trim(),
+          latitude,
           locality: optionalNumericValue(values.locality, "La localité"),
-          longitude: values.longitude.trim(),
+          longitude,
           neighborhood: values.neighborhood.trim(),
           postal_code: values.postal_code.trim(),
           proximite_transports: values.proximite_transports.trim(),
@@ -952,6 +988,7 @@ const AddressCreateSection = forwardRef<
     values.state,
     values.street,
     values.sub_locality,
+    geocodingQuery,
   ])
 
   useImperativeHandle(

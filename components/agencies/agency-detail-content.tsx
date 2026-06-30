@@ -23,6 +23,10 @@ import {
 } from "lucide-react"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import {
+  AddressCreateSection,
+  type AddressCreateSectionHandle,
+} from "@/components/localisation/address-create-section"
 import { Button } from "@/components/ui/button"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -286,6 +290,8 @@ function AgencyEditForm({
   onUpdated: (agency: Agency) => void
   slug: string
 }) {
+  const addressSectionRef = React.useRef<AddressCreateSectionHandle>(null)
+  const [replacingAddress, setReplacingAddress] = React.useState(false)
   const [values, setValues] = React.useState<EditValues>(() =>
     agencyToEditValues(agency)
   )
@@ -333,6 +339,18 @@ function AgencyEditForm({
       appendEditValue(formData, "rccm_number", values.rccm_number)
       appendEditValue(formData, "tax_number", values.tax_number)
       formData.append("is_active", values.is_active ? "true" : "false")
+
+      // L'adresse n'est remplacée que si l'utilisateur active
+      // explicitement cette section.
+      if (replacingAddress) {
+        if (!addressSectionRef.current) {
+          setError("Le formulaire d'adresse est indisponible.")
+          return
+        }
+
+        const addressId = await addressSectionRef.current.createAddress()
+        formData.append("address", addressId)
+      }
 
       if (logoFile) {
         formData.append("logo", logoFile)
@@ -517,6 +535,51 @@ function AgencyEditForm({
         </label>
       </div>
 
+      <div className="mt-6 space-y-4">
+        <div className="rounded-lg border border-border bg-muted/30 p-4">
+          <p className="text-sm font-medium text-foreground">
+            Adresse actuellement liée
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {agencyAddressLabel(agency)}
+          </p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Renseignez une nouvelle adresse seulement si vous voulez remplacer
+            l&apos;adresse actuelle.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {!replacingAddress ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setReplacingAddress(true)}
+              >
+                Remplacer l&apos;adresse
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setReplacingAddress(false)
+                }}
+              >
+                Annuler le remplacement
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {replacingAddress ? (
+          <AddressCreateSection
+            ref={addressSectionRef}
+            disabled={pending}
+            title="Nouvelle adresse"
+            description="Cette section permet de remplacer l'adresse actuelle de l'agence."
+          />
+        ) : null}
+      </div>
+
       <div className="mt-5 flex justify-end">
         <Button type="submit" className="h-10" disabled={pending}>
           {pending ? <Loader2 className="animate-spin" /> : <Save />}
@@ -527,14 +590,22 @@ function AgencyEditForm({
   )
 }
 
-function AgencyDetailContent({ slug }: { slug: string }) {
+function AgencyDetailContent({
+  slug,
+  startInEditMode = false,
+}: {
+  slug: string
+  startInEditMode?: boolean
+}) {
   const router = useRouter()
   const [agency, setAgency] = React.useState<Agency | null>(null)
   const [deleteError, setDeleteError] = React.useState("")
   const [deletePending, setDeletePending] = React.useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
   const [error, setError] = React.useState("")
-  const [editing, setEditing] = React.useState(false)
+  // On ouvre directement le formulaire si l'utilisateur arrive
+  // depuis l'action "Modifier" de la liste des agences.
+  const [editing, setEditing] = React.useState(startInEditMode)
   const [loading, setLoading] = React.useState(true)
 
   const detailSlug = agency ? agencySlug(agency) || slug : slug
@@ -701,10 +772,12 @@ function AgencyDetailContent({ slug }: { slug: string }) {
                     Retour
                   </Link>
                 </Button>
-                <Button type="button" onClick={() => setEditing(true)}>
-                  <Pencil />
-                  Modifier l&apos;agence
-                </Button>
+                {!editing ? (
+                  <Button type="button" onClick={() => setEditing(true)}>
+                    <Pencil />
+                    Modifier l&apos;agence
+                  </Button>
+                ) : null}
                 <Button
                   type="button"
                   variant="destructive"

@@ -12,7 +12,6 @@ import {
   RefreshCw,
 } from "lucide-react"
 
-import { AppartementEditDialog } from "@/components/appartements/appartement-edit-dialog"
 import { DashboardActionsMenu } from "@/components/dashboard/dashboard-actions-menu"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { Button } from "@/components/ui/button"
@@ -22,6 +21,7 @@ import { toast } from "@/components/ui/toaster"
 import {
   appartementAddressLabel,
   appartementDetailPath,
+  appartementEditPath,
   appartementDisplayName,
   appartementId,
   appartementMediaGallery,
@@ -109,8 +109,6 @@ function AppartementsContent() {
   const [deletePending, setDeletePending] = React.useState(false)
   const [deletingAppartement, setDeletingAppartement] =
     React.useState<Appartement | null>(null)
-  const [editingAppartement, setEditingAppartement] =
-    React.useState<Appartement | null>(null)
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(true)
 
@@ -185,25 +183,6 @@ function AppartementsContent() {
   function openDeleteDialog(appartement: Appartement) {
     setDeleteError("")
     setDeletingAppartement(appartement)
-  }
-
-  function updateAppartement(updatedAppartement: Appartement) {
-    const updatedId = appartementId(updatedAppartement)
-
-    setEditingAppartement(null)
-
-    if (!updatedId) {
-      void loadAppartements()
-      return
-    }
-
-    setAppartements((current) =>
-      current.map((appartement) =>
-        appartementId(appartement) === updatedId
-          ? updatedAppartement
-          : appartement
-      )
-    )
   }
 
   async function deleteAppartement() {
@@ -468,11 +447,7 @@ function AppartementsContent() {
                               detailHref={
                                 id ? appartementDetailPath(id) : undefined
                               }
-                              onEdit={
-                                id
-                                  ? () => setEditingAppartement(appartement)
-                                  : undefined
-                              }
+                              editHref={id ? appartementEditPath(id) : undefined}
                               onDelete={
                                 id
                                   ? () => openDeleteDialog(appartement)
@@ -550,13 +525,6 @@ function AppartementsContent() {
         />
       ) : null}
 
-      {editingAppartement ? (
-        <AppartementEditDialog
-          appartement={editingAppartement}
-          onClose={() => setEditingAppartement(null)}
-          onUpdated={updateAppartement}
-        />
-      ) : null}
     </>
   )
 }

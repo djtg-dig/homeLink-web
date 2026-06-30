@@ -6,6 +6,9 @@ type HotelDetailPageProps = {
   params: Promise<{
     id: string
   }>
+  searchParams: Promise<{
+    mode?: string
+  }>
 }
 
 export const metadata: Metadata = {
@@ -14,8 +17,10 @@ export const metadata: Metadata = {
 
 export default async function HotelDetailPage({
   params,
+  searchParams,
 }: HotelDetailPageProps) {
   const { id } = await params
+  const { mode } = await searchParams
 
-  return <HotelDetailContent id={id} />
+  return <HotelDetailContent id={id} startInEditMode={mode === "edit"} />
 }

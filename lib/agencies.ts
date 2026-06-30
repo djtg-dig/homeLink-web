@@ -242,9 +242,14 @@ function agencyDetailPath(slug: string) {
   return `/dashboard/agencies/${encodeURIComponent(slug)}`
 }
 
+function agencyEditPath(slug: string) {
+  return `${agencyDetailPath(slug)}?mode=edit#modifier`
+}
+
 export {
   agencyAddressLabel,
   agencyDetailPath,
+  agencyEditPath,
   agencyDisplayName,
   agencyOwnerName,
   agencySlug,

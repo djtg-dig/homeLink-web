@@ -156,6 +156,10 @@ function appartementDetailPath(id: string) {
   return `/dashboard/appartements/${encodeURIComponent(id)}`
 }
 
+function appartementEditPath(id: string) {
+  return `${appartementDetailPath(id)}?mode=edit`
+}
+
 function appartementDisplayName(appartement: Appartement) {
   return (
     appartement.title?.trim() ||
@@ -312,6 +316,7 @@ export {
   agencyName,
   appartementAddressLabel,
   appartementDetailPath,
+  appartementEditPath,
   appartementDisplayName,
   appartementId,
   appartementMediaGallery,
