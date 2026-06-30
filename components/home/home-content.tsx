@@ -29,12 +29,16 @@ import { ApiError, apiFetch } from "@/lib/api-client"
 import { formatApiMessage } from "@/lib/api-errors"
 import {
   buildPublicImmovablesQuery,
+  buildPublicImmovablesEndpoint,
+  buildPublicFilterOptionsEndpoint,
   initialPublicImmovableFilters,
   parsePublicImmovables,
   publicSortOptions,
   publicStatusOptions,
   publicTransactionOptions,
   publicTypeOptions,
+  type PublicFilterOption,
+  type PublicFilterOptionsResponse,
   type PublicImmovable,
   type PublicImmovableFilters,
   type PublicImmovablesResponse,
@@ -100,6 +104,24 @@ function buildHomeUrl(filters: PublicImmovableFilters) {
   return query ? `/?${query}#biens` : "/#biens"
 }
 
+function validFilterOptions(options: PublicFilterOption[] | undefined) {
+  return Array.isArray(options)
+    ? options.filter((option) => option.value && option.label)
+    : []
+}
+
+function selectedTypeOptions(typeBien: string) {
+  const selectedType = typeBien.trim()
+
+  if (!selectedType) {
+    return publicTypeOptions
+  }
+
+  const option = publicTypeOptions.find((type) => type.value === selectedType)
+
+  return option ? [option] : []
+}
+
 function TextField({
   inputMode,
   label,
@@ -140,18 +162,23 @@ function SelectField({
   options,
   placeholder,
   value,
+  disabled = false,
+  showAllOption = true,
 }: {
+  disabled?: boolean
   label: string
   name: keyof PublicImmovableFilters
   onChange: (name: keyof PublicImmovableFilters, value: string) => void
   options: SelectOption[]
   placeholder: string
+  showAllOption?: boolean
   value: string
 }) {
   return (
     <label className="grid gap-2 text-sm font-medium text-foreground">
       {label}
       <Select
+        disabled={disabled}
         value={value || "all"}
         onValueChange={(nextValue) =>
           onChange(name, nextValue === "all" ? "" : nextValue)
@@ -161,7 +188,7 @@ function SelectField({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent position="popper">
-          <SelectItem value="all">{placeholder}</SelectItem>
+          {showAllOption ? <SelectItem value="all">{placeholder}</SelectItem> : null}
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
@@ -251,6 +278,12 @@ function HomeContent({ initialFilters }: HomeContentProps) {
   )
   const [count, setCount] = React.useState(0)
   const [error, setError] = React.useState("")
+  const [filterTypeOptions, setFilterTypeOptions] =
+    React.useState(publicTypeOptions)
+  const [filterStatusOptions, setFilterStatusOptions] =
+    React.useState(publicStatusOptions)
+  const [filterTransactionOptions, setFilterTransactionOptions] =
+    React.useState(publicTransactionOptions)
   const [loading, setLoading] = React.useState(true)
   const [properties, setProperties] = React.useState<PublicImmovable[]>([])
 
@@ -273,11 +306,8 @@ function HomeContent({ initialFilters }: HomeContentProps) {
       setLoading(true)
 
       try {
-        const query = buildPublicImmovablesQuery(filters)
         const response = await apiFetch<PublicImmovablesResponse>(
-          query
-            ? `/api/immovables/public/?${query}`
-            : "/api/immovables/public/",
+          buildPublicImmovablesEndpoint(filters),
           { signal }
         )
         const parsed = parsePublicImmovables(response)
@@ -320,6 +350,52 @@ function HomeContent({ initialFilters }: HomeContentProps) {
     []
   )
 
+  const loadFilterOptions = React.useCallback(
+    async (typeBien: string, signal?: AbortSignal) => {
+      try {
+        const response = await apiFetch<PublicFilterOptionsResponse>(
+          buildPublicFilterOptionsEndpoint(typeBien),
+          { signal }
+        )
+
+        if (signal?.aborted) {
+          return
+        }
+
+        const backendTypeOptions = validFilterOptions(response.types_bien)
+        const fallbackTypeOptions = selectedTypeOptions(typeBien)
+        const nextTypeOptions = typeBien.trim()
+          ? fallbackTypeOptions
+          : backendTypeOptions
+        const nextStatusOptions = validFilterOptions(response.statuts)
+        const nextTransactionOptions = validFilterOptions(
+          response.types_transaction
+        )
+
+        setFilterTypeOptions(
+          nextTypeOptions.length > 0 ? nextTypeOptions : publicTypeOptions
+        )
+        setFilterStatusOptions(
+          nextStatusOptions.length > 0 ? nextStatusOptions : publicStatusOptions
+        )
+        setFilterTransactionOptions(
+          nextTransactionOptions.length > 0
+            ? nextTransactionOptions
+            : publicTransactionOptions
+        )
+      } catch {
+        if (signal?.aborted) {
+          return
+        }
+
+        setFilterTypeOptions(selectedTypeOptions(typeBien))
+        setFilterStatusOptions(publicStatusOptions)
+        setFilterTransactionOptions(publicTransactionOptions)
+      }
+    },
+    []
+  )
+
   React.useEffect(() => {
     const controller = new AbortController()
     const timer = window.setTimeout(() => {
@@ -331,6 +407,18 @@ function HomeContent({ initialFilters }: HomeContentProps) {
       controller.abort()
     }
   }, [appliedFilters, loadProperties])
+
+  React.useEffect(() => {
+    const controller = new AbortController()
+    const timer = window.setTimeout(() => {
+      void loadFilterOptions(appliedFilters.type_bien, controller.signal)
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [appliedFilters.type_bien, loadFilterOptions])
 
   function updateFilter(name: keyof PublicImmovableFilters, value: string) {
     setDraftFilters((current) => ({
@@ -373,6 +461,7 @@ function HomeContent({ initialFilters }: HomeContentProps) {
 
   const currentHeroCopy = heroCopy(draftFilters.type_bien)
   const aiSearchIsAvailable = appliedFilters.type_bien === "maison"
+  const isSpecificTypePage = Boolean(appliedFilters.type_bien)
   const selectedTypeLabel =
     publicTypeOptions.find((type) => type.value === appliedFilters.type_bien)
       ?.label ?? "la page générale"
@@ -454,7 +543,9 @@ function HomeContent({ initialFilters }: HomeContentProps) {
                   name="type_bien"
                   value={draftFilters.type_bien}
                   placeholder="Tous les biens"
-                  options={publicTypeOptions}
+                  options={filterTypeOptions}
+                  disabled={isSpecificTypePage}
+                  showAllOption={!isSpecificTypePage}
                   onChange={updateFilter}
                 />
                 <SelectField
@@ -462,7 +553,7 @@ function HomeContent({ initialFilters }: HomeContentProps) {
                   name="type_transaction"
                   value={draftFilters.type_transaction}
                   placeholder="Toutes"
-                  options={publicTransactionOptions}
+                  options={filterTransactionOptions}
                   onChange={updateFilter}
                 />
                 <div className="flex gap-2">
@@ -498,7 +589,7 @@ function HomeContent({ initialFilters }: HomeContentProps) {
                       name="statut"
                       value={draftFilters.statut}
                       placeholder="Tous les statuts"
-                      options={publicStatusOptions}
+                      options={filterStatusOptions}
                       onChange={updateFilter}
                     />
                     <TextField

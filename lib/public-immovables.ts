@@ -33,6 +33,7 @@ export type PublicImmovable = {
   description?: string | null
   detail_url?: string | null
   hotel?: Record<string, unknown> | null
+  immeuble?: Record<string, unknown> | null
   id?: string | null
   kiosque?: Record<string, unknown> | null
   images?: PublicImmovableMedia[] | null
@@ -59,8 +60,21 @@ export type PublicImmovablesResponse =
   | PublicImmovable[]
   | {
       count?: number
+      filters?: Record<string, unknown>
       results?: PublicImmovable[]
+      type_bien?: string
     }
+
+export type PublicFilterOption = {
+  label: string
+  value: string
+}
+
+export type PublicFilterOptionsResponse = {
+  statuts?: PublicFilterOption[]
+  types_bien?: PublicFilterOption[]
+  types_transaction?: PublicFilterOption[]
+}
 
 export type PublicImmovableFilters = {
   city: string
@@ -100,6 +114,7 @@ export const publicTypeOptions = [
   { label: "Bureaux", value: "bureau" },
   { label: "Terrains", value: "terrain" },
   { label: "Hôtels", value: "hotel" },
+  { label: "Immeubles", value: "immeuble" },
   { label: "Kiosques", value: "kiosque" },
   { label: "Salles événement", value: "salle_evenement" },
 ]
@@ -129,10 +144,31 @@ export const publicSortOptions = [
   { label: "Surface", value: "surface_totale" },
 ]
 
+const PUBLIC_ENDPOINTS_BY_TYPE: Record<string, string> = {
+  appartement: "/api/immovables/public/appartements/",
+  bureau: "/api/immovables/public/bureaux/",
+  hotel: "/api/immovables/public/hotels/",
+  kiosque: "/api/immovables/public/kiosques/",
+  maison: "/api/immovables/public/maisons/",
+  salle_evenement: "/api/immovables/public/salles-evenement/",
+  terrain: "/api/immovables/public/terrains/",
+}
+
+const PUBLIC_FILTER_ENDPOINTS_BY_TYPE: Record<string, string> = {
+  appartement: "/api/immovables/public/appartements/filter-options/",
+  bureau: "/api/immovables/public/bureaux/filter-options/",
+  hotel: "/api/immovables/public/hotels/filter-options/",
+  kiosque: "/api/immovables/public/kiosques/filter-options/",
+  maison: "/api/immovables/public/maisons/filter-options/",
+  salle_evenement: "/api/immovables/public/salles-evenement/filter-options/",
+  terrain: "/api/immovables/public/terrains/filter-options/",
+}
+
 const TYPE_LABELS: Record<string, string> = {
   appartement: "Appartement",
   bureau: "Bureau",
   hotel: "Hôtel",
+  immeuble: "Immeuble",
   kiosque: "Kiosque",
   maison: "Maison",
   salle_evenement: "Salle événement",
@@ -143,6 +179,7 @@ const DETAIL_KEYS_BY_TYPE: Record<string, keyof PublicImmovable> = {
   appartement: "appartement",
   bureau: "bureau",
   hotel: "hotel",
+  immeuble: "immeuble",
   kiosque: "kiosque",
   maison: "maison",
   salle_evenement: "salle_evenement",
@@ -153,6 +190,7 @@ const TYPES_BY_REFERENCE_PREFIX: Record<string, string> = {
   APP: "appartement",
   BUR: "bureau",
   HOT: "hotel",
+  IMM: "immeuble",
   KIO: "kiosque",
   MAI: "maison",
   SAL: "salle_evenement",
@@ -440,6 +478,26 @@ export function buildPublicImmovablesQuery(filters: PublicImmovableFilters) {
   })
 
   return params.toString()
+}
+
+export function buildPublicImmovablesEndpoint(filters: PublicImmovableFilters) {
+  const selectedType = filters.type_bien.trim()
+  const endpoint = PUBLIC_ENDPOINTS_BY_TYPE[selectedType] ?? "/api/immovables/public/"
+  const queryFilters = {
+    ...filters,
+    // L'endpoint spécifique connaît déjà son type de bien.
+    type_bien: endpoint === "/api/immovables/public/" ? selectedType : "",
+  }
+  const query = buildPublicImmovablesQuery(queryFilters)
+
+  return query ? `${endpoint}?${query}` : endpoint
+}
+
+export function buildPublicFilterOptionsEndpoint(typeBien: string) {
+  return (
+    PUBLIC_FILTER_ENDPOINTS_BY_TYPE[typeBien.trim()] ??
+    "/api/immovables/public/filter-options/"
+  )
 }
 
 export function parsePublicImmovables(response: PublicImmovablesResponse) {
