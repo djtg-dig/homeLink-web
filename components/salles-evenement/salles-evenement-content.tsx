@@ -345,7 +345,9 @@ function SallesEvenementContent() {
                                 {salleEvenementDisplayName(salle)}
                               </p>
                               <p className="mt-1 text-xs text-muted-foreground">
-                                {salleEvenementReferenceLabel(salle)} ·{" "}
+                                {salleEvenementReferenceLabel(salle)} ·
+                              </p>
+                              <p className="text-xs text-muted-foreground">
                                 {createdDateLabel(salle.created_at)}
                               </p>
                               <p className="mt-1 text-xs text-muted-foreground sm:hidden">

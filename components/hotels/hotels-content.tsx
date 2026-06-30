@@ -424,7 +424,9 @@ function HotelsContent() {
                                   {hotelDisplayName(hotel)}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                  {hotelReferenceLabel(hotel)} ·{" "}
+                                  {hotelReferenceLabel(hotel)} ·
+                                </p>
+                                <p className="text-xs text-muted-foreground">
                                   {createdDateLabel(hotel.created_at)}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground sm:hidden">

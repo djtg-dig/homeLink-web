@@ -418,7 +418,9 @@ function AppartementsContent() {
                                   {appartementDisplayName(appartement)}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                  {appartementReferenceLabel(appartement)} ·{" "}
+                                  {appartementReferenceLabel(appartement)} ·
+                                </p>
+                                <p className="text-xs text-muted-foreground">
                                   {createdDateLabel(appartement.created_at)}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground sm:hidden">

@@ -435,7 +435,9 @@ function MaisonsContent() {
                                   {maisonDisplayName(maison)}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                  {maisonReferenceLabel(maison)} ·{" "}
+                                  {maisonReferenceLabel(maison)} ·
+                                </p>
+                                <p className="text-xs text-muted-foreground">
                                   {createdDateLabel(maison.created_at)}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground sm:hidden">

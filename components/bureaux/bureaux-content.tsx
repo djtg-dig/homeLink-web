@@ -1390,7 +1390,9 @@ function BureauxContent() {
                                   {bureauDisplayName(bureau)}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                  {bureauReferenceLabel(bureau)} ·{" "}
+                                  {bureauReferenceLabel(bureau)} ·
+                                </p>
+                                <p className="text-xs text-muted-foreground">
                                   {createdDateLabel(bureau.created_at)}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground sm:hidden">

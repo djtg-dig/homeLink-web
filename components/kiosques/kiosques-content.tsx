@@ -430,7 +430,9 @@ function KiosquesContent() {
                                   {kiosqueDisplayName(kiosque)}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                  {kiosqueReferenceLabel(kiosque)} ·{" "}
+                                  {kiosqueReferenceLabel(kiosque)} ·
+                                </p>
+                                <p className="text-xs text-muted-foreground">
                                   {createdDateLabel(kiosque.created_at)}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground sm:hidden">

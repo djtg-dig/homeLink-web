@@ -337,7 +337,9 @@ function TerrainsContent() {
                                 {terrainDisplayName(terrain)}
                               </p>
                               <p className="mt-1 text-xs text-muted-foreground">
-                                {terrainReferenceLabel(terrain)} ·{" "}
+                                {terrainReferenceLabel(terrain)} ·
+                              </p>
+                              <p className="text-xs text-muted-foreground">
                                 {createdDateLabel(terrain.created_at)}
                               </p>
                               <p className="mt-1 text-xs text-muted-foreground sm:hidden">
