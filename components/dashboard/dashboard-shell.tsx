@@ -455,8 +455,10 @@ function DashboardShell({
         id="dashboard-mobile-sidebar"
         aria-hidden={!sidebarOpen}
         className={cn(
-          "dashboard-mobile-sidebar fixed inset-y-0 left-0 z-50 flex w-full flex-col overflow-y-auto bg-brand-navy p-4 text-brand-white transition-transform sm:w-80 sm:border-r sm:border-white/10 lg:hidden",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          "dashboard-mobile-sidebar fixed inset-y-0 left-0 z-50 flex w-full flex-col overflow-y-auto bg-brand-navy p-4 text-brand-white lg:hidden",
+          sidebarOpen
+            ? "visible opacity-100"
+            : "pointer-events-none invisible opacity-0"
         )}
       >
         <div className="mb-4 flex shrink-0 justify-end">

@@ -161,6 +161,6 @@
   }
 
   .dashboard-mobile-sidebar-open .theme-switcher {
-    display: none;
+    display: none !important;
   }
 }
