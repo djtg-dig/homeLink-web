@@ -4,6 +4,8 @@ export type PublicImmovableAddress = {
   city?: string | null
   country?: string | null
   formatted_address?: string | null
+  latitude?: number | string | null
+  longitude?: number | string | null
   neighborhood?: string | null
   state?: string | null
   street?: string | null

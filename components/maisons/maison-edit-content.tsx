@@ -85,7 +85,9 @@ type MaisonEditValues = {
   is_active: boolean
   is_isolated: boolean
   isolation: string
+  latitude: string
   lodger_number: string
+  longitude: string
   place_number_garage: string
   pool: boolean
   pool_area: string
@@ -314,7 +316,9 @@ function formValuesFromMaison(maison: Maison): MaisonEditValues {
     is_active: maison.is_active !== false,
     is_isolated: Boolean(details?.is_isolated),
     isolation: details?.isolation?.trim() || NO_ISOLATION_VALUE,
+    latitude: textValue(maison.adresse?.latitude),
     lodger_number: textValue(details?.lodger_number),
+    longitude: textValue(maison.adresse?.longitude),
     place_number_garage: textValue(details?.place_number_garage),
     pool: Boolean(details?.pool),
     pool_area: textValue(details?.pool_area),
@@ -406,7 +410,20 @@ function buildPatchPayload(values: MaisonEditValues) {
           "Le prix de location mensuel"
         )
 
+  const latitude = optionalDecimal(values.latitude, "La latitude")
+  const longitude = optionalDecimal(values.longitude, "La longitude")
+  const address: Record<string, unknown> = {}
+
+  if (latitude !== undefined) {
+    address.latitude = latitude
+  }
+
+  if (longitude !== undefined) {
+    address.longitude = longitude
+  }
+
   return {
+    ...(Object.keys(address).length > 0 ? { adresse: address } : {}),
     agency_id: values.agency_id === NO_AGENCY_VALUE ? null : values.agency_id,
     description: values.description.trim(),
     est_proprietaire: values.est_proprietaire,
@@ -1093,6 +1110,24 @@ function MaisonEditContent({ id }: { id: string }) {
                 <p className="text-sm leading-6 text-muted-foreground">
                   {maison ? maisonAddressLabel(maison) : "-"}
                 </p>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <TextField
+                    label="Latitude"
+                    name="latitude"
+                    value={values.latitude}
+                    inputMode="decimal"
+                    placeholder="-4.393200"
+                    onChange={updateValue}
+                  />
+                  <TextField
+                    label="Longitude"
+                    name="longitude"
+                    value={values.longitude}
+                    inputMode="decimal"
+                    placeholder="15.293400"
+                    onChange={updateValue}
+                  />
+                </div>
               </Section>
 
               <Section

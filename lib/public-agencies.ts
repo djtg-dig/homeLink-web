@@ -13,6 +13,8 @@ export type PublicAgencyAddress = {
   country?: { id?: number; name?: string | null; iso2?: string | null } | null
   display_address?: string | null
   formatted_address?: string | null
+  latitude?: number | string | null
+  longitude?: number | string | null
   neighborhood?: string | null
   postal_code?: string | null
   state?: string | null

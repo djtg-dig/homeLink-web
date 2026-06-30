@@ -18,6 +18,7 @@ import * as React from "react"
 
 import { SiteFooter } from "@/components/navigation/site-footer"
 import { SiteHeader } from "@/components/navigation/site-header"
+import { MapView } from "@/components/map-view"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ApiError, apiFetch } from "@/lib/api-client"
@@ -503,6 +504,25 @@ function PublicPropertyDetailContent({ id }: { id: string }) {
                 )}
               </article>
             </aside>
+          </div>
+        </section>
+
+        <section className="px-4 pb-8 sm:px-8 sm:pb-10 lg:px-10">
+          <div className="mx-auto max-w-6xl">
+            <article className="rounded-lg border border-border bg-card p-5 shadow-sm">
+              <h2 className="text-xl font-semibold">Localisation</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                La carte s&apos;affiche automatiquement quand le bien possède des
+                coordonnées.
+              </p>
+              <div className="mt-4">
+                <MapView
+                  latitude={property.adresse?.latitude}
+                  longitude={property.adresse?.longitude}
+                  title={`Carte de ${publicImmovableTitle(property)}`}
+                />
+              </div>
+            </article>
           </div>
         </section>
 

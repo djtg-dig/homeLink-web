@@ -7,6 +7,7 @@ import * as React from "react"
 
 import { SiteFooter } from "@/components/navigation/site-footer"
 import { SiteHeader } from "@/components/navigation/site-header"
+import { MapView } from "@/components/map-view"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ApiError, apiFetch } from "@/lib/api-client"
@@ -283,6 +284,25 @@ function PublicAgencyDetailContent({ slug }: { slug: string }) {
                 </div>
               </article>
             </aside>
+          </div>
+        </section>
+
+        <section className="px-4 pb-8 sm:px-8 sm:pb-10 lg:px-10">
+          <div className="mx-auto max-w-6xl">
+            <article className="rounded-lg border border-border bg-card p-5 shadow-sm">
+              <h2 className="text-xl font-semibold">Localisation</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                La carte de l&apos;agence s&apos;affiche quand les coordonnées sont
+                disponibles.
+              </p>
+              <div className="mt-4">
+                <MapView
+                  latitude={agency.address?.latitude}
+                  longitude={agency.address?.longitude}
+                  title={`Carte de ${publicAgencyName(agency)}`}
+                />
+              </div>
+            </article>
           </div>
         </section>
       </main>
